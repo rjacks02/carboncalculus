@@ -1,0 +1,1073 @@
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+* {
+  font-family: Verdana, sans-serif;
+}
+
+.home{
+  display: grid;
+  place-items: center;
+  height: 100vh; 
+  row-gap: 0;
+  background: #aed9ea;
+}
+
+.title{
+  font-size: 4rem;
+  line-height: 50%;
+  color: 	#2e7c53;
+  text-align: center;
+}
+
+.subtitle{
+  font-size: 1rem;
+  color: #1e516a;
+  width: 50%;
+  text-align: center;
+  margin: auto;
+  margin-top: 5%;
+  font-style: italic;
+}
+
+.homeButtonContainer{
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  width: 55%;
+  margin: auto;
+  margin-top: 5%;
+  gap: 10%;
+}
+
+.homeButton{
+  display: block;
+  width: 100%;
+  padding: 1rem 1rem;
+  margin-bottom: 1rem; 
+  font-size: 1.1rem;
+  background-color: #2e7c53;
+  color: white;
+  border: hidden;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  text-align: center;
+}
+
+.homeButton:hover{
+  background-color: #49bd7f;
+}
+
+.headerContainer{
+  z-index: 1000;
+  display: grid;
+  grid-template-columns: auto auto auto auto auto;
+  gap: 2%;
+  align-items: center;
+  height: 16vh;
+  margin-right: 2%;
+  margin-left: 2%;
+}
+
+.headerContainer > * {
+  margin: 0;
+  padding: 0;
+  align-self: center;
+}
+
+.header {
+    font-size: 4vw;
+    white-space: nowrap;
+    overflow: hidden;
+    margin: 0;
+    color: 	#2e7c53;
+    text-align: center;
+}
+
+.navButton {
+  width: 100%;
+  padding: 1rem 1rem;
+  font-size: 1.1rem;
+  background-color: #2e7c53;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  text-align: center;
+  margin-bottom: 0;
+}
+
+.navButton:hover{
+  background-color: #49bd7f;
+}
+
+.mainContainer{
+  margin-top: 0;
+  width: 100%;
+  margin: auto;
+}
+
+.mainNPV{
+  justify-content: center;
+  margin: auto;
+  margin-top: 0;
+  background-color: #94c8dc;
+  overflow-y: scroll;
+  height: 95%;
+  border: .5rem solid #2e7c53;
+}
+
+.horizontal{
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 0px;
+  height: 65vh;
+  overflow-y: clip;
+}
+
+.savedColumns{
+  display: grid;
+  grid-template-columns: 1fr 5fr;
+  gap: 4%;
+  width: 100%;
+}
+
+.columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5%;
+    width: 100%;
+}
+
+.section {
+  height: fit-content;
+  display: flex;
+  flex-direction: column;
+  background-color: #94c8dc;
+  padding: 10px;
+  box-sizing: border-box;
+  gap: 0.5rem;
+  overflow-x: hidden;
+}
+
+.sectionHorizontal {
+  height: inherit;
+  display: flex;
+  flex-direction: column;
+  background-color: #94c8dc;
+  padding: 10px;
+  box-sizing: border-box;
+  gap: 0.5rem;
+  overflow-x: hidden;
+  margin-top: 0;
+  overflow: hidden;
+}
+
+.saveSection{
+  height: 84vh;
+  overflow-y: scroll;
+  margin: auto;
+  width: 100%;
+  border: .5rem solid #2e7c53;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start
+}
+
+.sectionTitle {
+  background-color: #f0db9a;
+  font-size: 1.5rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  width: max-content;
+  align-self: center;
+  text-align: center;
+  border-radius: 10px;
+  margin: auto;
+  margin-top: 2%;
+}
+
+.inputColumnsHolder{
+    display: grid;
+    grid-auto-columns: 1fr 1fr;
+    margin: auto;
+    text-align: center;
+    font-size: .4rem;
+    color: black;
+    column-gap: 2rem;
+}
+
+.inputColumns {
+    grid-row: 1;
+    margin-bottom: 3%;
+}
+
+.inputColumns label {
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.inputCenter {
+    text-align: center;
+    font-size: 1.1rem;
+    color: black;
+    margin-bottom: 1rem;
+}
+
+.inputCenter:last-child {
+  margin-bottom: 0rem;
+}
+
+.totalYears {
+  margin: auto;
+  text-align: right;
+  font-size: 1.1rem;
+  color: black;
+  margin-top: 10%;
+  margin-bottom: 5%;
+}
+
+
+
+.npvButton{
+  width: fit-content;
+  margin: auto;
+  padding: 1rem 1rem;
+  font-size: 1.1rem;
+  background-color: #f0db9a;
+  border: hidden;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  text-align: center;
+}
+
+.npvButton:hover{
+  background-color: #f4e5b8;
+}
+
+  .npv{
+    background-color: #aed9ea;
+    margin: 0 auto 0 auto;
+    text-align: center;
+    font-size: 2rem;
+    width: max-content;
+    padding: 2%;
+    border-radius: 10px;
+  }
+
+
+  .visualTitle{
+    background-color: #aed9ea;
+    grid-row: 1;
+    position: relative;
+    width: max-content;
+    height: max-content;
+    margin: auto;
+    text-align: center;
+    font-size: 1.5rem;
+    line-height: 100%;
+    padding: 2% 2%;
+    margin-top: 1%;
+    border-radius: 5px;
+  }
+
+
+.visualSection {
+  width: 80%;
+  height: 550px;
+  background-color: #aed9ea;
+  padding: 1rem;
+  box-sizing: border-box;
+  margin: auto;
+  margin-bottom: 3%;
+  margin-top: 0;
+  transition: 1s ease;
+}
+
+.visualSection:last-child {
+  margin-bottom: 0;
+}
+
+.visualSectionHorizontal{
+  height: 330px;
+}
+
+.hidden{
+  visibility: hidden;
+}
+
+.options{
+  width: 20%;
+}
+  
+.optionButton {
+  display: block;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem; 
+  font-size: 1.1rem;
+  background-color: #aed9ea;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  text-align: center;
+}
+
+.optionButton:last-child {
+  margin-bottom: 0;
+}
+
+.optionButton:hover {
+  background-color: #5c99b7;
+  color: #fff;
+}
+
+.spacedButton {
+  margin-top: 2rem;
+}
+
+.savedList{
+  display: block;
+  flex-grow: 1;
+}
+
+.save{
+  height: fit-content;
+  margin-bottom: 2%;
+  display: grid;
+  grid-template-columns: 8fr 2fr;
+  line-height: 50%;
+  align-items: center;
+  border: none;
+  gap: 3%;
+}
+
+.save:last-child {
+  margin-bottom: 0;
+}
+
+.saveInfo{
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  height: fit-content;
+  line-height: 50%;
+  align-items: center;
+  background-color: #aed9ea;
+  border: none;
+  border-radius: 6px;
+  text-align: center;
+}
+
+
+.saveInfoItem{
+  font-size: 1.5rem;
+  padding: 10%;
+  text-align: center;
+}
+
+.saveInfoName{
+  width: 90%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.saveAction {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 0.5rem;
+  background-color: #aed9ea;
+  border-radius: 6px;
+  padding: 1rem;
+  width: max-content;
+}
+
+.saveActionItem{
+  height: max-content;
+  align-items: center;
+  background-color: #aed9ea;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  padding: .5rem .5rem;
+  font-size: 1rem;
+  text-align: center;
+  justify-content: center;
+}
+
+.saveActionItem:hover {
+  background-color: #5c99b7;
+  color: #fff;
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.4); /* dimmed background */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.popup {
+  background-color: #94c8dc;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  min-width: 300px;
+  max-width: 90%;
+  text-align: center;
+}
+
+.popupButtonContainer{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  margin: auto;
+  margin-top: 1.5rem;
+}
+
+.popupButton{
+  background-color: #aed9ea;
+
+  cursor: pointer;
+  margin: auto;
+  font-size: 1.2rem;
+}
+
+.popupButton:hover {
+  background-color: #5c99b7;
+  color: #fff;
+}
+
+.compare{
+  height: fit-content;
+  margin-bottom: 2%;
+  display: grid;
+  line-height: 50%;
+  align-items: center;
+  border: none;
+  gap: 3%;
+}
+
+.compare:last-child {
+  margin-bottom: 0;
+}
+
+.compareInfo{
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  height: fit-content;
+  line-height: 50%;
+  align-items: center;
+  background-color: #aed9ea;
+  border: none;
+  border-radius: 6px;
+  text-align: center;
+  cursor: pointer;
+}
+
+
+.compareInfoItem{
+  font-size: 1.5rem;
+  padding: 10%;
+  text-align: center;
+}
+
+.compareInfo:hover {
+  background-color: #5c99b7;
+  color: #fff;
+}
+
+.compareInfoClicked{
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  height: fit-content;
+  line-height: 50%;
+  align-items: center;
+  background-color: #5c99b7;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.compareSection {
+  margin-left: -2.5%;
+}
+
+.blockContainer {
+  height: 100%;
+  border-radius: 6px;
+  padding: 1rem;
+  margin-top: 1rem;
+  overflow-y: hidden;
+}
+
+.yearContainer{
+  height: 28vh;
+  overflow-y: auto;
+  padding: 10px;
+  margin-top: 0;
+  margin-bottom: 0;
+  background-color: #aed9ea;
+  padding-top: 1rem;
+  margin-top: -1rem;
+}
+
+.tabsContainer{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  position: relative;
+  top: -1rem;
+}
+
+.tab{
+  text-align: center;
+  padding: 0.5rem 1rem;
+  border-bottom: none;
+  border-radius: 8px 8px 0 0;
+  background: #5c99b7;
+  cursor: pointer;
+  font-weight: 500;
+  transition: 0.2s ease;
+  height: 20px;
+  font-size: 1.1rem;
+}
+
+.active {
+  background: #aed9ea;
+  border: hidden;
+  z-index: 2;
+}
+
+.calcColumns{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  margin-top: 0;
+}
+
+.calcCenter{
+  margin: auto;
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
+.scenarioTitle{
+    background-color: #aed9ea;
+    margin-top: 0;
+    margin-bottom: 0;
+    text-align: center;
+    font-size: 1.4rem;
+    padding: 1%;
+    border-radius: 8px;
+    margin-left: auto;
+    max-width: 50vw;
+    white-space: normal;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.popupSaveButtonContainer{
+  display: grid;
+  grid-template-columns: 1fr;
+  margin: auto;
+  margin-top: 1.5rem;
+}
+
+.arrow{
+  font-size: 3rem;
+  padding: 3%;
+  height: fit-content;
+  width: fit-content;
+  margin: auto;
+  text-align: center;
+  background-color: #94c8dc;
+  border: .5rem solid #2e7c53;
+  cursor: pointer;
+}
+
+.arrow:hover{
+  background-color: #5c99b7;
+}
+
+.notVisible {
+  visibility: hidden;
+}
+
+.mainNPV::-webkit-scrollbar {
+  width: 15px;
+}
+
+.mainNPV::-webkit-scrollbar-track {
+  background: #e0f2f7;
+  border-radius: 5px;
+}
+
+.mainNPV::-webkit-scrollbar-thumb {
+  background-color: #5c99b7;
+  border-radius: 5px;
+  border: 2px solid #e0f2f7;
+}
+
+.saveSection::-webkit-scrollbar-thumb:hover {
+  background-color: #417c99;
+}
+
+.saveSection::-webkit-scrollbar {
+  width: 15px;
+}
+
+.saveSection::-webkit-scrollbar-track {
+  background: #e0f2f7;
+  border-radius: 5px;
+}
+
+.saveSection::-webkit-scrollbar-thumb {
+  background-color: #5c99b7;
+  border-radius: 5px;
+  border: 2px solid #e0f2f7;
+}
+
+.saveSection::-webkit-scrollbar-thumb:hover {
+  background-color: #417c99;
+}
+
+.yearContainer::-webkit-scrollbar {
+  width: 15px;
+}
+
+.yearContainer::-webkit-scrollbar-track {
+  background: #e0f2f7;
+  border-radius: 5px;
+}
+
+.yearContainer::-webkit-scrollbar-thumb {
+  background-color: #5c99b7;
+  border-radius: 5px;
+  border: 2px solid #e0f2f7;
+}
+
+.yearContainer::-webkit-scrollbar-thumb:hover {
+  background-color: #417c99;
+}
+
+.popupAddContainer{
+  display: grid;
+  grid-template-columns: auto auto auto;
+  margin: auto;
+  margin-top: 1.5rem;
+}
+
+.popup2Container{
+  display: grid;
+  grid-template-columns: auto auto;
+  margin: auto;
+  margin-top: 1.5rem;
+}
+
+.popupRemoveContainer{
+  display: grid;
+  grid-template-columns: auto auto auto auto;
+  margin: auto;
+  margin-top: 1.5rem;
+}
+
+.mainTabsContainer{
+  display: grid;
+  grid-template-columns: auto;
+  grid-auto-flow: column;
+  grid-auto-columns: max-content;
+  gap: 0.5rem;
+  position: relative;
+  justify-content: start;
+  overflow-x: scroll;
+  margin-top: -2rem;
+  padding-top: 1.6rem;
+  width: 100%;
+  min-width: 100%;
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.mainTab{
+  width: 180px;
+  text-align: center;
+  padding: 0.5rem 1rem;
+  border-bottom: none;
+  border-radius: 8px 8px 0 0;
+  background: #49bd7f;
+  cursor: pointer;
+  font-size: 1.3rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: 0.2s ease;
+  display: flex;
+}
+
+.mainTabName{
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex-grow: 1;
+  min-width: 0;
+}
+
+.selected {
+  background: #2e7c53;
+  color: white;
+  border: hidden;
+}
+
+.mainTabsContainer::-webkit-scrollbar {
+  height: 10px;
+}
+
+.mainTabsContainer::-webkit-scrollbar-track {
+  background: #2e7c53;
+}
+
+.mainTabsContainer::-webkit-scrollbar-thumb {
+  background-color: #49bd7f;
+  border-radius: 5px;
+}
+
+.faqsContainer{
+  justify-content: center;
+  margin: auto;
+  background-color: #94c8dc;
+  overflow-y: scroll;
+  height: 71vh;
+  border: .5rem solid #2e7c53;
+  padding: 2%;
+}
+
+.faqTitle{
+  font-size: 3rem;
+  font-weight: bold;
+  color: 	#2e7c53;
+  text-align: center;
+  padding-bottom: 2%;
+  border-bottom: .5rem dotted #2e7c53;
+}
+
+.qanda{
+  margin-top: 2%;
+  background-color: #aed9ea;
+  padding: 1%;
+  border-radius: 10px;
+}
+
+.question{
+  font-size: 2.4rem;
+  font-weight: bold;
+  color: 	#2e7c53;
+  text-align: left;
+}
+
+.answer{
+  margin-top: 1%;
+  text-indent: 5em;
+  font-size: 1rem;
+  font-weight: 500;
+  color: 	black;
+  text-align: left;
+}
+
+.faqsContainer::-webkit-scrollbar {
+  width: 15px;
+}
+
+.faqsContainer::-webkit-scrollbar-track {
+  background: #e0f2f7;
+  border-radius: 5px;
+}
+
+.faqsContainer::-webkit-scrollbar-thumb {
+  background-color: #5c99b7;
+  border-radius: 5px;
+  border: 2px solid #e0f2f7;
+}
+
+.faqsColumns{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  justify-content: center;
+  height: 100%;
+}
+
+.plotContainer {
+  flex: 1 1 400px;
+  height: 400px;
+  display: flex;
+  justify-content: center; 
+  align-items: center;
+}
+
+.plot {
+  width: 90% !important;
+  height: 90% !important;
+  margin: auto;
+}
+
+.renameButton {
+  width: fit-content;
+  height: fit-content;
+  margin-top: auto;
+  margin-bottom: auto;
+  padding: .2rem;
+  font-size: .9rem;
+  background-color: #5c99b7;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  text-align: center;
+  margin-right: auto;
+}
+
+.renameButton:hover {
+  background-color: #aed9ea;
+  color: black;
+}
+
+.naming{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  margin-bottom: 0;
+  gap: 2%;
+  margin-top: 3%;
+}
+
+
+.dropdown {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+  margin-top: 0;
+  margin-bottom: 0;
+  cursor: pointer;
+}
+
+.dropdown .navButton{
+  cursor: pointer;
+}
+
+.dropdownContent {
+  display: none;
+  position: absolute;
+  top: 100%;
+  background-color: #f9f9f9;
+  min-width: 160px;
+  border-radius: 6px;
+  box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
+  z-index: 1;
+  width: 100%;
+}
+
+.dropdownContent a {
+  color: black;
+  padding: 0.8rem 1rem;
+  text-decoration: none;
+  display: block;
+  transition: background-color 0.2s ease;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.dropdownContent a:hover {
+  background-color: #e0f3ec;
+}
+
+.dropdown:hover .dropdownContent {
+  display: block;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.dropdown:hover .dropdownContent,
+.dropdown:focus-within .dropdownContent {
+  display: block;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.visualContainer {
+  height: 370px;
+  border-radius: 6px;
+  padding: 1rem;
+  margin-top: 0;
+  overflow-y: hidden;
+}
+
+.visualOptionsContainer{
+  height: 280px;
+  overflow-y: auto;
+  padding: 10px;
+  margin-top: 0;
+  margin-bottom: 0;
+  padding-bottom: 30%;
+  background-color: #aed9ea;
+  padding-top: 1rem;
+  margin-top: -1rem;
+  overflow: hidden;
+}
+
+
+
+
+
+
+.multiSelectDropdown {
+  background-color: #aed9ea;
+  margin: auto;
+  padding-left: 5%;
+  padding-right: 5%;
+  width: fit-content;
+  border-radius: 6px;
+}
+
+.multiSelectLabel {
+  padding: 0.5rem;
+  cursor: pointer;
+  font-weight: bold;
+  text-align: center;
+  font-size: 1.5rem;
+}
+
+.multiSelectContent {
+  top: 100%;
+  padding: 1rem;
+  width: max-content;
+}
+
+.multiSelectItem {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  font-size: 1.1rem;
+}
+
+.tooltipRemove {
+  visibility: hidden;
+  width: max-content;
+  background-color: #3b738f;
+  color: white;
+  text-align: center;
+  border: .2rem solid #1c3948;
+  padding: 0.25rem 0.5rem;
+  position: absolute;
+  z-index: 10;
+  left: 50%;
+  transform: translate(-50%, -200%);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  font-size: .9rem;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.tooltipRemove::before {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: .5rem;
+  border-style: solid;
+  border-color: #1c3948 transparent transparent transparent; /* red top, transparent sides */
+  width: 0;
+  height: 0;
+}
+
+.x:hover .tooltipRemove {
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
+  top: 100%;
+}
+
+.mainTabsContainer, .mainTab, .x {
+  overflow: visible !important;
+}
+
+.mainTabsContainer {
+  overflow-x: scroll !important;
+}
+
+.x{
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+  flex-shrink: 0;
+  margin-left: 0.5rem;
+}
+
+.addTab{
+  position: relative;
+  padding: 0.5rem 1rem;
+  color: #2e7c53;
+  cursor: pointer;
+  font-size: 1.5rem;
+}
+
+.addTab:hover .tooltipRemove {
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
+  top: 100%;
+}
+
+.tooltipOpen {
+  visibility: hidden;
+  width: max-content;
+  background-color: #3b738f;
+  color: white;
+  text-align: center;
+  border: .2rem solid #1c3948;
+  padding: 0.25rem 0.5rem;
+  position: absolute;
+  z-index: 10;
+  left: 50%;
+  transform: translate(-50%, -220%);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  font-size: .9rem;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.tooltipOpen::before {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: .5rem;
+  border-style: solid;
+  border-color: #1c3948 transparent transparent transparent; /* red top, transparent sides */
+  width: 0;
+  height: 0;
+}
+
+.addTab:hover .tooltipOpen {
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
+  top: 100%;
+}
