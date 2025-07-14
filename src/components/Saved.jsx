@@ -68,7 +68,7 @@ const Saved = ({addScenario, setPage}) => {
     }, []);
 
     function refreshKeys() {
-        const keyWithTimestamps = Object.keys(localStorage).sort((a, b) => b - a);
+        const keyWithTimestamps = Object.keys(localStorage).filter(k => !isNaN(k)).sort((a, b) => b - a);
         setLocalKeys(keyWithTimestamps);
       }
 
