@@ -59,7 +59,7 @@ const Item = ({key_, onDelete, rename, addScenario, update}) => {
     )
 }
 
-const Saved = ({addScenario}) => {
+const Saved = ({addScenario, setPage}) => {
     const [localKeys, setLocalKeys] = useState(Object.keys(localStorage));
     const [update, setUpdate] = useState(false);
 
@@ -92,6 +92,7 @@ const Saved = ({addScenario}) => {
                 <div className = {styles.savedList}>
                     {localKeys.map((key) => (<Item key={key} key_ = {key} onDelete = {onDelete} rename = {rename} addScenario = {addScenario} update = {update}/>))}
                 </div>
+                <button className = {styles.npvButton} onClick = {() => {setPage('npv');}}><span>Cancel</span></button>
             </div>
         </div>
     );

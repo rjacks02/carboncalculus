@@ -521,7 +521,7 @@ const NPV = () => {
                 </div>
             )}
             </div>)}
-            {page === 'saved' && (<Saved addScenario = {addScenario}/>)}
+            {page === 'saved' && (<Saved addScenario = {addScenario} setPage = {setPage}/>)}
         </div> 
     );
 };
