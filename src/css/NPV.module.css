@@ -202,6 +202,7 @@ html, body, #root {
     column-gap: 2rem;
 }
 
+
 .inputColumns {
     grid-row: 1;
     margin-bottom: 3%;
@@ -223,13 +224,34 @@ html, body, #root {
   margin-bottom: 0rem;
 }
 
-.totalYears {
-  margin: auto;
-  text-align: right;
-  font-size: 1.1rem;
+.inputBox{
+  width: 20%;
+}
+
+.info{
+  position: relative;
   color: black;
-  margin-top: 10%;
+  cursor: pointer;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.info:hover{
+  color: white;
+}
+
+.totalYears {
+  text-align: right;
+  font-size: 1rem;
+  color: black;
+  margin-top: 8%;
   margin-bottom: 5%;
+  text-align: center;
+  margin-left: auto;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 1px;
 }
 
 
@@ -245,6 +267,7 @@ html, body, #root {
   cursor: pointer;
   transition: background-color 0.3s ease;
   text-align: center;
+  margin-top: -1%;
 }
 
 .npvButton:hover{
@@ -428,7 +451,7 @@ html, body, #root {
   border-radius: 12px;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
   min-width: 300px;
-  max-width: 90%;
+  max-width: 40%;
   text-align: center;
 }
 
@@ -558,7 +581,7 @@ html, body, #root {
 .calcColumns{
   display: grid;
   grid-template-columns: 1fr 1fr;
-  margin-top: 0;
+  margin-top: -1%;
 }
 
 .calcCenter{
@@ -847,7 +870,8 @@ html, body, #root {
 }
 
 .naming{
-  display: grid;
+  display: flex;
+  justify-content: center;
   grid-template-columns: 1fr 1fr;
   margin-bottom: 0;
   gap: 2%;

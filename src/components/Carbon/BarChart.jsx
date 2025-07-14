@@ -70,7 +70,7 @@ const BarChart = ({name, vertical, vals, units, delay, emissions}) => {
           }}
           style={{ width: '100%', height: '100%' }}
           useResizeHandler={true}
-          config={{ responsive: true }}
+          config={{ responsive: true, displayModeBar: false }}
         />)}
           </div>
     );

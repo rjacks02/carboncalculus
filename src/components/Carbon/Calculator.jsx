@@ -11,6 +11,7 @@ const Calculator = ({bau, vertical, scenario, saveToStorage, updateScenario, uni
     const [longTerm, setLongTerm] = useState(scenario.longTerm);
     const [activeTab, setActiveTab] = useState(scenario.activeTab);
     const [delay, setDelay] = useState(scenario.delay);
+    
 
     const basicValuesRef = useRef([...scenario.yearlyValuesRef.current]);
     const advancedValuesRef = useRef([...scenario.yearlyValuesRef.current]);
@@ -20,6 +21,19 @@ const Calculator = ({bau, vertical, scenario, saveToStorage, updateScenario, uni
     const [showPopup, setShowPopup] = useState(false);
     const [rename, setRename] = useState(false);
     const [save, setSave] = useState(false);
+
+    const [showInfo, setShowInfo] = useState(false);
+    const [infoKey, setInfoKey] = useState();
+
+    let info = {'Upfront Emissions': 'Upfront emissions are the amount of carbon released at the beginning of a project or intervention. They occur immediately in year 0 and thus carry full weight in Carbon Calculus, significantly influencing a scenario’s climate impact.',
+                'Discount Rate': 'Carbon’s “discount” rate represents the effective annual dissipation rate of CO2 in the atmosphere through the flux of the global carbon cycle. We recommend using a discount rate somewhere in the range of 2% to 5%; 3.355% is the default, as it is aligned with prior literature and the 100-year global warming potential of CO2.',
+                'Total Years': 'This refers to the full length of time modeled by the scenario. The first year is labeled as year 0, and the final year is represented by this value.',
+                'Years Delayed': 'This is the number of years before a scenario begins generating or reducing emissions. Both upfront and annual emissions are affected by this delay. As the delay increases, the climate impact of those emissions or reductions decreases due to the discount rate.',
+                'Long-Term Value': 'Enabling this function accounts for the limit of your scenario, taking your final year’s emission rate and assuming that rate continues for many years to come. This is encouraged as a default setting, as most real-world emissions will not stop at the end of your chosen time horizon, but that ultimately depends on your scenario.',
+                'NPV<sub>CO<sub>2</sub></sub>': 'This is the cumulative net discounted CO2 emitted into the atmosphere per your scenario, valued from the perspective of emissions today. For example, at a 3.355% annual discount rate, 1 ton of CO2 emitted annually, indefinitely, has a net present value (NPV_CO_2) of 30.8 tons of CO2 emitted only once, today. The term “value” here is a proxy for “impact,” as quantity emitted, when those emissions occur, and the rate at which those emissions dissipate all contribute to the impact that CO2 in the atmosphere has on global radiative forcing (the greenhouse effect, global average temperature increase).',
+                'BAU (Business As Usual)': 'This is a scenario that represents the current projected annual emissions rate if today’s actions are continued. This is likely a continuation of today’s emissions rate indefinitely, depending on one’s assumptions for what their “business as usual” is. This should not reflect targets or commitments for emissions reductions, which can be modeled as its own scenario.',
+                'D<sub>Eff</sub> (Effective Decarbonization)': 'This represents the relative difference between a scenario’s emissions (emissions resulting from taking some sort of action) and BAU emissions (a continuation of today’s emissions, the “do nothing” case). This metric helps to answer the question, “how effective is this scenario compared to what is currently happening?”. While NPV_CO_2 is an absolute metric, this is a metric relative to BAU.'
+            };
 
     const AdvancedYear = ({index, value}) => {
         const [yearlyValue, setYearlyValue] = useState(value);
@@ -36,12 +50,14 @@ const Calculator = ({bau, vertical, scenario, saveToStorage, updateScenario, uni
         )
     }
 
-    const BasicYear = ({endYear, value}) => {
+    const BasicYear = ({startYear, endYear, value}) => {
         const [yearlyValue, setYearlyValue] = useState(value);
+
+        if (isNaN(endYear) || isNaN(startYear)) return null;
 
         return(
             <div className = {styles.inputCenter}>
-                <label htmlFor="year">{endYear === '1' ? 'Year 1: ' : 'Year 1 - ' + endYear + ': '}</label>
+                <label htmlFor="year">{endYear === 1 ? 'Year 1: ' : 'Year ' + startYear + ' - ' + endYear + ': '}</label>
                 <input id="year" 
                     value = {yearlyValue} 
                     onChange={(e) => {let newVal = handleValueChange(e.target.value); setYearlyValue(newVal); const maxIndex = Number(totalYears);
@@ -213,7 +229,7 @@ const Calculator = ({bau, vertical, scenario, saveToStorage, updateScenario, uni
           return (
             <div>
                 <div className = {styles.inputCenter}>Annual CO<sub>2</sub> Emissions ({units}):</div>
-                <BasicYear endYear = {totalYears} value={yearlyValuesRef.current[0]} />
+                <BasicYear startYear = {1+parseInt(delay)} endYear = {parseInt(totalYears)+parseInt(delay)} value={yearlyValuesRef.current[0]} />
             </div>
           );
         } else {
@@ -221,7 +237,7 @@ const Calculator = ({bau, vertical, scenario, saveToStorage, updateScenario, uni
             <div>
                 <div className = {styles.inputCenter}>Annual CO<sub>2</sub> Emissions ({units}):</div>
               {Array.from({ length: maxIndex }).map((_, index) => (
-                <AdvancedYear key={index} index={index} value={yearlyValuesRef.current[index]} />
+                <AdvancedYear key={index} index={index+parseInt(delay)} value={yearlyValuesRef.current[index]} />
               ))}
             </div>
           );
@@ -244,7 +260,7 @@ const Calculator = ({bau, vertical, scenario, saveToStorage, updateScenario, uni
                             value = {initialInvestment} 
                             onChange={(e) => setInitialInvestment(handleValueChange(e.target.value))}
                             onBlur = {() => {setUpdate(prev => !prev);}} 
-                            type="text" inputMode="decimal"/>
+                            type="text" inputMode="decimal"/><div className = {styles.info}><i class="material-icons" onClick = {() => {setInfoKey('Upfront Emissions'); setShowInfo(true);}}>info_outline</i></div>
                     </div>
                     <div className = {styles.totalYears}>
                         <label htmlFor="discountRate">Discount Rate (%): </label>
@@ -252,7 +268,7 @@ const Calculator = ({bau, vertical, scenario, saveToStorage, updateScenario, uni
                             value = {discountRate} 
                             onChange={(e) => setDiscountRate(e.target.value)} 
                             onBlur = {(e) => {setDiscountRate(handlePercentChange(e.target.value)); setUpdate(prev => !prev);}}
-                            type="text" inputMode="decimal"/>
+                            type="text" inputMode="decimal"/><div className = {styles.info}><i class="material-icons" onClick = {() => {setInfoKey('Discount Rate'); setShowInfo(true);}}>info_outline</i></div>
                     </div>
                     <div className = {styles.totalYears}>
                             <label htmlFor="totalYears">Total Years: </label>
@@ -261,7 +277,7 @@ const Calculator = ({bau, vertical, scenario, saveToStorage, updateScenario, uni
                                 onChange={(e) => setTotalYears(e.target.value)} 
                                 onBlur = {(e) => {setTotalYears(handleIntegerChange(e.target.value)); setUpdate(prev => !prev);}}
                                 type="text" 
-                                inputMode="decimal"/>
+                                inputMode="decimal"/><div className = {styles.info}><i class="material-icons" onClick = {() => {setInfoKey('Total Years'); setShowInfo(true);}}>info_outline</i></div>
                     </div>
                     <div className = {styles.totalYears}>
                             <label htmlFor="delay">Years Delayed: </label>
@@ -270,13 +286,13 @@ const Calculator = ({bau, vertical, scenario, saveToStorage, updateScenario, uni
                                 onChange={(e) => setDelay(e.target.value)} 
                                 onBlur = {(e) => {setDelay(handleDelayChange(e.target.value)); setUpdate(prev => !prev);}}
                                 type="text" 
-                                inputMode="decimal"/>
+                                inputMode="decimal"/><div className = {styles.info}><i class="material-icons" onClick = {() => {setInfoKey('Years Delayed'); setShowInfo(true);}}>info_outline</i></div>
                     </div>
                     <div className = {styles.totalYears}>
                         <label>
                             Include Long-Term Value?
                             <input type="checkbox" checked={longTerm} onChange={handleToggle} />
-                        </label>
+                        </label><div className = {styles.info}><i class="material-icons" onClick = {() => {setInfoKey('Long-Term Value'); setShowInfo(true);}}>info_outline</i></div>
                     </div>
                 </div>
                 <div>
@@ -302,7 +318,8 @@ const Calculator = ({bau, vertical, scenario, saveToStorage, updateScenario, uni
 
         {!vertical && (<div className = {styles.section}>
             <div className = {styles.naming}>
-                {bau && <h2 className = {styles.scenarioTitle}>Name: (BAU) {scenarioName}</h2>}
+                {bau && <h2 className = {styles.scenarioTitle}><span className = {styles.info}><i class="material-icons" onClick = {() => {setInfoKey('BAU (Business As Usual)'); setShowInfo(true);}}>info_outline</i>
+                            </span> (BAU) Name: {scenarioName}</h2>}
                 {!bau && <h2 className = {styles.scenarioTitle}>Name: {scenarioName}</h2>}
                 <button className = {styles.renameButton} onClick = {() => {setShowPopup(true); setRename(true);}}>Edit Name</button>
             </div>
@@ -310,43 +327,44 @@ const Calculator = ({bau, vertical, scenario, saveToStorage, updateScenario, uni
                 <div className = {styles.calcCenter}>
                     <div className = {styles.totalYears}>
                         <label htmlFor="initialInvestment">Upfront Emissions ({units}): </label>
-                        <input id="initialInvestment" 
+                        <input className = {styles.inputBox} id="initialInvestment" 
                             value = {initialInvestment} 
                             onChange={(e) => setInitialInvestment(e.target.value)}
                             onBlur = {(e) => {setInitialInvestment(handleValueChange(e.target.value)); setUpdate(prev => !prev);}} 
-                            type="text" inputMode="decimal"/>
+                            type="text" inputMode="decimal"/><div className = {styles.info}><i class="material-icons" onClick = {() => {setInfoKey('Upfront Emissions'); setShowInfo(true);}}>info_outline</i>
+                            </div>
                     </div>
                     <div className = {styles.totalYears}>
                         <label htmlFor="discountRate">Discount Rate (%): </label>
-                        <input id="discountRate" 
+                        <input className = {styles.inputBox} id="discountRate" 
                             value = {discountRate} 
                             onChange={(e) => setDiscountRate(e.target.value)} 
                             onBlur = {(e) => {setDiscountRate(handlePercentChange(e.target.value)); setUpdate(prev => !prev);}}
-                            type="text" inputMode="decimal"/>
+                            type="text" inputMode="decimal"/><div className = {styles.info}><i class="material-icons" onClick = {() => {setInfoKey('Discount Rate'); setShowInfo(true);}}>info_outline</i></div>
                     </div>
                     <div className = {styles.totalYears}>
                             <label htmlFor="totalYears">Total Years: </label>
-                            <input id="totalYears" 
+                            <input className = {styles.inputBox} id="totalYears" 
                                 value = {totalYears} 
                                 onChange={(e) => setTotalYears(e.target.value)} 
                                 onBlur = {(e) => {setTotalYears(handleIntegerChange(e.target.value)); setUpdate(prev => !prev);}}
                                 type="text" 
-                                inputMode="decimal"/>
+                                inputMode="decimal"/><div className = {styles.info}><i class="material-icons" onClick = {() => {setInfoKey('Total Years'); setShowInfo(true);}}>info_outline</i></div>
                     </div>
                     <div className = {styles.totalYears}>
                             <label htmlFor="delay">Years Delayed: </label>
-                            <input id="delay" 
+                            <input className = {styles.inputBox} id="delay" 
                                 value = {delay} 
                                 onChange={(e) => setDelay(e.target.value)} 
                                 onBlur = {(e) => {setDelay(handleDelayChange(e.target.value)); setUpdate(prev => !prev);}}
                                 type="text" 
-                                inputMode="decimal"/>
+                                inputMode="decimal"/><div className = {styles.info}><i class="material-icons" onClick = {() => {setInfoKey('Years Delayed'); setShowInfo(true);}}>info_outline</i></div>
                     </div>
                     <div className = {styles.totalYears}>
                         <label>
                             Include Long-Term Value?
                             <input type="checkbox" checked={longTerm} onChange={handleToggle} />
-                        </label>
+                        </label><div className = {styles.info}><i class="material-icons" onClick = {() => {setInfoKey('Long-Term Value'); setShowInfo(true);}}>info_outline</i></div>
                     </div>
                 </div>
                 <div>
@@ -396,6 +414,19 @@ const Calculator = ({bau, vertical, scenario, saveToStorage, updateScenario, uni
                                 type="text" />
                         <div className = {styles.popupSaveButtonContainer}>         
                             <button className = {styles.popupButton} onClick={() => {setShowPopup(false); setRename(false); setUpdate(prev => !prev);}}>Rename</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {showInfo && (
+                <div className={styles.overlay}>
+                    <div className={styles.popup}>
+                        <h2>{infoKey}:</h2>
+                        <p>{info[infoKey]}</p>
+                        <div className = {styles.popup2Container}> 
+                            <button className = {styles.popupButton} onClick={() => {setShowInfo(false);}}>Close</button>
+                            <button className = {styles.popupButton} onClick={() => {setShowInfo(false);}}>Read More</button>
                         </div>
                     </div>
                 </div>

@@ -116,16 +116,6 @@ const Decarbonization = ({bau, scenarios, units, update, compare, setCompare}) =
             {compare && (<Plot
         data={data}
         layout={{
-          title: {
-            text: `Effective Decarbonization (D<sub>Eff</sub>) from (BAU) ${bau.name} to ${compare.name || "_____"}`,
-            font: {
-              family: 'Verdana, sans-serif',
-              color: 'black',
-              size: 24
-            },
-            xref: 'paper',
-            xanchor: 'center',
-          },
           xaxis: {
             title: {
               text: 'Year',
@@ -148,7 +138,7 @@ const Decarbonization = ({bau, scenarios, units, update, compare, setCompare}) =
             },
             standoff: 40
           },
-          margin: { t: 40, l: 60, r: 40, b: 40 },
+          margin: { t: 60, l: 60, r: 40, b: 40 },
             paper_bgcolor: '#aed9ea',
             plot_bgcolor: '#94c8dc',
             annotations: breakEven !== null ? [
@@ -166,8 +156,38 @@ const Decarbonization = ({bau, scenarios, units, update, compare, setCompare}) =
                 opacity: 0.9,
                 cliponaxis: false,
                 font: { color: 'red' }
+              }, {
+                text: `Effective Decarbonization (D<sub>Eff</sub>) from (BAU) ${bau.name} to ${compare.name || "_____"}`,
+                font: {
+                  family: 'Verdana, sans-serif',
+                  size: 23,
+                  color: 'black',
+                },
+                x: 0.5,
+                y: 1.1,
+                xref: 'paper',
+                yref: 'paper',
+                xanchor: 'center',
+                yanchor: 'top',
+                showarrow: false,
+                align: 'center',
               }
-            ] : []
+            ] : [{
+              text: `Effective Decarbonization (D<sub>Eff</sub>) from (BAU) ${bau.name} to ${compare.name || "_____"}`,
+              font: {
+                family: 'Verdana, sans-serif',
+                size: 23,
+                color: 'black',
+              },
+              x: 0.5,
+              y: 1.1,
+              xref: 'paper',
+              yref: 'paper',
+              xanchor: 'center',
+              yanchor: 'top',
+              showarrow: false,
+              align: 'center',
+            }]
           }}
         style={{ width: '100%', height: '100%' }}
         useResizeHandler={true}

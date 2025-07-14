@@ -12,8 +12,8 @@ import Decarbonization from "../components/Carbon/Decarbonization";
 
 
 const NPV = () => {
-    const baseScenarioKG = {bau: true, createdAt: 0, name: 'Scenario', initialInvestment: '300.00', discountRate: '5.00', totalYears: '5', yearlyValuesRef: {current: ['100.00', '100.00', '100.00', '100.00', '100.00']}, longTerm: false, activeTab: 'Basic', delay: '0', units: 'Kilograms'};
-    const baseScenarioMT = {bau: true, createdAt: 0, name: 'Scenario', initialInvestment: '0.3', discountRate: '5.00', totalYears: '5', yearlyValuesRef: {current: ['0.1', '0.1', '0.1', '0.1', '0.1']}, longTerm: false, activeTab: 'Basic', delay: '0', units: 'Metric Tons'};
+    const baseScenarioKG = {bau: true, createdAt: 0, name: 'Scenario', initialInvestment: '300.00', discountRate: '3.355', totalYears: '5', yearlyValuesRef: {current: ['100.00', '100.00', '100.00', '100.00', '100.00']}, longTerm: false, activeTab: 'Basic', delay: '0', units: 'Kilograms'};
+    const baseScenarioMT = {bau: true, createdAt: 0, name: 'Scenario', initialInvestment: '0.3', discountRate: '3.355', totalYears: '5', yearlyValuesRef: {current: ['0.1', '0.1', '0.1', '0.1', '0.1']}, longTerm: false, activeTab: 'Basic', delay: '0', units: 'Metric Tons'};
 
     const [npv, setNPV] = useState(0);
     const npvValuesRef = useRef({});
