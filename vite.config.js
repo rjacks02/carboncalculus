@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [react()],
   base: "/carboncalculus-vite",
   build: {
-    outDir: 'build', // CRA's default build output
+    outDir: 'dist',
   },
   server: {
     port: 3000,
