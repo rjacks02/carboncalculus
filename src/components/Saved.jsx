@@ -60,7 +60,7 @@ const Item = ({key_, onDelete, rename, addScenario, update}) => {
 }
 
 const Saved = ({addScenario, setPage}) => {
-    const [localKeys, setLocalKeys] = useState(Object.keys(localStorage));
+    const [localKeys, setLocalKeys] = useState([]);
     const [update, setUpdate] = useState(false);
 
     useEffect(() => {
