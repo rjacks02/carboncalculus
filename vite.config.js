@@ -4,6 +4,7 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
+  base: "/carboncalculus-vite",
   build: {
     outDir: 'build', // CRA's default build output
   },
