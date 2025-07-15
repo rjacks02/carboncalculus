@@ -122,6 +122,19 @@ html, body, #root {
   border: .5rem solid #2e7c53;
 }
 
+.calcHeaders{
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.alignRight{
+  position: absolute;
+  right: 0;
+  margin-right: 2%;
+}
+
 .horizontal{
   display: grid;
   grid-template-columns: 1.2fr 1fr;
@@ -242,7 +255,7 @@ html, body, #root {
 
 .totalYears {
   text-align: right;
-  font-size: 1rem;
+  font-size: .9rem;
   color: black;
   margin-top: 8%;
   margin-bottom: 5%;
@@ -899,7 +912,7 @@ html, body, #root {
   min-width: 160px;
   border-radius: 6px;
   box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
-  z-index: 1;
+  z-index: 100;
   width: 100%;
 }
 

@@ -12,8 +12,8 @@ import Decarbonization from "../components/Carbon/Decarbonization";
 
 
 const NPV = () => {
-    const baseScenarioKG = {bau: true, createdAt: 0, name: 'Scenario', initialInvestment: '300.00', discountRate: '3.355', totalYears: '5', yearlyValuesRef: {current: ['100.00', '100.00', '100.00', '100.00', '100.00']}, longTerm: false, activeTab: 'Basic', delay: '0', units: 'Kilograms'};
-    const baseScenarioMT = {bau: true, createdAt: 0, name: 'Scenario', initialInvestment: '0.3', discountRate: '3.355', totalYears: '5', yearlyValuesRef: {current: ['0.1', '0.1', '0.1', '0.1', '0.1']}, longTerm: false, activeTab: 'Basic', delay: '0', units: 'Metric Tons'};
+    const baseScenarioKG = {bau: true, createdAt: 0, name: 'Scenario', initialInvestment: '300.00', discountRate: '3.355', totalYears: '5', yearlyValuesRef: {current: ['100.00', '100.00', '100.00', '100.00', '100.00']}, longTerm: true, activeTab: 'Basic', delay: '0', units: 'Kilograms'};
+    const baseScenarioMT = {bau: true, createdAt: 0, name: 'Scenario', initialInvestment: '0.3', discountRate: '3.355', totalYears: '5', yearlyValuesRef: {current: ['0.1', '0.1', '0.1', '0.1', '0.1']}, longTerm: true, activeTab: 'Basic', delay: '0', units: 'Metric Tons'};
 
     const [npv, setNPV] = useState(0);
     const npvValuesRef = useRef({});
@@ -362,7 +362,7 @@ const NPV = () => {
         
     return (
         <div>
-            <Header vertical = {vertical} setVertical={setVertical} units = {units} setUnits = {setUnits} convertToKilograms = {convertToKilograms} convertToTons = {convertToTons} emissions = {emissions} setEmissions = {setEmissions}/>
+            <Header setPage = {setPage}/>
             {page === 'npv' && vertical && (<div className = {styles.mainContainer}>
                 <div style={{ height: '80vh'}}>
                   <div className={styles.mainTabsContainer}>
@@ -389,7 +389,19 @@ const NPV = () => {
                             </div>
                         </div>
                     <div className = {styles.mainNPV}>
-                    <h2 className = {styles.sectionTitle}>Net Present Value of CO<sub>2</sub> Calculator</h2>
+                    <div className = {styles.calcHeaders}>
+                      <h2 className = {styles.sectionTitle}>Net Present Value of CO<sub>2</sub> Calculator</h2>
+                      <div className = {styles.alignRight}>
+                        <div className={styles.dropdown}>
+                          <button className={styles.navButton}>More Options</button>
+                          <div className={styles.dropdownContent}>
+                          <a onClick={() => {setEmissions(prev => !prev);}}>Switch Mode: {emissions ? `Reductions` : 'Emissions'}</a>
+                              <a onClick={() => {setVertical(prev => !prev);}}>Switch Layout: {vertical ? `Horizontal` : 'Vertical'}</a>
+                              <a onClick={() => {setUnits(prev => {if (prev === 'Kilograms'){convertToTons(); return 'Metric Tons'} else{convertToKilograms(); return 'Kilograms';}})}}>Switch Units: {units === 'Kilograms' ? `Metric Tons` : 'Kilograms'}</a>
+                          </div>
+                        </div>
+                      </div>
+                      </div>
                         <Calculator key={`${index}-${units}`} bau = {index === 0} vertical = {vertical} scenario = {currentScenarios[index]} saveToStorage = {saveToStorage} updateScenario = {updateScenario} units = {units}/>
                         <Visuals scenarioData = {currentScenarios} index = {index} units = {units} delay = {parseInt(currentScenarios[index].delay)} vertical = {vertical} emissions = {emissions}/>
                         <SharedVisuals scenarioData = {currentScenarios} selected = {selected} setSelected = {setSelected} update = {update} units = {units} emissions = {emissions}/>
@@ -467,7 +479,19 @@ const NPV = () => {
                             </div>
                         </div>
                     <div className = {styles.mainNPV}>
-                    <h2 className = {styles.sectionTitle}>Net Present Value of CO<sub>2</sub> Calculator</h2>
+                      <div className = {styles.calcHeaders}>
+                      <h2 className = {styles.sectionTitle}>Net Present Value of CO<sub>2</sub> Calculator</h2>
+                      <div className = {styles.alignRight}>
+                        <div className={styles.dropdown}>
+                          <button className={styles.navButton}>More Options</button>
+                          <div className={styles.dropdownContent}>
+                          <a onClick={() => {setEmissions(prev => !prev);}}>Switch Mode: {emissions ? `Reductions` : 'Emissions'}</a>
+                              <a onClick={() => {setVertical(prev => !prev);}}>Switch Layout: {vertical ? `Horizontal` : 'Vertical'}</a>
+                              <a onClick={() => {setUnits(prev => {if (prev === 'Kilograms'){convertToTons(); return 'Metric Tons'} else{convertToKilograms(); return 'Kilograms';}})}}>Switch Units: {units === 'Kilograms' ? `Metric Tons` : 'Kilograms'}</a>
+                          </div>
+                        </div>
+                      </div>
+                      </div>
                       <div className = {styles.horizontal}>
                         <Calculator key={`${index}-${units}`} bau = {index === 0} vertical = {vertical} scenario = {currentScenarios[index]} saveToStorage = {saveToStorage} updateScenario = {updateScenario} units = {units}/>
                         <Visuals scenarioData = {currentScenarios} index = {index} units = {units} delay = {parseInt(currentScenarios[index].delay)} vertical = {vertical} emissions = {emissions}/>

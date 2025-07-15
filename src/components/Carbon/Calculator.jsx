@@ -42,8 +42,8 @@ const Calculator = ({bau, vertical, scenario, saveToStorage, updateScenario, uni
                 <label htmlFor="year">Year {index+1}: </label>
                 <input id="year" 
                     value = {yearlyValue} 
-                    onChange={(e) => {let newVal = handleValueChange(e.target.value); setYearlyValue(newVal); yearlyValuesRef.current[index] = newVal;}}  
-                    onBlur = {() => {setUpdate(prev => !prev);}}
+                    onChange={(e) => {setYearlyValue(e.target.value);}}  
+                    onBlur = {(e) => {let newVal = handleValueChange(e.target.value); setYearlyValue(newVal); yearlyValuesRef.current[index] = newVal; setUpdate(prev => !prev);}}
                     type="text" 
                     inputMode="decimal"/>
             </div>
@@ -53,18 +53,18 @@ const Calculator = ({bau, vertical, scenario, saveToStorage, updateScenario, uni
     const BasicYear = ({startYear, endYear, value}) => {
         const [yearlyValue, setYearlyValue] = useState(value);
 
-        if (isNaN(endYear) || isNaN(startYear)) return null;
+        if (isNaN(endYear) || isNaN(startYear) || endYear === 0 || startYear === 0) return null;
 
         return(
             <div className = {styles.inputCenter}>
                 <label htmlFor="year">{endYear === 1 ? 'Year 1: ' : 'Year ' + startYear + ' - ' + endYear + ': '}</label>
                 <input id="year" 
                     value = {yearlyValue} 
-                    onChange={(e) => {let newVal = handleValueChange(e.target.value); setYearlyValue(newVal); const maxIndex = Number(totalYears);
+                    onChange={(e) => {setYearlyValue(e.target.value);}}  
+                    onBlur = {(e) => {let newVal = handleValueChange(e.target.value); setYearlyValue(newVal); const maxIndex = Number(totalYears);
                         for (let i = 0; i < maxIndex; i++) {
                           yearlyValuesRef.current[i] = newVal;
-                        }}}  
-                    onBlur = {() => {setUpdate(prev => !prev);}}
+                        }; setUpdate(prev => !prev);}}
                     type="text" 
                     inputMode="decimal"/>
             </div>
@@ -248,18 +248,19 @@ const Calculator = ({bau, vertical, scenario, saveToStorage, updateScenario, uni
         <div>
         {vertical && (<div className = {styles.section}>
             <div className = {styles.naming}>
-                {bau && <h2 className = {styles.scenarioTitle}>Name: (BAU) {scenarioName}</h2>}
+                {bau && <h2 className = {styles.scenarioTitle}><span className = {styles.info}><i class="material-icons" onClick = {() => {setInfoKey('BAU (Business As Usual)'); setShowInfo(true);}}>info_outline</i>
+                            </span> (BAU) Name: {scenarioName}</h2>}
                 {!bau && <h2 className = {styles.scenarioTitle}>Name: {scenarioName}</h2>}
                 <button className = {styles.renameButton} onClick = {() => {setShowPopup(true); setRename(true);}}>Edit Name</button>
             </div>
             <div className = {styles.calcColumns}>
                 <div className = {styles.calcCenter}>
                     <div className = {styles.totalYears}>
-                        <label htmlFor="initialInvestment">Upfront Emissions ({units}): </label>
+                        <label htmlFor="initialInvestment">Upfront CO<sub>2</sub> Emissions ({units}): </label>
                         <input id="initialInvestment" 
                             value = {initialInvestment} 
-                            onChange={(e) => setInitialInvestment(handleValueChange(e.target.value))}
-                            onBlur = {() => {setUpdate(prev => !prev);}} 
+                            onChange={(e) => setInitialInvestment(e.target.value)}
+                            onBlur = {(e) => {setInitialInvestment(handleValueChange(e.target.value)); setUpdate(prev => !prev);}} 
                             type="text" inputMode="decimal"/><div className = {styles.info}><i class="material-icons" onClick = {() => {setInfoKey('Upfront Emissions'); setShowInfo(true);}}>info_outline</i></div>
                     </div>
                     <div className = {styles.totalYears}>
@@ -290,7 +291,7 @@ const Calculator = ({bau, vertical, scenario, saveToStorage, updateScenario, uni
                     </div>
                     <div className = {styles.totalYears}>
                         <label>
-                            Include Long-Term Value?
+                            Long-Term Value:
                             <input type="checkbox" checked={longTerm} onChange={handleToggle} />
                         </label><div className = {styles.info}><i class="material-icons" onClick = {() => {setInfoKey('Long-Term Value'); setShowInfo(true);}}>info_outline</i></div>
                     </div>
@@ -326,7 +327,7 @@ const Calculator = ({bau, vertical, scenario, saveToStorage, updateScenario, uni
             <div className = {styles.calcColumns}>
                 <div className = {styles.calcCenter}>
                     <div className = {styles.totalYears}>
-                        <label htmlFor="initialInvestment">Upfront Emissions ({units}): </label>
+                        <label htmlFor="initialInvestment">Upfront CO<sub>2</sub> Emissions ({units}): </label>
                         <input className = {styles.inputBox} id="initialInvestment" 
                             value = {initialInvestment} 
                             onChange={(e) => setInitialInvestment(e.target.value)}
@@ -362,7 +363,7 @@ const Calculator = ({bau, vertical, scenario, saveToStorage, updateScenario, uni
                     </div>
                     <div className = {styles.totalYears}>
                         <label>
-                            Include Long-Term Value?
+                            Long-Term Value:
                             <input type="checkbox" checked={longTerm} onChange={handleToggle} />
                         </label><div className = {styles.info}><i class="material-icons" onClick = {() => {setInfoKey('Long-Term Value'); setShowInfo(true);}}>info_outline</i></div>
                     </div>

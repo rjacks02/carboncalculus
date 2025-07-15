@@ -3,7 +3,7 @@ import React, {useState, useEffect, useRef} from "react";
 import styles from '../../css/NPV.module.css'
 import Plot from 'react-plotly.js';
 
-const SelectScenario = ({scenarios, compare, setCompare}) => {
+const SelectScenario = ({scenarios, compare, setCompare, setShowInfo}) => {
   const [isOpen, setIsOpen] = useState(true);
   const dropdownRef = useRef();
 
@@ -23,7 +23,8 @@ const SelectScenario = ({scenarios, compare, setCompare}) => {
         className={styles.multiSelectLabel}
         onClick={() => setIsOpen((prev) => !prev)}
       >
-        Select Scenario To Compare To BAU▾
+        Select Scenario To Compare To BAU for D<sub>Eff</sub>  ▾   <span className = {styles.info}><i class="material-icons" onClick = {() => {setShowInfo(true);}}>info_outline</i>
+                            </span>
       </div>
       {isOpen && (
         <div className={styles.SelectContent}>
@@ -47,6 +48,7 @@ const Decarbonization = ({bau, scenarios, units, update, compare, setCompare}) =
   const [breakEven, setBreakEven] = useState(null);
   const [data, setData] = useState([]);
   const year = new Date().getFullYear();
+  const [showInfo, setShowInfo] = useState(false);
 
     const colors =["#2e7c53", "#1e516a", "#e66157", "#f0db9a", "#264653", "#e07a5f", "#6a4c93", "#00b8d9", "#8a9a5b", "#a9a9a9"];
 
@@ -110,7 +112,7 @@ const Decarbonization = ({bau, scenarios, units, update, compare, setCompare}) =
 
     return (
       <div className = {styles.section}>
-        <SelectScenario scenarios = {scenarios} compare = {compare} setCompare = {setCompare} bau = {bau}/>
+        <SelectScenario scenarios = {scenarios} compare = {compare} setCompare = {setCompare} bau = {bau} setShowInfo = {setShowInfo}/>
      
         <div className = {styles.visualSection}>
             {compare && (<Plot
@@ -194,6 +196,18 @@ const Decarbonization = ({bau, scenarios, units, update, compare, setCompare}) =
         config={{ responsive: true }}
       />)}
         </div>
+        {showInfo && (
+                <div className={styles.overlay}>
+                    <div className={styles.popup}>
+                    <h2>D<sub>Eff</sub> (Effective Decarbonization)</h2>
+                    <p>This represents the relative difference between a scenario’s emissions (emissions resulting from taking some sort of action) and BAU emissions (a continuation of today’s emissions, the “do nothing” case). This metric helps to answer the question, “how effective is this scenario compared to what is currently happening?”. While NPV<sub>CO<sub>2</sub></sub> is an absolute metric, this is a metric relative to BAU.</p>
+                        <div className = {styles.popup2Container}> 
+                            <button className = {styles.popupButton} onClick={() => {setShowInfo(false);}}>Close</button>
+                            <button className = {styles.popupButton} onClick={() => {setShowInfo(false);}}>Read More</button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
     
