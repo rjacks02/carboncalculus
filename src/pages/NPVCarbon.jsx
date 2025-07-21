@@ -39,7 +39,7 @@ const NPV = () => {
   const [showBAU, setShowBAU] = useState(true); //show/hide BAU scenario from tab list
   const [units, setUnits] = useState('Kilograms') //units: kilograms or metric tons
   const [emissions, setEmissions] = useState(true); //set mode: emissions or reductions
-  const [vertical, setVertical] = useState(false); //set layout as vertical or horizontal
+  const [vertical, setVertical] = useState(false); //set layout: vertical or horizontal
 
 
   //adding scenarios

@@ -44,7 +44,7 @@ const Calculator = ({bau, vertical, scenario, saveToStorage, updateScenario, uni
                 <input id="year" 
                     value = {yearlyValue} 
                     onChange={(e) => {setYearlyValue(e.target.value);}}  
-                    onBlur = {(e) => {let newVal = handleValueChange(e.target.value); setYearlyValue(newVal); yearlyValuesRef.current[index] = newVal; setUpdate(prev => !prev);}}
+                    onBlur = {(e) => {let newVal = handleValueChange(e.target.value); setYearlyValue(newVal); yearlyValuesRef.current[index-delay] = newVal; setUpdate(prev => !prev);}}
                     type="text" 
                     inputMode="decimal"/>
             </div>
