@@ -24,7 +24,7 @@ const Item = ({key_, onDelete, rename, addScenario, update}) => {
                     {info.name}
                 </div>
                 <div className = {styles.saveInfoItem}>
-                    {info.initialInvestment}
+                    {info.upfrontEmissions}
                 </div>
                 <div className = {styles.saveInfoItem}>
                     {info.discountRate}
@@ -68,7 +68,7 @@ const Saved = ({addScenario, setPage}) => {
     }, []);
 
     function refreshKeys() {
-        const keyWithTimestamps = Object.keys(localStorage).filter(k => !isNaN(k)).sort((a, b) => b - a);
+        const keyWithTimestamps = Object.keys(localStorage).filter(k => k.startsWith("scenario-")).sort((a, b) => b - a);
         setLocalKeys(keyWithTimestamps);
       }
 

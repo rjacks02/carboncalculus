@@ -4,13 +4,14 @@ import styles from '../../css/NPV.module.css'
 
 const Calculator = ({bau, vertical, scenario, saveToStorage, updateScenario, units}) => {
     const [scenarioName, setName] = useState(scenario.name);
-    const [initialInvestment, setInitialInvestment] = useState(scenario.initialInvestment);
+    const [upfrontEmissions, setupfrontEmissions] = useState(scenario.upfrontEmissions);
     const [discountRate, setDiscountRate] = useState(scenario.discountRate);
     const [totalYears, setTotalYears] = useState(scenario.totalYears);
     const yearlyValuesRef = useRef(scenario.yearlyValuesRef.current);
     const [longTerm, setLongTerm] = useState(scenario.longTerm);
     const [activeTab, setActiveTab] = useState(scenario.activeTab);
     const [delay, setDelay] = useState(scenario.delay);
+    const [createdAt, setCreatedAt] = useState(scenario.createdAt);
     
 
     const basicValuesRef = useRef([...scenario.yearlyValuesRef.current]);
@@ -187,10 +188,10 @@ const Calculator = ({bau, vertical, scenario, saveToStorage, updateScenario, uni
               }
         }
 
-    }, [totalYears, initialInvestment]);
+    }, [totalYears, upfrontEmissions]);
 
     useEffect(() => {
-        updateScenario(scenarioName, initialInvestment, discountRate, totalYears, { current: getFullYearlyValues() }, longTerm, activeTab, delay, getFullYearlyValues());
+        updateScenario(scenarioName, upfrontEmissions, discountRate, totalYears, { current: getFullYearlyValues() }, longTerm, activeTab, delay, getFullYearlyValues());
     }, [update]);
 
     useEffect(() => {
@@ -256,11 +257,11 @@ const Calculator = ({bau, vertical, scenario, saveToStorage, updateScenario, uni
             <div className = {styles.calcColumns}>
                 <div className = {styles.calcCenter}>
                     <div className = {styles.totalYears}>
-                        <label htmlFor="initialInvestment">Upfront CO<sub>2</sub> Emissions ({units}): </label>
-                        <input id="initialInvestment" 
-                            value = {initialInvestment} 
-                            onChange={(e) => setInitialInvestment(e.target.value)}
-                            onBlur = {(e) => {setInitialInvestment(handleValueChange(e.target.value)); setUpdate(prev => !prev);}} 
+                        <label htmlFor="upfrontEmissions">Upfront CO<sub>2</sub> Emissions ({units}): </label>
+                        <input id="upfrontEmissions" 
+                            value = {upfrontEmissions} 
+                            onChange={(e) => setupfrontEmissions(e.target.value)}
+                            onBlur = {(e) => {setupfrontEmissions(handleValueChange(e.target.value)); setUpdate(prev => !prev);}} 
                             type="text" inputMode="decimal"/><div className = {styles.info}><i class="material-icons" onClick = {() => {setInfoKey('Upfront Emissions'); setShowInfo(true);}}>info_outline</i></div>
                     </div>
                     <div className = {styles.totalYears}>
@@ -327,11 +328,11 @@ const Calculator = ({bau, vertical, scenario, saveToStorage, updateScenario, uni
             <div className = {styles.calcColumns}>
                 <div className = {styles.calcCenter}>
                     <div className = {styles.totalYears}>
-                        <label htmlFor="initialInvestment">Upfront CO<sub>2</sub> Emissions ({units}): </label>
-                        <input className = {styles.inputBox} id="initialInvestment" 
-                            value = {initialInvestment} 
-                            onChange={(e) => setInitialInvestment(e.target.value)}
-                            onBlur = {(e) => {setInitialInvestment(handleValueChange(e.target.value)); setUpdate(prev => !prev);}} 
+                        <label htmlFor="upfrontEmissions">Upfront CO<sub>2</sub> Emissions ({units}): </label>
+                        <input className = {styles.inputBox} id="upfrontEmissions" 
+                            value = {upfrontEmissions} 
+                            onChange={(e) => setupfrontEmissions(e.target.value)}
+                            onBlur = {(e) => {setupfrontEmissions(handleValueChange(e.target.value)); setUpdate(prev => !prev);}} 
                             type="text" inputMode="decimal"/><div className = {styles.info}><i class="material-icons" onClick = {() => {setInfoKey('Upfront Emissions'); setShowInfo(true);}}>info_outline</i>
                             </div>
                     </div>
@@ -399,7 +400,7 @@ const Calculator = ({bau, vertical, scenario, saveToStorage, updateScenario, uni
                                 type="text" />
                         <div className = {styles.popupButtonContainer}> 
                             <button className = {styles.popupButton} onClick={() => {setShowPopup(false); setSave(false);}}>Close</button>
-                            <button className = {styles.popupButton} onClick={() => {setShowPopup(false); saveToStorage(scenarioName, Date.now(), initialInvestment, discountRate, totalYears, yearlyValuesRef, longTerm, activeTab, delay); setSave(false); setUpdate(prev => !prev);}}>Save</button>
+                            <button className = {styles.popupButton} onClick={() => {setShowPopup(false); saveToStorage(scenarioName, createdAt, upfrontEmissions, discountRate, totalYears, yearlyValuesRef, longTerm, activeTab, delay); setSave(false); setUpdate(prev => !prev);}}>Save</button>
                         </div>
                     </div>
                 </div>

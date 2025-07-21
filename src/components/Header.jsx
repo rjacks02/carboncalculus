@@ -11,7 +11,7 @@ const Header = ({setPage}) => {
             <h2 className = {styles.header}>Carbon Calculus™</h2>
             <button className = {styles.navButton} onClick = {() => {navigate('/Home')}}>Home</button>
             <button className = {styles.navButton} onClick = {() => {setPage('npv')}}>Open Calculator</button>
-            <button className = {styles.navButton} onClick = {() => {}}>FAQs/Tutorial</button>
+            <button className = {styles.navButton} onClick = {() => {setPage('faqs')}}>FAQs/Tutorial</button>
             <button className = {styles.navButton} onClick = {() => {}}>Our Research</button>
         </div>
     );

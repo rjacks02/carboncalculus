@@ -2,7 +2,6 @@ import React, {useState, useEffect, useRef} from "react";
 import styles from '../../css/NPV.module.css';
 
 import CompareGraph from './CompareGraph';
-import CompareBarChart from './CompareBarChart';
 
 const SelectScenarios = ({scenarios, selected, setSelected, update }) => {
     const [isOpen, setIsOpen] = useState(true);
