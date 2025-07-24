@@ -68,7 +68,7 @@ const Saved = ({addScenario, setPage}) => {
     }, []);
 
     function refreshKeys() {
-        const keyWithTimestamps = Object.keys(localStorage).filter(k => k.startsWith("scenario-")).sort((a, b) => b - a);
+        const keyWithTimestamps = Object.keys(localStorage).filter(k => k.startsWith("scenario-") && k !== "scenario-bau").sort((a, b) => b - a);
         setLocalKeys(keyWithTimestamps);
       }
 
