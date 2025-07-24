@@ -13,7 +13,7 @@ const Home = () => {
                     <h2>Carbon Calculus™</h2>
                 </div>
                 <div className = {styles.subtitle}>
-                    <h2>"A novel approach to quantify the net present value of carbon dioxide emission reductions (NPV CO2) and assist in more efficiently comparing the value of decarbonization actions"</h2>
+                    <h2>"A novel approach to quantify the net present value of carbon dioxide emission reductions (NPV<sub>CO<sub>2</sub></sub>) and assist in more efficiently comparing the value of decarbonization actions"</h2>
                 </div>
                 <div className = {styles.homeButtonContainer}>
                     <button className = {styles.homeButton} onClick = {() => {navigate('/NPVCarbon')}}>Begin Calculations</button>
