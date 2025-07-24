@@ -63,9 +63,10 @@ const Calculator = ({bauScenario, vertical, scenario, saveToStorage, updateScena
                             advancedValuesRef.current[index-delay] = newVal;
                             const currentIndex = inputRefs.current.indexOf(e.target);
                             setUpdate(prev => !prev);
-                            setFocusIndex(currentIndex + 1);
-                            setUpdateFocus(updateFocus+1);
-                            
+                            setTimeout(() => {
+                                setFocusIndex(currentIndex + 1);
+                                setUpdateFocus(updateFocus+1);
+                              }, "100");
                         }
                     }}
                     value = {yearlyValue} 
@@ -97,10 +98,13 @@ const Calculator = ({bauScenario, vertical, scenario, saveToStorage, updateScena
                             let newVal = handleValueChange(e.target.value); setYearlyValue(newVal); const maxIndex = Number(totalYears);
                         for (let i = 0; i < maxIndex; i++) {
                           basicValuesRef.current[i] = newVal;
-                        }; setUpdate(prev => !prev);
+                        }; 
                             const currentIndex = inputRefs.current.indexOf(e.target);
-                            setFocusIndex(currentIndex + 1);
-                            setUpdateFocus(updateFocus+1);
+                            setUpdate(prev => !prev);
+                            setTimeout(() => {
+                                setFocusIndex(currentIndex + 1);
+                                setUpdateFocus(updateFocus+1);
+                              }, "100");
                         }
                     }}
                     
