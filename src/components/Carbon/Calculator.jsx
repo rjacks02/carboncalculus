@@ -58,10 +58,14 @@ const Calculator = ({bauScenario, vertical, scenario, saveToStorage, updateScena
                       }}
                     onKeyDown={(e) => {
                         if (e.key === 'Enter' || e.key === 'Tab') {
-                            e.preventDefault();
+                            let newVal = handleValueChange(e.target.value);
+                            setYearlyValue(newVal);
+                            advancedValuesRef.current[index-delay] = newVal;
                             const currentIndex = inputRefs.current.indexOf(e.target);
+                            setUpdate(prev => !prev);
                             setFocusIndex(currentIndex + 1);
                             setUpdateFocus(updateFocus+1);
+                            
                         }
                     }}
                     value = {yearlyValue} 
@@ -90,7 +94,10 @@ const Calculator = ({bauScenario, vertical, scenario, saveToStorage, updateScena
                       }}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' || e.key === 'Tab') {
-                            e.preventDefault();
+                            let newVal = handleValueChange(e.target.value); setYearlyValue(newVal); const maxIndex = Number(totalYears);
+                        for (let i = 0; i < maxIndex; i++) {
+                          basicValuesRef.current[i] = newVal;
+                        }; setUpdate(prev => !prev);
                             const currentIndex = inputRefs.current.indexOf(e.target);
                             setFocusIndex(currentIndex + 1);
                             setUpdateFocus(updateFocus+1);
