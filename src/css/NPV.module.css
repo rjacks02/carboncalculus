@@ -871,6 +871,11 @@ html, body, #root {
   padding: 2%;
   border-radius: 10px;
   height: fit-content;
+  display: flex;
+  flex-direction: column;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .leftFAQs{
@@ -920,6 +925,17 @@ html, body, #root {
   gap: 5%;
   text-align: center;
   align-items: center;
+}
+
+.faqsTut{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  justify-content: center;
+  padding: 1%;
+  gap: 5%;
+  text-align: center;
+  align-items: center;
+  grid-auto-rows: 1fr;
 }
 
 .plotContainer {
@@ -1182,4 +1198,18 @@ html, body, #root {
   opacity: 1;
   pointer-events: auto;
   top: 100%;
+}
+
+.tutorial {
+  margin: auto;
+  background-color:#2e7c53;
+  color: white;
+  font-size: 2rem;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  text-align: center;
+  justify-content: center;
+  border: .5rem solid white;
 }

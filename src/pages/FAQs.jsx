@@ -13,7 +13,9 @@ const FAQs = () => {
                     <div className = {styles.faqTitle}>
                         Frequently Asked Questions (FAQs)
                     </div>
-                    <div className = {`${styles.qanda} ${styles.leftFAQs}`}>
+                    <div className = {styles.faqsTut}>
+            
+                    <div className = {styles.qanda}>
                         <div className = {styles.question}>
                             What is Carbon Calculus™?
                         </div>
@@ -23,6 +25,11 @@ const FAQs = () => {
                             The primary metric showcased in this tool is a calculation of the net present value of carbon dioxide emissions (NPV<sub>CO<sub>2</sub></sub>).
                         </div>
                     </div>
+                    <div className = {styles.tutorial}>
+                   Tutorial Coming Soon! ▶
+                    </div>
+                    </div>
+                    
                     <div className = {`${styles.qanda} ${styles.rightFAQs}`}>
                         <div className = {styles.question}>
                             How Does NPV Relate to Carbon? What is NPV<sub>CO<sub>2</sub></sub>?
