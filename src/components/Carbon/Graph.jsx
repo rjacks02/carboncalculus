@@ -33,7 +33,7 @@ const Graph = ({name, vertical, vals, units, emissions}) => {
         ]}
         layout={{
           title: {
-            text:`${name}: Cumulative NPV<sub>CO<sub>2</sub></sub>`,
+            text:`${name}`,
             font: {
               family: 'Verdana, sans-serif',
               color: 'black',

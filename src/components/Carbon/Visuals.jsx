@@ -45,14 +45,31 @@ const Visuals = ({scenarioData, index, units, delay, vertical, emissions}) => {
                             </span>NPV<sub>CO<sub>2</sub></sub>: {(scenarioData[index]?.npv ?? 0).toFixed(2)} {units} Today</div>
                 <div className = {styles.visualContainer}>
                             <div className={styles.tabsContainer}>
-                                {['Graph', 'Bar Chart'].map((tab) => (
+                            {[
+                                {
+                                label: (
+                                    <>
+                                    Cumulative NPV<sub>CO<sub>2</sub></sub>
+                                    </>
+                                ),
+                                value: 'Graph'
+                                },
+                                {
+                                    label: (
+                                        <>
+                                        Yearly PV<sub>CO<sub>2</sub></sub>
+                                        </>
+                                    ),
+                                value: 'Bar Chart'
+                                }
+                            ].map(({ label, value }) => (
                                 <div
-                                    key={tab}
-                                    className={`${styles.tab} ${activeTab === tab ? styles.active : ''}`}
-                                    onClick={() => setActiveTab(tab)}>
-                                    {tab}
+                                key={value}
+                                className={`${styles.tab} ${activeTab === value ? styles.active : ''}`}
+                                onClick={() => setActiveTab(value)}>
+                                {label}
                                 </div>
-                                ))}
+                            ))}
                             </div>
                             <div className = {styles.visualOptionsContainer}>
                                     {renderVisual()}

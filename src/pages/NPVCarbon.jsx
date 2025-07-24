@@ -19,7 +19,10 @@ const NPV = () => {
 
 
   //main variables
-  const [currentScenarios, setCurrentScenarios] = useState([baseScenarioKG]); //list of all open scenarios
+  const [currentScenarios, setCurrentScenarios] = useState(() => {
+    const stored = localStorage.getItem("scenario-bau");
+    return stored ? [{ ...JSON.parse(stored), yearlyValuesRef: { current: JSON.parse(stored).yearlyValues || [] }, bau: true }] : [baseScenarioKG];
+  }); //list of all open scenarios
   const [index, setIndex] = useState(0); //current index based on tabs - which scenario to display
   const [page, setPage] = useState('npv'); //what page to display: npv, saved, faqs
 
@@ -431,7 +434,6 @@ const NPV = () => {
     let scenario = currentScenarios[toRemove];
     saveToStorage(scenario.name, scenario.createdAt, scenario.upfrontEmissions, scenario.discountRate, scenario.totalYears, scenario.yearlyValuesRef, scenario.longTerm, scenario.activeTab, scenario.delay)
   }
-
         
   return (
     <div>
@@ -476,7 +478,7 @@ const NPV = () => {
           <div style={{ height: '80vh'}}>
             <div className={styles.mainTabsContainer}>
               {currentScenarios.map((scenario, ind) => {
-                if (ind === 0 && !showBAU) return null; 
+                if (ind === 0 && !showBAU)  return null; 
                               
                 return (
                 <div key={scenario.createdAt}
@@ -501,12 +503,12 @@ const NPV = () => {
             </div>
             <div className = {styles.mainNPV}>
               <div className = {styles.calcHeaders}>
-                <h2 className = {styles.sectionTitle}>Net Present Value of CO<sub>2</sub> Calculator</h2>
+                <h2 className = {styles.sectionTitle}>Carbon Calculator</h2>
                 <div className = {styles.alignRight}>
                   <div className={styles.dropdown}>
-                    <button className={styles.navButton}>More Options</button>
+                    <button className={styles.moreOptions}>More Options</button>
                     <div className={styles.dropdownContent}>
-                      <a onClick={() => {setShowBAU(prev => !prev); }}>{showBAU ? `Hide` : 'Show'} BAU</a>
+                      <a onClick={() => {setShowBAU(prev => {if (prev && currentScenarios.length === 1){setAddPopup(true);} else if (index === 0){setIndex(1);} return !prev}); }}>{showBAU ? `Hide` : 'Show'} BAU</a>
                       <a onClick={() => {setEmissions(prev => !prev);}}>Switch Mode: {emissions ? `Reductions` : 'Emissions'}</a>
                       <a onClick={() => {setVertical(prev => !prev);}}>Switch Layout: {vertical ? `Horizontal` : 'Vertical'}</a>
                       <a onClick={() => {setUnits(prev => {if (prev === 'Kilograms'){convertToTons(); return 'Metric Tons'} else{convertToKilograms(); return 'Kilograms';}})}}>Switch Units: {units === 'Kilograms' ? `Metric Tons` : 'Kilograms'}</a>
@@ -514,10 +516,11 @@ const NPV = () => {
                   </div>
                 </div>
               </div>
-              <Calculator key={`${index}-${units}`} bau = {index === 0} vertical = {vertical} scenario = {currentScenarios[index]} saveToStorage = {saveToStorage} updateScenario = {updateScenario} units = {units}/>
+              {(showBAU || currentScenarios.length > 1) && !newOpen && (<div>
+              <Calculator key={`${index}-${units}`} bauScenario = {index === 0} vertical = {vertical} scenario = {currentScenarios[index]} saveToStorage = {saveToStorage} updateScenario = {updateScenario} units = {units}/>
               <Visuals scenarioData = {currentScenarios} index = {index} units = {units} delay = {parseInt(currentScenarios[index].delay)} vertical = {vertical} emissions = {emissions}/>
               <SharedVisuals scenarioData = {currentScenarios} selected = {selected} setSelected = {setSelected} update = {update} units = {units} emissions = {emissions}/>
-              <Decarbonization bau = {currentScenarios[0]} scenarios = {currentScenarios} units = {units} update = {update} compare = {compare} setCompare = {setCompare}/>
+              <Decarbonization bau = {currentScenarios[0]} scenarios = {currentScenarios} units = {units} update = {update} compare = {compare} setCompare = {setCompare}/></div>)}
             </div>
           </div>
           {addPopup && (
@@ -597,12 +600,12 @@ const NPV = () => {
             </div>
             <div className = {styles.mainNPV}>
               <div className = {styles.calcHeaders}>
-                <h2 className = {styles.sectionTitle}>Net Present Value of CO<sub>2</sub> Calculator</h2>
+                <h2 className = {styles.sectionTitle}>Carbon Calculator</h2>
                 <div className = {styles.alignRight}>
                   <div className={styles.dropdown}>
-                    <button className={styles.navButton}>More Options</button>
+                    <button className={styles.moreOptions}>More Options</button>
                     <div className={styles.dropdownContent}>
-                      <a onClick={() => {setShowBAU(prev => !prev);}}>{showBAU ? `Hide` : 'Show'} BAU</a>
+                      <a onClick={() => {setShowBAU(prev => {if (prev && currentScenarios.length === 1){setAddPopup(true);}else if (index === 0){setIndex(1);} return !prev}); }}>{showBAU ? `Hide` : 'Show'} BAU</a>
                       <a onClick={() => {setEmissions(prev => !prev);}}>Switch Mode: {emissions ? `Reductions` : 'Emissions'}</a>
                       <a onClick={() => {setVertical(prev => !prev);}}>Switch Layout: {vertical ? `Horizontal` : 'Vertical'}</a>
                       <a onClick={() => {setUnits(prev => {if (prev === 'Kilograms'){convertToTons(); return 'Metric Tons'} else{convertToKilograms(); return 'Kilograms';}})}}>Switch Units: {units === 'Kilograms' ? `Metric Tons` : 'Kilograms'}</a>
@@ -610,12 +613,12 @@ const NPV = () => {
                   </div>
                 </div>
               </div>
-              <div className = {styles.horizontal}>
-                <Calculator key={`${index}-${units}`} bau = {index === 0} vertical = {vertical} scenario = {currentScenarios[index]} saveToStorage = {saveToStorage} updateScenario = {updateScenario} units = {units}/>
+              {(showBAU || currentScenarios.length > 1) && !newOpen && (<div><div className = {styles.horizontal}>
+                <Calculator key={`${index}-${units}`} bauScenario = {index === 0} vertical = {vertical} scenario = {currentScenarios[index]} saveToStorage = {saveToStorage} updateScenario = {updateScenario} units = {units}/>
                 <Visuals scenarioData = {currentScenarios} index = {index} units = {units} delay = {parseInt(currentScenarios[index].delay)} vertical = {vertical} emissions = {emissions}/>
               </div>
               <SharedVisuals scenarioData = {currentScenarios} selected = {selected} setSelected = {setSelected} update = {update} units = {units} emissions = {emissions}/>
-              <Decarbonization bau = {currentScenarios[0]} scenarios = {currentScenarios} units = {units} update = {update} compare = {compare} setCompare = {setCompare}/>
+              <Decarbonization bau = {currentScenarios[0]} scenarios = {currentScenarios} units = {units} update = {update} compare = {compare} setCompare = {setCompare}/> </div>)}
             </div>
           </div>
           {addPopup && (

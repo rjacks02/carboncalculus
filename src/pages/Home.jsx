@@ -16,9 +16,7 @@ const Home = () => {
                     <h2>"A novel approach to quantify the net present value of carbon dioxide emission reductions (NPV CO2) and assist in more efficiently comparing the value of decarbonization actions"</h2>
                 </div>
                 <div className = {styles.homeButtonContainer}>
-                    <button className = {styles.homeButton}>FAQs/Tutorial</button>
                     <button className = {styles.homeButton} onClick = {() => {navigate('/NPVCarbon')}}>Begin Calculations</button>
-                    <button className = {styles.homeButton}>Our Research</button>
                 </div>
             </div>
         </div>

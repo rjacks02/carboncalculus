@@ -2,7 +2,7 @@ import React, {useState, useRef, useEffect} from 'react';
 
 import styles from '../../css/NPV.module.css'
 
-const Calculator = ({bau, vertical, scenario, saveToStorage, updateScenario, units}) => {
+const Calculator = ({bauScenario, vertical, scenario, saveToStorage, updateScenario, units}) => {
     const [scenarioName, setName] = useState(scenario.name);
     const [upfrontEmissions, setupfrontEmissions] = useState(scenario.upfrontEmissions);
     const [discountRate, setDiscountRate] = useState(scenario.discountRate);
@@ -12,16 +12,25 @@ const Calculator = ({bau, vertical, scenario, saveToStorage, updateScenario, uni
     const [activeTab, setActiveTab] = useState(scenario.activeTab);
     const [delay, setDelay] = useState(scenario.delay);
     const [createdAt, setCreatedAt] = useState(scenario.createdAt);
+    const [bau, setBAU] = useState(bauScenario)
     
 
     const basicValuesRef = useRef([...scenario.yearlyValuesRef.current]);
     const advancedValuesRef = useRef([...scenario.yearlyValuesRef.current]);
+
+    const inputRefs = useRef([]);
+    let refIndex = 0;
+    const [focusIndex, setFocusIndex] = useState(0);
+    const [updateFocus, setUpdateFocus] = useState(0);
+  
 
     const [update, setUpdate] = useState(true);
 
     const [showPopup, setShowPopup] = useState(false);
     const [rename, setRename] = useState(false);
     const [save, setSave] = useState(false);
+    const [saveAs, setSaveAs] = useState(false);
+    const [saveBAU, setSaveBAU] = useState(false);
 
     const [showInfo, setShowInfo] = useState(false);
     const [infoKey, setInfoKey] = useState();
@@ -38,13 +47,28 @@ const Calculator = ({bau, vertical, scenario, saveToStorage, updateScenario, uni
 
     const AdvancedYear = ({index, value}) => {
         const [yearlyValue, setYearlyValue] = useState(value);
+
         return(
             <div className = {styles.inputCenter}>
-                <label htmlFor="year">Year {index+1}: </label>
-                <input id="year" 
+                <label htmlFor={`year-${index}`}>Year {index+1}: </label>
+                <input id={`year-${index}`}
+                    ref={el => {
+                        if (el) inputRefs.current[refIndex] = el;
+                        refIndex++;
+                      }}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === 'Tab') {
+                            e.preventDefault();
+                            const currentIndex = inputRefs.current.indexOf(e.target);
+                            setFocusIndex(currentIndex + 1);
+                            setUpdateFocus(updateFocus+1);
+                        }
+                    }}
                     value = {yearlyValue} 
                     onChange={(e) => {setYearlyValue(e.target.value);}}  
-                    onBlur = {(e) => {let newVal = handleValueChange(e.target.value); setYearlyValue(newVal); yearlyValuesRef.current[index-delay] = newVal; setUpdate(prev => !prev);}}
+                    onBlur = {(e) => {let newVal = handleValueChange(e.target.value); setYearlyValue(newVal); if (advancedValuesRef.current[index-delay] !== newVal) {
+                        setUpdate(prev => !prev);
+                      }advancedValuesRef.current[index-delay] = newVal;}}
                     type="text" 
                     inputMode="decimal"/>
             </div>
@@ -60,17 +84,43 @@ const Calculator = ({bau, vertical, scenario, saveToStorage, updateScenario, uni
             <div className = {styles.inputCenter}>
                 <label htmlFor="year">{endYear === 1 ? 'Year 1: ' : 'Year ' + startYear + ' - ' + endYear + ': '}</label>
                 <input id="year" 
+                    ref={el => {
+                        if (el) inputRefs.current[refIndex] = el;
+                        refIndex++;
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === 'Tab') {
+                            e.preventDefault();
+                            const currentIndex = inputRefs.current.indexOf(e.target);
+                            setFocusIndex(currentIndex + 1);
+                            setUpdateFocus(updateFocus+1);
+                        }
+                    }}
+                    
                     value = {yearlyValue} 
                     onChange={(e) => {setYearlyValue(e.target.value);}}  
                     onBlur = {(e) => {let newVal = handleValueChange(e.target.value); setYearlyValue(newVal); const maxIndex = Number(totalYears);
                         for (let i = 0; i < maxIndex; i++) {
-                          yearlyValuesRef.current[i] = newVal;
+                          basicValuesRef.current[i] = newVal;
                         }; setUpdate(prev => !prev);}}
                     type="text" 
                     inputMode="decimal"/>
             </div>
         )
     }
+
+useEffect(() => {
+    if (focusIndex !== null && document.activeElement !== inputRefs.current[focusIndex]) {
+        const next = inputRefs.current[focusIndex];
+        if (next && document.contains(next)) {
+            next.focus();
+        }
+        else{
+          inputRefs.current[0].focus();
+        }
+      }
+  }, [focusIndex, updateFocus]);
+  
 
     function handleValueChange(val){
         let negative = false;
@@ -160,6 +210,12 @@ const Calculator = ({bau, vertical, scenario, saveToStorage, updateScenario, uni
     };
 
     const getFullYearlyValues = () => {
+        if (activeTab === 'Basic'){
+            yearlyValuesRef.current = [...basicValuesRef.current]
+        }
+        else{
+            yearlyValuesRef.current = [...advancedValuesRef.current]
+        }
         const baseValues = yearlyValuesRef.current.slice(0, parseInt(totalYears));
 
           const lastVal = baseValues[baseValues.length - 1];
@@ -168,60 +224,25 @@ const Calculator = ({bau, vertical, scenario, saveToStorage, updateScenario, uni
       };
 
     useEffect(() => {
-        const maxIndex = Number(totalYears);
-        
-        yearlyValuesRef.current.splice(maxIndex);
-
-        if (activeTab === 'Basic'){
-            if (!yearlyValuesRef.current[0]) {
-                yearlyValuesRef.current[0] = '100.00';
-              }
-            for (let i = 0; i < maxIndex; i++) {
-                yearlyValuesRef.current[i] = yearlyValuesRef.current[0];
-              }
-        }
-        else{
-            for (let i = 0; i < maxIndex; i++) {
-                if (!yearlyValuesRef.current[i]) {
-                  yearlyValuesRef.current[i] = '100.00';
-                }
-              }
-        }
-
-    }, [totalYears, upfrontEmissions]);
-
-    useEffect(() => {
         updateScenario(scenarioName, upfrontEmissions, discountRate, totalYears, { current: getFullYearlyValues() }, longTerm, activeTab, delay, getFullYearlyValues());
-    }, [update]);
+    }, [update, activeTab]);
 
-    useEffect(() => {
-        if (activeTab === 'Basic') {
-          advancedValuesRef.current = [...yearlyValuesRef.current];
-          yearlyValuesRef.current = [...basicValuesRef.current];
-      
-        } else {
-          basicValuesRef.current = [...yearlyValuesRef.current];
-          yearlyValuesRef.current = [...advancedValuesRef.current];
-        }
-      
-        setUpdate(prev => !prev);
-      }, [activeTab]);
 
     const renderYears = () => {
         const maxIndex = parseInt(totalYears);
- 
+
         if (activeTab === 'Basic'){
-            if (!yearlyValuesRef.current[0]) {
-                yearlyValuesRef.current[0] = '100.00';
+            if (!basicValuesRef.current[0]) {
+                basicValuesRef.current[0] = '100.00';
               }
             for (let i = 0; i < maxIndex; i++) {
-                yearlyValuesRef.current[i] = yearlyValuesRef.current[0];
+                basicValuesRef.current[i] = basicValuesRef.current[0];
               }
         }
         else{
             for (let i = 0; i < maxIndex; i++) {
-                if (!yearlyValuesRef.current[i]) {
-                  yearlyValuesRef.current[i] = '100.00';
+                if (!advancedValuesRef.current[i]) {
+                    advancedValuesRef.current[i] = '100.00';
                 }
               }
         }
@@ -230,7 +251,7 @@ const Calculator = ({bau, vertical, scenario, saveToStorage, updateScenario, uni
           return (
             <div>
                 <div className = {styles.inputCenter}>Annual CO<sub>2</sub> Emissions ({units}):</div>
-                <BasicYear startYear = {1+parseInt(delay)} endYear = {parseInt(totalYears)+parseInt(delay)} value={yearlyValuesRef.current[0]} />
+                <BasicYear startYear = {1+parseInt(delay)} endYear = {parseInt(totalYears)+parseInt(delay)} value={basicValuesRef.current[0]} />
             </div>
           );
         } else {
@@ -238,7 +259,7 @@ const Calculator = ({bau, vertical, scenario, saveToStorage, updateScenario, uni
             <div>
                 <div className = {styles.inputCenter}>Annual CO<sub>2</sub> Emissions ({units}):</div>
               {Array.from({ length: maxIndex }).map((_, index) => (
-                <AdvancedYear key={index} index={index+parseInt(delay)} value={yearlyValuesRef.current[index]} />
+                <AdvancedYear key={index} index={index+parseInt(delay)} value={advancedValuesRef.current[index]} />
               ))}
             </div>
           );
@@ -259,6 +280,17 @@ const Calculator = ({bau, vertical, scenario, saveToStorage, updateScenario, uni
                     <div className = {styles.totalYears}>
                         <label htmlFor="upfrontEmissions">Upfront CO<sub>2</sub> Emissions ({units}): </label>
                         <input id="upfrontEmissions" 
+                        ref={el => {
+                            if (el) inputRefs.current[refIndex] = el;
+                            refIndex++;
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === 'Tab') {
+                                e.preventDefault();
+                                const currentIndex = inputRefs.current.indexOf(e.target);
+                                setFocusIndex(currentIndex + 1);
+                            }
+                        }}
                             value = {upfrontEmissions} 
                             onChange={(e) => setupfrontEmissions(e.target.value)}
                             onBlur = {(e) => {setupfrontEmissions(handleValueChange(e.target.value)); setUpdate(prev => !prev);}} 
@@ -267,6 +299,17 @@ const Calculator = ({bau, vertical, scenario, saveToStorage, updateScenario, uni
                     <div className = {styles.totalYears}>
                         <label htmlFor="discountRate">Discount Rate (%): </label>
                         <input id="discountRate" 
+                        ref={el => {
+                            if (el) inputRefs.current[refIndex] = el;
+                            refIndex++;
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === 'Tab') {
+                                e.preventDefault();
+                                const currentIndex = inputRefs.current.indexOf(e.target);
+                                setFocusIndex(currentIndex + 1);
+                            }
+                        }}
                             value = {discountRate} 
                             onChange={(e) => setDiscountRate(e.target.value)} 
                             onBlur = {(e) => {setDiscountRate(handlePercentChange(e.target.value)); setUpdate(prev => !prev);}}
@@ -275,6 +318,17 @@ const Calculator = ({bau, vertical, scenario, saveToStorage, updateScenario, uni
                     <div className = {styles.totalYears}>
                             <label htmlFor="totalYears">Total Years: </label>
                             <input id="totalYears" 
+                            ref={el => {
+                                if (el) inputRefs.current[refIndex] = el;
+                                refIndex++;
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === 'Tab') {
+                                    e.preventDefault();
+                                    const currentIndex = inputRefs.current.indexOf(e.target);
+                                    setFocusIndex(currentIndex + 1);
+                                }
+                            }}
                                 value = {totalYears} 
                                 onChange={(e) => setTotalYears(e.target.value)} 
                                 onBlur = {(e) => {setTotalYears(handleIntegerChange(e.target.value)); setUpdate(prev => !prev);}}
@@ -284,6 +338,17 @@ const Calculator = ({bau, vertical, scenario, saveToStorage, updateScenario, uni
                     <div className = {styles.totalYears}>
                             <label htmlFor="delay">Years Delayed: </label>
                             <input id="delay" 
+                            ref={el => {
+                                if (el) inputRefs.current[refIndex] = el;
+                                refIndex++;
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === 'Tab') {
+                                    e.preventDefault();
+                                    const currentIndex = inputRefs.current.indexOf(e.target);
+                                    setFocusIndex(currentIndex + 1);
+                                }
+                            }}
                                 value = {delay} 
                                 onChange={(e) => setDelay(e.target.value)} 
                                 onBlur = {(e) => {setDelay(handleDelayChange(e.target.value)); setUpdate(prev => !prev);}}
@@ -293,7 +358,18 @@ const Calculator = ({bau, vertical, scenario, saveToStorage, updateScenario, uni
                     <div className = {styles.totalYears}>
                         <label>
                             Long-Term Value:
-                            <input type="checkbox" checked={longTerm} onChange={handleToggle} />
+                            <input ref={el => {
+                            if (el) inputRefs.current[refIndex] = el;
+                            refIndex++;
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === 'Tab') {
+                                e.preventDefault();
+                                const currentIndex = inputRefs.current.indexOf(e.target);
+                                setFocusIndex(currentIndex + 1);
+                            }
+                        }}
+                    type="checkbox" id = "longterm" checked={longTerm} onChange={handleToggle} />
                         </label><div className = {styles.info}><i class="material-icons" onClick = {() => {setInfoKey('Long-Term Value'); setShowInfo(true);}}>info_outline</i></div>
                     </div>
                 </div>
@@ -315,11 +391,15 @@ const Calculator = ({bau, vertical, scenario, saveToStorage, updateScenario, uni
                     </div>
                 </div>
             </div>
-            <button className = {styles.npvButton} onClick = {() => {setShowPopup(true); setSave(true);}}><span>Add to Saved Scenarios</span></button>
+            <div className = {styles.cols}>
+            {bau && (<button className = {styles.npvButton} onClick = {() => {setSaveBAU(true);}}><span>Save BAU</span></button>)}
+            {localStorage.getItem("scenario-" + createdAt) && !bau && (<button className = {styles.npvButton} onClick = {() => {setShowPopup(true); setSave(true);}}><span>Save</span></button>)}
+            <button className = {styles.npvButton} onClick = {() => {setShowPopup(true); setSaveAs(true);}}><span>Save As...</span></button>
+            </div>
         </div>)}
 
         {!vertical && (<div className = {styles.section}>
-            <div className = {styles.naming}>
+            <div className = {styles.naming} >
                 {bau && <h2 className = {styles.scenarioTitle}><span className = {styles.info}><i class="material-icons" onClick = {() => {setInfoKey('BAU (Business As Usual)'); setShowInfo(true);}}>info_outline</i>
                             </span> (BAU) Name: {scenarioName}</h2>}
                 {!bau && <h2 className = {styles.scenarioTitle}>Name: {scenarioName}</h2>}
@@ -329,7 +409,18 @@ const Calculator = ({bau, vertical, scenario, saveToStorage, updateScenario, uni
                 <div className = {styles.calcCenter}>
                     <div className = {styles.totalYears}>
                         <label htmlFor="upfrontEmissions">Upfront CO<sub>2</sub> Emissions ({units}): </label>
-                        <input className = {styles.inputBox} id="upfrontEmissions" 
+                        <input  id="upfrontEmissions" 
+                        ref={el => {
+                            if (el) inputRefs.current[refIndex] = el;
+                            refIndex++;
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === 'Tab') {
+                                e.preventDefault();
+                                const currentIndex = inputRefs.current.indexOf(e.target);
+                                setFocusIndex(currentIndex + 1);
+                            }
+                        }}
                             value = {upfrontEmissions} 
                             onChange={(e) => setupfrontEmissions(e.target.value)}
                             onBlur = {(e) => {setupfrontEmissions(handleValueChange(e.target.value)); setUpdate(prev => !prev);}} 
@@ -338,7 +429,18 @@ const Calculator = ({bau, vertical, scenario, saveToStorage, updateScenario, uni
                     </div>
                     <div className = {styles.totalYears}>
                         <label htmlFor="discountRate">Discount Rate (%): </label>
-                        <input className = {styles.inputBox} id="discountRate" 
+                        <input  id="discountRate" 
+                        ref={el => {
+                            if (el) inputRefs.current[refIndex] = el;
+                            refIndex++;
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === 'Tab') {
+                                e.preventDefault();
+                                const currentIndex = inputRefs.current.indexOf(e.target);
+                                setFocusIndex(currentIndex + 1);
+                            }
+                        }}
                             value = {discountRate} 
                             onChange={(e) => setDiscountRate(e.target.value)} 
                             onBlur = {(e) => {setDiscountRate(handlePercentChange(e.target.value)); setUpdate(prev => !prev);}}
@@ -346,7 +448,18 @@ const Calculator = ({bau, vertical, scenario, saveToStorage, updateScenario, uni
                     </div>
                     <div className = {styles.totalYears}>
                             <label htmlFor="totalYears">Total Years: </label>
-                            <input className = {styles.inputBox} id="totalYears" 
+                            <input  id="totalYears" 
+                            ref={el => {
+                                if (el) inputRefs.current[refIndex] = el;
+                                refIndex++;
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === 'Tab') {
+                                    e.preventDefault();
+                                    const currentIndex = inputRefs.current.indexOf(e.target);
+                                    setFocusIndex(currentIndex + 1);
+                                }
+                            }}
                                 value = {totalYears} 
                                 onChange={(e) => setTotalYears(e.target.value)} 
                                 onBlur = {(e) => {setTotalYears(handleIntegerChange(e.target.value)); setUpdate(prev => !prev);}}
@@ -355,7 +468,18 @@ const Calculator = ({bau, vertical, scenario, saveToStorage, updateScenario, uni
                     </div>
                     <div className = {styles.totalYears}>
                             <label htmlFor="delay">Years Delayed: </label>
-                            <input className = {styles.inputBox} id="delay" 
+                            <input  id="delay" 
+                            ref={el => {
+                                if (el) inputRefs.current[refIndex] = el;
+                                refIndex++;
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === 'Tab') {
+                                    e.preventDefault();
+                                    const currentIndex = inputRefs.current.indexOf(e.target);
+                                    setFocusIndex(currentIndex + 1);
+                                }
+                            }}
                                 value = {delay} 
                                 onChange={(e) => setDelay(e.target.value)} 
                                 onBlur = {(e) => {setDelay(handleDelayChange(e.target.value)); setUpdate(prev => !prev);}}
@@ -365,7 +489,18 @@ const Calculator = ({bau, vertical, scenario, saveToStorage, updateScenario, uni
                     <div className = {styles.totalYears}>
                         <label>
                             Long-Term Value:
-                            <input type="checkbox" checked={longTerm} onChange={handleToggle} />
+                            <input ref={el => {
+                            if (el) inputRefs.current[refIndex] = el;
+                            refIndex++;
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === 'Tab') {
+                                e.preventDefault();
+                                const currentIndex = inputRefs.current.indexOf(e.target);
+                                setFocusIndex(currentIndex + 1);
+                            }
+                        }}
+                        type="checkbox" id = "longterm" checked={longTerm} onChange={handleToggle} />
                         </label><div className = {styles.info}><i class="material-icons" onClick = {() => {setInfoKey('Long-Term Value'); setShowInfo(true);}}>info_outline</i></div>
                     </div>
                 </div>
@@ -387,7 +522,11 @@ const Calculator = ({bau, vertical, scenario, saveToStorage, updateScenario, uni
                     </div>
                 </div>
             </div>
-            <button className = {styles.npvButton} onClick = {() => {setShowPopup(true); setSave(true);}}><span>Add to Saved Scenarios</span></button>
+            <div className = {styles.cols}>
+            {bau && (<button className = {styles.npvButton} onClick = {() => {setSaveBAU(true);}}><span>Save BAU</span></button>)}
+            {!bau && localStorage.getItem("scenario-" + createdAt) && (<button className = {styles.npvButton} onClick = {() => {setShowPopup(true); setSave(true);}}><span>Save</span></button>)}
+            <button className = {styles.npvButton} onClick = {() => {setShowPopup(true); setSaveAs(true);}}><span>Save As...</span></button>
+            </div>
         </div>)}
 
             {showPopup && save && (
@@ -400,7 +539,39 @@ const Calculator = ({bau, vertical, scenario, saveToStorage, updateScenario, uni
                                 type="text" />
                         <div className = {styles.popupButtonContainer}> 
                             <button className = {styles.popupButton} onClick={() => {setShowPopup(false); setSave(false);}}>Close</button>
-                            <button className = {styles.popupButton} onClick={() => {setShowPopup(false); saveToStorage(scenarioName, createdAt, upfrontEmissions, discountRate, totalYears, yearlyValuesRef, longTerm, activeTab, delay); setSave(false); setUpdate(prev => !prev);}}>Save</button>
+                            <button className = {styles.popupButton} onClick={() => {setShowPopup(false); saveToStorage(scenarioName, createdAt, upfrontEmissions, discountRate, totalYears, { current: getFullYearlyValues() }, longTerm, activeTab, delay); setSave(false); setUpdate(prev => !prev);}}>Save</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+        {showPopup && saveAs && (
+                <div className={styles.overlay}>
+                    <div className={styles.popup}>
+                        <h2>Edit Name and/or Save As:</h2>
+                        <input id="scenarioName" 
+                                value = {scenarioName} 
+                                onChange={(e) => setName(e.target.value)} 
+                                type="text" />
+                        <div className = {styles.popupButtonContainer}> 
+                            <button className = {styles.popupButton} onClick={() => {setShowPopup(false); setSaveAs(false);}}>Close</button>
+                            <button className = {styles.popupButton} onClick={() => {setShowPopup(false); setCreatedAt(Date.now()); saveToStorage(scenarioName, Date.now(), upfrontEmissions, discountRate, totalYears, { current: getFullYearlyValues() }, longTerm, activeTab, delay); setSaveAs(false); setUpdate(prev => !prev);}}>Save As</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+{saveBAU && (
+                <div className={styles.overlay}>
+                    <div className={styles.popup}>
+                        <h2>Edit Name and/or Save As:</h2>
+                        <input id="scenarioName" 
+                                value = {scenarioName} 
+                                onChange={(e) => setName(e.target.value)} 
+                                type="text" />
+                        <div className = {styles.popupButtonContainer}> 
+                            <button className = {styles.popupButton} onClick={() => {setSaveBAU(false);}}>Close</button>
+                            <button className = {styles.popupButton} onClick={() => {setSaveBAU(false); saveToStorage(scenarioName, "bau", upfrontEmissions, discountRate, totalYears, { current: getFullYearlyValues() }, longTerm, activeTab, delay); setSaveAs(false); setUpdate(prev => !prev);}}>Save BAU</button>
                         </div>
                     </div>
                 </div>

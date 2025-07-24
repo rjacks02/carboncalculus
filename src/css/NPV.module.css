@@ -13,34 +13,33 @@ html, body, #root {
   display: grid;
   place-items: center;
   height: 100vh; 
-  row-gap: 0;
   background: #aed9ea;
+}
+
+.home h2 {
+  margin-bottom: 0;
 }
 
 .title{
   font-size: 4rem;
-  line-height: 50%;
   color: 	#2e7c53;
   text-align: center;
+  margin-bottom: 2%;
 }
 
 .subtitle{
   font-size: 1rem;
   color: #1e516a;
-  width: 50%;
+  width: 75%;
   text-align: center;
   margin: auto;
-  margin-top: 5%;
   font-style: italic;
+  margin-bottom: 2%;
 }
 
 .homeButtonContainer{
-  display: grid;
-  grid-template-columns: 1fr 2fr 1fr;
   width: 55%;
   margin: auto;
-  margin-top: 5%;
-  gap: 10%;
 }
 
 .homeButton{
@@ -91,7 +90,7 @@ html, body, #root {
 .navButton {
   width: 100%;
   padding: 1rem 1rem;
-  font-size: 1.1rem;
+  font-size: 1.2vw;
   background-color: #2e7c53;
   color: white;
   border: none;
@@ -103,6 +102,24 @@ html, body, #root {
 }
 
 .navButton:hover{
+  background-color: #49bd7f;
+}
+
+.moreOptions {
+  width: 100%;
+  padding: 1rem 1rem;
+  font-size: 1.1rem;
+  background-color: #2e7c53;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  text-align: center;
+  margin-bottom: 0;
+}
+
+.moreOptions:hover{
   background-color: #49bd7f;
 }
 
@@ -136,12 +153,24 @@ html, body, #root {
   margin-right: 2%;
 }
 
-.horizontal{
+.horizontal {
   display: grid;
-  grid-template-columns: 1.2fr 1fr;
-  gap: 0px;
-  height: 65vh;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  gap: 0;
   overflow-y: clip;
+}
+
+.horizontal > * {
+  min-width: 0;
+  overflow: hidden;
+}
+
+@media (max-width: 1150px) {
+  .horizontal{
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto;
+    grid-auto-flow: row;
+  }
 }
 
 .savedColumns{
@@ -156,6 +185,13 @@ html, body, #root {
     grid-template-columns: 1fr 1fr;
     gap: 5%;
     width: 100%;
+}
+
+.cols {
+  display: flex;
+  margin: auto;
+  width: fit-content;
+  gap: 20px;
 }
 
 .section {
@@ -238,16 +274,27 @@ html, body, #root {
   margin-bottom: 0rem;
 }
 
-.inputBox{
-  width: 20%;
-}
-
 .info{
   position: relative;
   color: black;
   cursor: pointer;
   display: inline-block;
   vertical-align: middle;
+}
+
+.longterm{
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 2%;
+  background-color: #aed9ea;
+  font-size: 1.5rem;
+  padding-left: 5%;
+  padding-right: 5%;
+  width: fit-content;
+  border-radius: 6px;z-index: 10;
+  text-align: center;
 }
 
 .info:hover{
@@ -291,10 +338,22 @@ html, body, #root {
     background-color: #aed9ea;
     margin: 0 auto 0 auto;
     text-align: center;
+    font-size: 1.5rem;
+    width: max-content;
+    padding: 2%;
+    border-radius: 10px;
+    white-space: initial;
+  }
+
+  .deff{
+    background-color: #aed9ea;
+    margin: 0 auto 0 auto;
+    text-align: center;
     font-size: 2rem;
     width: max-content;
     padding: 2%;
     border-radius: 10px;
+    white-space: initial;
   }
 
 
@@ -324,6 +383,10 @@ html, body, #root {
   margin-bottom: 3%;
   margin-top: 0;
   transition: 1s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  position: relative;
 }
 
 .visualSection:last-child {

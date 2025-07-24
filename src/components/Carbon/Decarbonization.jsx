@@ -3,7 +3,7 @@ import React, {useState, useEffect, useRef} from "react";
 import styles from '../../css/NPV.module.css'
 import Plot from 'react-plotly.js';
 
-const SelectScenario = ({scenarios, compare, setCompare, setShowInfo}) => {
+const SelectScenario = ({scenarios, compare, setCompare, setDeff}) => {
   const [isOpen, setIsOpen] = useState(true);
   const dropdownRef = useRef();
 
@@ -11,6 +11,7 @@ const SelectScenario = ({scenarios, compare, setCompare, setShowInfo}) => {
   const toggleOption = (option) => {
     if (compare.createdAt === option.createdAt){
       setCompare([])
+      setDeff(0);
     }
     else{
       setCompare(option);
@@ -23,8 +24,7 @@ const SelectScenario = ({scenarios, compare, setCompare, setShowInfo}) => {
         className={styles.multiSelectLabel}
         onClick={() => setIsOpen((prev) => !prev)}
       >
-        Select Scenario To Compare To BAU for D<sub>Eff</sub>  ▾   <span className = {styles.info}><i class="material-icons" onClick = {() => {setShowInfo(true);}}>info_outline</i>
-                            </span>
+        Select Scenario To Compare To BAU ▾
       </div>
       {isOpen && (
         <div className={styles.SelectContent}>
@@ -50,6 +50,10 @@ const Decarbonization = ({bau, scenarios, units, update, compare, setCompare}) =
   const year = new Date().getFullYear();
   const [showInfo, setShowInfo] = useState(false);
 
+  const [longterm, setLongterm] = useState(true);
+
+  const [deff, setDeff] = useState(0);
+
     const colors =["#2e7c53", "#1e516a", "#e66157", "#f0db9a", "#264653", "#e07a5f", "#6a4c93", "#00b8d9", "#8a9a5b", "#a9a9a9"];
 
     useEffect(() => {
@@ -60,7 +64,16 @@ const Decarbonization = ({bau, scenarios, units, update, compare, setCompare}) =
         let bauVals = [...bau.npvTotalValues];
         let diff = [];
 
-        const maxIndex = Math.min(300, npvVals.length, bauVals.length);
+        let maxIndex;
+
+        if (longterm){
+          maxIndex = Math.min(300, npvVals.length, bauVals.length);
+        }
+        else{
+          maxIndex = parseInt(compare.totalYears)+parseInt(compare.delay)+1;
+        }
+
+        
         for (let i = 0; i < compare.delay; i++){
           diff.push(0);
         }
@@ -71,6 +84,8 @@ const Decarbonization = ({bau, scenarios, units, update, compare, setCompare}) =
           const difference = -(npvVal - bauVal);
           diff.push(+difference.toFixed(10));
         }
+
+        setDeff(parseFloat(diff[maxIndex-1].toPrecision(3)).toFixed(2));
 
         let current = {
             x: diff.map((_, i) => i+year),
@@ -86,7 +101,7 @@ const Decarbonization = ({bau, scenarios, units, update, compare, setCompare}) =
     else{
       setData([]);
     }
-  }, [compare, bau, units, update]);
+  }, [compare, bau, units, update, longterm]);
 
  function findBreakeven(diff) {
     if (diff){
@@ -110,12 +125,22 @@ const Decarbonization = ({bau, scenarios, units, update, compare, setCompare}) =
     }
   }
 
+  function handleToggle(){
+    setLongterm(prev => !prev);
+  }
+
     return (
       <div className = {styles.section}>
-        <SelectScenario scenarios = {scenarios} compare = {compare} setCompare = {setCompare} bau = {bau} setShowInfo = {setShowInfo}/>
-     
+        <h2 className = {styles.sectionTitle}>Visualizing Effective Decarbonization</h2>
+        <div className = {styles.deff}><span className = {styles.info}><i class="material-icons" onClick = {() => {setShowInfo(true);}}>info_outline</i>
+                            </span>D<sub>Eff</sub>: {deff} {units} Today</div>
+        <SelectScenario scenarios = {scenarios} compare = {compare} setCompare = {setCompare} bau = {bau} setDeff = {setDeff}/>
+        
         <div className = {styles.visualSection}>
-            {compare && (<Plot
+      
+            <div> 
+                            
+          <Plot
         data={data}
         layout={{
           xaxis: {
@@ -138,7 +163,16 @@ const Decarbonization = ({bau, scenarios, units, update, compare, setCompare}) =
               },
               standoff: 40
             },
-            standoff: 40
+          },
+          title: {
+            text:`Effective Decarbonization (D<sub>Eff</sub>) from (BAU) ${bau.name} to ${compare.name || "_____"}`,
+            font: {
+              family: 'Verdana, sans-serif',
+              color: 'black',
+              size: 22
+            },
+            xref: 'paper',
+            xanchor: 'center'
           },
           margin: { t: 60, l: 60, r: 40, b: 40 },
             paper_bgcolor: '#aed9ea',
@@ -158,43 +192,19 @@ const Decarbonization = ({bau, scenarios, units, update, compare, setCompare}) =
                 opacity: 0.9,
                 cliponaxis: false,
                 font: { color: 'red' }
-              }, {
-                text: `Effective Decarbonization (D<sub>Eff</sub>) from (BAU) ${bau.name} to ${compare.name || "_____"}`,
-                font: {
-                  family: 'Verdana, sans-serif',
-                  size: 23,
-                  color: 'black',
-                },
-                x: 0.5,
-                y: 1.1,
-                xref: 'paper',
-                yref: 'paper',
-                xanchor: 'center',
-                yanchor: 'top',
-                showarrow: false,
-                align: 'center',
-              }
-            ] : [{
-              text: `Effective Decarbonization (D<sub>Eff</sub>) from (BAU) ${bau.name} to ${compare.name || "_____"}`,
-              font: {
-                family: 'Verdana, sans-serif',
-                size: 23,
-                color: 'black',
-              },
-              x: 0.5,
-              y: 1.1,
-              xref: 'paper',
-              yref: 'paper',
-              xanchor: 'center',
-              yanchor: 'top',
-              showarrow: false,
-              align: 'center',
-            }]
+              }] : []
           }}
         style={{ width: '100%', height: '100%' }}
         useResizeHandler={true}
         config={{ responsive: true }}
-      />)}
+      /> </div>
+      <div className = {styles.longterm}>
+        <label>
+            Include Long-Term Value:
+            <input 
+        type="checkbox" id = "longterm" checked={longterm} onChange={handleToggle} />
+        </label>
+    </div>
         </div>
         {showInfo && (
                 <div className={styles.overlay}>

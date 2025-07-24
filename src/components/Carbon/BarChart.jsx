@@ -32,7 +32,7 @@ const BarChart = ({name, vertical, vals, units, delay, emissions}) => {
         ]}
         layout={{
           title: {
-            text: `${name}: Yearly PV<sub>CO<sub>2</sub></sub>`,
+            text: `${name}`,
             font: {
               family: 'Verdana, sans-serif',
               color: 'black',
