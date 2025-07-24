@@ -516,7 +516,7 @@ const NPV = () => {
                   </div>
                 </div>
               </div>
-              {(showBAU || currentScenarios.length > 1) && (<div>
+              {(showBAU || currentScenarios?.length > 1) && (<div>
               <Calculator key={`${index}-${units}`} bauScenario = {index === 0} vertical = {vertical} scenario = {currentScenarios[index]} saveToStorage = {saveToStorage} updateScenario = {updateScenario} units = {units}/>
               <Visuals scenarioData = {currentScenarios} index = {index} units = {units} delay = {parseInt(currentScenarios[index].delay)} vertical = {vertical} emissions = {emissions}/>
               <SharedVisuals scenarioData = {currentScenarios} selected = {selected} setSelected = {setSelected} update = {update} units = {units} emissions = {emissions}/>
@@ -613,7 +613,7 @@ const NPV = () => {
                   </div>
                 </div>
               </div>
-              {(showBAU || currentScenarios.length > 1) && (<div><div className = {styles.horizontal}>
+              {(showBAU || currentScenarios?.length > 1) && (<div><div className = {styles.horizontal}>
                 <Calculator key={`${index}-${units}`} bauScenario = {index === 0} vertical = {vertical} scenario = {currentScenarios[index]} saveToStorage = {saveToStorage} updateScenario = {updateScenario} units = {units}/>
                 <Visuals scenarioData = {currentScenarios} index = {index} units = {units} delay = {parseInt(currentScenarios[index].delay)} vertical = {vertical} emissions = {emissions}/>
               </div>
