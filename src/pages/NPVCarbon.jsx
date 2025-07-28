@@ -13,16 +13,13 @@ import Decarbonization from "../components/Carbon/Decarbonization";
 
 
 const NPV = () => {
-  //base scenarios for BAU in kilograms and metric tons
-  const baseScenarioKG = {bau: true, createdAt: 0, name: 'Scenario', upfrontEmissions: '300.00', discountRate: '3.355', totalYears: '5', yearlyValuesRef: {current: ['100.00', '100.00', '100.00', '100.00', '100.00']}, longTerm: true, activeTab: 'Basic', delay: '0', units: 'Kilograms'};
-  const baseScenarioMT = {bau: true, createdAt: 0, name: 'Scenario', upfrontEmissions: '0.3', discountRate: '3.355', totalYears: '5', yearlyValuesRef: {current: ['0.1', '0.1', '0.1', '0.1', '0.1']}, longTerm: true, activeTab: 'Basic', delay: '0', units: 'Metric Tons'};
+  //base scenarios in kilograms and metric tons
+  const baseScenarioKG = {createdAt: Date.now(), name: '', upfrontEmissions: '3000.00', discountRate: '3.355', totalYears: '5', yearlyValuesRef: {current: ['1000.00', '1000.00', '1000.00', '1000.00', '1000.00']}, longTerm: false, activeTab: 'Basic', delay: '0', units: 'Kilograms'};
+  const baseScenarioMT = {createdAt: Date.now(), name: '', upfrontEmissions: '3.0', discountRate: '3.355', totalYears: '5', yearlyValuesRef: {current: ['1.0', '1.0', '1.0', '1.0', '1.0']}, longTerm: false, activeTab: 'Basic', delay: '0', units: 'Metric Tons'};
 
 
   //main variables
-  const [currentScenarios, setCurrentScenarios] = useState(() => {
-    const stored = localStorage.getItem("scenario-bau");
-    return stored ? [{ ...JSON.parse(stored), yearlyValuesRef: { current: JSON.parse(stored).yearlyValues || [] }, bau: true }] : [baseScenarioKG];
-  }); //list of all open scenarios
+  const [currentScenarios, setCurrentScenarios] = useState([baseScenarioKG]); //list of all open scenarios
   const [index, setIndex] = useState(0); //current index based on tabs - which scenario to display
   const [page, setPage] = useState('npv'); //what page to display: npv, saved, faqs
 
@@ -39,7 +36,6 @@ const NPV = () => {
   
 
   //all updated under 'more options' button
-  const [showBAU, setShowBAU] = useState(true); //show/hide BAU scenario from tab list
   const [units, setUnits] = useState('Kilograms') //units: kilograms or metric tons
   const [emissions, setEmissions] = useState(true); //set mode: emissions or reductions
   const [vertical, setVertical] = useState(false); //set layout: vertical or horizontal
@@ -47,7 +43,7 @@ const NPV = () => {
 
   //adding scenarios
   const [addPopup, setAddPopup] = useState(false); //show popup for adding new scenario
-  const [num, setNum] = useState(1); //number for creating new scenario
+  const [num, setNum] = useState(2); //number for creating new scenario
 
 
   //removing scenarios
@@ -62,7 +58,8 @@ const NPV = () => {
 
   //comparing scenarios
   const [selected, setSelected] = useState([]); //selected scenarios for comparison graph
-  const [compare, setCompare] = useState([]); //selected scenario for effective decarbonization graph
+  const [bau, setBAU] = useState({}); //bau scenario for effective decarbonization graph
+  const [compare, setCompare] = useState([]); //selected scenarios for effective decarbonization graph
   const [update, setUpdate] = useState(0); //update shared comparison and decarbonization graphs after values change
 
 
@@ -116,7 +113,7 @@ const NPV = () => {
 
   //extend yearly values to 300 years (long term value)
   const getFullYearlyValues = (s) => {
-    const baseValues = s.yearlyValuesRef.current.slice(0, parseInt(s.totalYears));
+    const baseValues = s.yearlyValuesRef.current.slice(0, Math.min(300, parseInt(s.totalYears)));
 
     const lastVal = baseValues[baseValues.length - 1];
     const extendedVals = Array(300 - baseValues.length-parseInt(s.delay)).fill(lastVal);
@@ -174,7 +171,28 @@ const NPV = () => {
     return updatedScenario;
   }
 
+  function duplicateScenario(){
+    setCurrentScenarios(prev => {
+      let newScenario;
+        newScenario = {
+          name: currentScenarios[index].name + " copy",
+          upfrontEmissions: currentScenarios[index].upfrontEmissions,
+          discountRate: currentScenarios[index].discountRate,
+          totalYears: currentScenarios[index].totalYears,
+          yearlyValuesRef: currentScenarios[index].yearlyValuesRef,
+          longTerm: currentScenarios[index].longTerm,
+          activeTab: currentScenarios[index].activeTab,
+          delay: currentScenarios[index].delay,
+          units: currentScenarios[index].units,
+          createdAt: Date.now()
+        };
 
+        const newList = [...prev, newScenario];
+        setNum(n => n + 1);
+        setIndex(newList.length - 1);
+        return newList;
+      });
+  }
   //opens new scenario
   function addScenario(toAdd) {
     setCurrentScenarios(prev => {
@@ -184,7 +202,7 @@ const NPV = () => {
       if (toAdd === null) {
         if (units === 'Kilograms'){
           newScenario = {
-            name: 'Scenario #' + num,
+            name: '',
             upfrontEmissions: baseScenarioKG.upfrontEmissions,
             discountRate: baseScenarioKG.discountRate,
             totalYears: baseScenarioKG.totalYears,
@@ -260,12 +278,13 @@ const NPV = () => {
 
   //remove scenario at ind
   function removeScenario(ind) {
-    //if scenario was selected for comparison graph, remove it
+    //if scenario was selected for comparison graph or decarvonization, remove it
     setSelected(prev => prev.filter(sel => sel.createdAt !== currentScenarios[ind].createdAt));
-    
-    //if scenario was selected for decarbonization graph, remove it
-    if (compare.createdAt === currentScenarios[ind].createdAt){
-      setCompare([]);
+    setCompare(prev => prev.filter(sel => sel.createdAt !== currentScenarios[ind].createdAt));
+
+    //if scenario was selected as BAU for decarbonization graph, remove it
+    if (bau.createdAt === currentScenarios[ind].createdAt){
+      setBAU({});
     }
 
     let newIndex = index;
@@ -280,13 +299,12 @@ const NPV = () => {
     setIndex(newIndex);
 
     const newScenarios = currentScenarios.filter((_, i) => i !== ind);
-
-    //if only scenario is bau when bau is hidden, show popup to add scenario
-    if (newScenarios.length === 1 && !showBAU){
-      setAddPopup(true);
-    }
       
     setCurrentScenarios(newScenarios);
+
+    if (newScenarios.length === 0){
+      setAddPopup(true);
+    }
   }
 
   //check if scenario has changed (if so, gives option to save before removing)
@@ -393,10 +411,24 @@ const NPV = () => {
     setUpdate((u) => u + 1); //send update to compare graph component
   }
 
-  //update compare (decarbonization) if scenario changed
   function updateCompare(option){
-    if (compare.createdAt === option.createdAt){ //if scenario is in compare, update it
-      setCompare(option)
+    setCompare((prev) => {
+      const exists = prev.some((o) => o.createdAt === option.createdAt); //if scenario is in compare
+      
+      if (!exists) return prev;
+    
+      return prev.map((o) =>
+        o.createdAt === option.createdAt ? option : o //replace old version of scenario with updated
+      );
+    });
+
+    setUpdate((u) => u + 1); //send update to decarbonization component
+  }
+
+  //update compare (decarbonization) if scenario changed
+  function updateBAU(option){
+    if (bau.createdAt === option.createdAt){ //if scenario is in compare, update it
+      setBAU(option)
     }
 
     setUpdate((u) => u + 1); //send update to decarbonization component
@@ -427,6 +459,7 @@ const NPV = () => {
     //update dependencies
     updateSelected(fullScenario);
     updateCompare(fullScenario);
+    updateBAU(fullScenario);
   }
 
   //updates an already saved scenario in local storage
@@ -477,15 +510,13 @@ const NPV = () => {
         <div className = {styles.mainContainer}>
           <div style={{ height: '80vh'}}>
             <div className={styles.mainTabsContainer}>
-              {currentScenarios.map((scenario, ind) => {
-                if (ind === 0 && !showBAU)  return null; 
-                              
+              {currentScenarios.map((scenario, ind) => {          
                 return (
                 <div key={scenario.createdAt}
                   className={`${styles.mainTab} ${index === ind ? styles.selected : ''}`}
                   onClick={() => setIndex(ind)}>
-                  <div className = {styles.mainTabName}> {ind === 0 ? `(BAU) ${scenario.name}` : scenario.name} </div>
-                  {ind !== 0 && (<div className = {styles.x} onClick={(e) => {e.stopPropagation(); setToRemove(ind); 
+                  <div className = {styles.mainTabName}> {scenario.name} </div>
+                  <div className = {styles.x} onClick={(e) => {e.stopPropagation(); setToRemove(ind); 
                     if (changed(ind)){
                       setRemove(true);
                     }
@@ -494,7 +525,7 @@ const NPV = () => {
                     }}}>
                     <i class='fas fa-close'></i>
                     <span className={styles.tooltipRemove}>Remove Scenario</span>
-                  </div>)}
+                  </div>
                 </div>)
               })}
               <div className = {styles.addTab} onClick = {() => {setAddPopup(true);}}><i class='	fas fa-plus'></i>
@@ -508,19 +539,19 @@ const NPV = () => {
                   <div className={styles.dropdown}>
                     <button className={styles.moreOptions}>More Options</button>
                     <div className={styles.dropdownContent}>
-                      <a onClick={() => {setShowBAU(prev => {if (prev && currentScenarios.length === 1){setAddPopup(true);} else if (index === 0){setIndex(1);} return !prev}); }}>{showBAU ? `Hide` : 'Show'} BAU</a>
                       <a onClick={() => {setEmissions(prev => !prev);}}>Switch Mode: {emissions ? `Reductions` : 'Emissions'}</a>
                       <a onClick={() => {setVertical(prev => !prev);}}>Switch Layout: {vertical ? `Horizontal` : 'Vertical'}</a>
                       <a onClick={() => {setUnits(prev => {if (prev === 'Kilograms'){convertToTons(); return 'Metric Tons'} else{convertToKilograms(); return 'Kilograms';}})}}>Switch Units: {units === 'Kilograms' ? `Metric Tons` : 'Kilograms'}</a>
+                      <a onClick={() => {duplicateScenario();}}>Duplicate Scenario</a>
                     </div>
                   </div>
                 </div>
               </div>
-              {(showBAU || currentScenarios?.length > 1) && (<div>
-              <Calculator key={`${index}-${units}`} bauScenario = {index === 0} vertical = {vertical} scenario = {currentScenarios[index]} saveToStorage = {saveToStorage} updateScenario = {updateScenario} units = {units}/>
+              {(currentScenarios?.length > 0) && (<div>
+              <Calculator key={`${index}-${units}`} vertical = {vertical} scenario = {currentScenarios[index]} saveToStorage = {saveToStorage} updateScenario = {updateScenario} units = {units}/>
               <Visuals scenarioData = {currentScenarios} index = {index} units = {units} delay = {parseInt(currentScenarios[index].delay)} vertical = {vertical} emissions = {emissions}/>
               <SharedVisuals scenarioData = {currentScenarios} selected = {selected} setSelected = {setSelected} update = {update} units = {units} emissions = {emissions}/>
-              <Decarbonization bau = {currentScenarios[0]} scenarios = {currentScenarios} units = {units} update = {update} compare = {compare} setCompare = {setCompare}/></div>)}
+              <Decarbonization scenarios = {currentScenarios} units = {units} update = {update} bau = {bau} setBAU = {setBAU} compare = {compare} setCompare = {setCompare}/></div>)}
             </div>
           </div>
           {addPopup && (
@@ -575,14 +606,13 @@ const NPV = () => {
           <div style={{ height: '80vh'}}>
             <div className={styles.mainTabsContainer}>
             {currentScenarios.map((scenario, ind) => {
-              if (ind === 0 && !showBAU) return null; 
                           
               return (
                 <div key={scenario.createdAt}
                   className={`${styles.mainTab} ${index === ind ? styles.selected : ''}`}
                   onClick={() => setIndex(ind)}>
-                  <div className = {styles.mainTabName}> {ind === 0 ? `(BAU) ${scenario.name}` : scenario.name} </div>
-                  {ind !== 0 && (<div className = {styles.x} onClick={(e) => {e.stopPropagation(); setToRemove(ind); 
+                  <div className = {styles.mainTabName}> {scenario.name} </div>
+                  <div className = {styles.x} onClick={(e) => {e.stopPropagation(); setToRemove(ind); 
                     if (changed(ind)){
                       setRemove(true);
                     }
@@ -591,7 +621,7 @@ const NPV = () => {
                     }}}>
                     <i class='fas fa-close'></i>
                     <span className={styles.tooltipRemove}>Remove Scenario</span>
-                  </div>)}
+                  </div>
                 </div>)
               })}
               <div className = {styles.addTab} onClick = {() => {setAddPopup(true);}}><i class='	fas fa-plus'></i>
@@ -605,20 +635,20 @@ const NPV = () => {
                   <div className={styles.dropdown}>
                     <button className={styles.moreOptions}>More Options</button>
                     <div className={styles.dropdownContent}>
-                      <a onClick={() => {setShowBAU(prev => {if (prev && currentScenarios.length === 1){setAddPopup(true);}else if (index === 0){setIndex(1);} return !prev}); }}>{showBAU ? `Hide` : 'Show'} BAU</a>
                       <a onClick={() => {setEmissions(prev => !prev);}}>Switch Mode: {emissions ? `Reductions` : 'Emissions'}</a>
                       <a onClick={() => {setVertical(prev => !prev);}}>Switch Layout: {vertical ? `Horizontal` : 'Vertical'}</a>
                       <a onClick={() => {setUnits(prev => {if (prev === 'Kilograms'){convertToTons(); return 'Metric Tons'} else{convertToKilograms(); return 'Kilograms';}})}}>Switch Units: {units === 'Kilograms' ? `Metric Tons` : 'Kilograms'}</a>
+                      <a onClick={() => {duplicateScenario();}}>Duplicate Scenario</a>
                     </div>
                   </div>
                 </div>
               </div>
-              {(showBAU || currentScenarios?.length > 1) && (<div><div className = {styles.horizontal}>
-                <Calculator key={`${index}-${units}`} bauScenario = {index === 0} vertical = {vertical} scenario = {currentScenarios[index]} saveToStorage = {saveToStorage} updateScenario = {updateScenario} units = {units}/>
+              {(currentScenarios?.length > 0) && (<div><div className = {styles.horizontal}>
+                <Calculator key={`${index}-${units}`} vertical = {vertical} scenario = {currentScenarios[index]} saveToStorage = {saveToStorage} updateScenario = {updateScenario} units = {units}/>
                 <Visuals scenarioData = {currentScenarios} index = {index} units = {units} delay = {parseInt(currentScenarios[index].delay)} vertical = {vertical} emissions = {emissions}/>
               </div>
               <SharedVisuals scenarioData = {currentScenarios} selected = {selected} setSelected = {setSelected} update = {update} units = {units} emissions = {emissions}/>
-              <Decarbonization bau = {currentScenarios[0]} scenarios = {currentScenarios} units = {units} update = {update} compare = {compare} setCompare = {setCompare}/> </div>)}
+              <Decarbonization scenarios = {currentScenarios} units = {units} update = {update} bau = {bau} setBAU = {setBAU}  compare = {compare} setCompare = {setCompare}/> </div>)}
             </div>
           </div>
           {addPopup && (

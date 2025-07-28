@@ -7,9 +7,9 @@ const CompareGraph = ({scenarios, update, units, emissions}) => {
     const [data, setData] = useState([]);
     const year = new Date().getFullYear();
 
-    const [longterm, setLongterm] = useState(true);
+    const [longterm, setLongterm] = useState(false);
 
-    const colors =["#2e7c53", "#1e516a", "#e66157", "#f0db9a", "#264653", "#e07a5f", "#6a4c93", "#00b8d9", "#8a9a5b", "#a9a9a9"];
+    const colors =["#000000", "#E69F00", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7"];
 
     useEffect(() => {
       let newData = [];
@@ -29,8 +29,8 @@ const CompareGraph = ({scenarios, update, units, emissions}) => {
                 type: 'line',
                 mode: 'lines+markers',
                 marker: { color: colors[i % 10] },
-                name: scenarios[i].bau ? `(BAU) ${scenarios[i].name}` : scenarios[i].name,
-                hovertemplate: `${scenarios[i].bau ? `(BAU) ${scenarios[i].name}` : scenarios[i].name}<br> Year: %{x}<br>${units} of CO<sub>2</sub>: %{y}<extra></extra>`,
+                name: scenarios[i].name,
+                hovertemplate: `${scenarios[i].name}<br> Year: %{x}<br>${units} of CO<sub>2</sub>: %{y}<extra></extra>`,
                 hoverlabel: {
                     align: 'left'
                   }
@@ -52,6 +52,7 @@ const CompareGraph = ({scenarios, update, units, emissions}) => {
 
     return (
         <div className = {styles.visualSection}>
+          <div>
             <Plot
         data={data}
         layout={{
@@ -87,7 +88,7 @@ const CompareGraph = ({scenarios, update, units, emissions}) => {
             },
             standoff: 40
           },
-          margin: { t: 40, l: 60, r: 40, b: 150 },
+          margin: { t: 40, l: 60, r: 40, b: 30 },
             paper_bgcolor: '#aed9ea',
             plot_bgcolor: '#94c8dc',
             legend: {
@@ -101,7 +102,7 @@ const CompareGraph = ({scenarios, update, units, emissions}) => {
         style={{ width: '100%', height: '100%' }}
         useResizeHandler={true}
         config={{ responsive: true}}
-      /><div className = {styles.longterm}>
+      /></div><div className = {styles.longterm}>
       <label>
           Include Long-Term Value:
           <input 

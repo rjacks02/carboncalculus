@@ -3,100 +3,137 @@ import React, {useState, useEffect, useRef} from "react";
 import styles from '../../css/NPV.module.css'
 import Plot from 'react-plotly.js';
 
-const SelectScenario = ({scenarios, compare, setCompare, setDeff}) => {
+const SelectScenario = ({scenarios, compare, setCompare, bau, setBAU}) => {
   const [isOpen, setIsOpen] = useState(true);
+  
   const dropdownRef = useRef();
 
-
-  const toggleOption = (option) => {
-    if (compare.createdAt === option.createdAt){
-      setCompare([])
-      setDeff(0);
+  const toggleOptionBAU = (option) => {
+    if (bau && bau.createdAt === option.createdAt){
+      setBAU({})
     }
     else{
-      setCompare(option);
+      setBAU(option);
     }
   };
 
+  const toggleOptionCompare = (option) => {
+    setCompare((prev) => {
+      const exists = prev.some((o) => o.createdAt === option.createdAt);
+      return exists
+        ? prev.filter((o) => o.createdAt !== option.createdAt)
+        : [...prev, option];
+    });
+  };
+
   return (
+    <div className = {styles.cols2}>
     <div className={styles.multiSelectDropdown} ref={dropdownRef}>
       <div
         className={styles.multiSelectLabel}
         onClick={() => setIsOpen((prev) => !prev)}
       >
-        Select Scenario To Compare To BAU ▾
+        Select BAU Scenario ▾
       </div>
       {isOpen && (
         <div className={styles.SelectContent}>
           {scenarios.map((option, ind) => (
-            ind !== 0 && (<label className={styles.multiSelectItem} key={option.createdAt}>
+            <label className={styles.multiSelectItem} key={option.createdAt}>
               <input
                 type="checkbox"
-                checked={compare.createdAt === option.createdAt}
-                onChange={() => toggleOption(option)}
+                checked={bau && bau.createdAt === option.createdAt}
+                onChange={() => toggleOptionBAU(option)}
               />
               {option.name}
-            </label>)
+            </label>
           ))}
         </div>
       )}
     </div>
+    <div className={styles.multiSelectDropdown} ref={dropdownRef}>
+      <div
+        className={styles.multiSelectLabel}
+        onClick={() => setIsOpen((prev) => !prev)}
+      >
+        Select Comparison Scenarios ▾
+      </div>
+      {isOpen && (
+        <div className={styles.SelectContent}>
+          {scenarios.map((option, ind) => (
+            <label className={styles.multiSelectItem} key={option.createdAt}>
+              <input
+                type="checkbox"
+                checked={compare.some(sel => sel.createdAt === option.createdAt)}
+                onChange={() => toggleOptionCompare(option)}
+              />
+              {option.name}
+            </label>
+          ))}
+        </div>
+      )}
+    </div>
+    </div>
   );
 };
 
-const Decarbonization = ({bau, scenarios, units, update, compare, setCompare}) => {
+const Decarbonization = ({scenarios, units, update, bau, setBAU, compare, setCompare}) => {
   const [breakEven, setBreakEven] = useState(null);
   const [data, setData] = useState([]);
   const year = new Date().getFullYear();
   const [showInfo, setShowInfo] = useState(false);
 
-  const [longterm, setLongterm] = useState(true);
+  const [longterm, setLongterm] = useState(false);
 
   const [deff, setDeff] = useState(0);
 
-    const colors =["#2e7c53", "#1e516a", "#e66157", "#f0db9a", "#264653", "#e07a5f", "#6a4c93", "#00b8d9", "#8a9a5b", "#a9a9a9"];
+    const colors =["#000000", "#E69F00", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7"];
 
     useEffect(() => {
       let newData = [];
 
-      if (compare && bau && compare.npvTotalValues && bau.npvTotalValues){
-        let npvVals = [...compare.npvTotalValues];
+      if (compare && bau && bau?.npvTotalValues && compare[0]?.npvTotalValues){
         let bauVals = [...bau.npvTotalValues];
-        let diff = [];
 
-        let maxIndex;
+        for (let i = 0; i < compare.length; i++){
+          let npvVals = [...compare[i].npvTotalValues];
+          let diff = [];
 
-        if (longterm){
-          maxIndex = Math.min(300, npvVals.length, bauVals.length);
-        }
-        else{
-          maxIndex = parseInt(compare.totalYears)+parseInt(compare.delay)+1;
-        }
+          let maxIndex;
 
-        
-        for (let i = 0; i < compare.delay; i++){
-          diff.push(0);
-        }
-        
-        for (let i = compare.delay; i < maxIndex; i++){
-          const npvVal = parseFloat(npvVals[i]) || 0;
-          const bauVal = parseFloat(bauVals[i]) || 0;
-          const difference = -(npvVal - bauVal);
-          diff.push(+difference.toFixed(10));
-        }
-
-        setDeff(parseFloat(diff[maxIndex-1].toPrecision(3)).toFixed(2));
-
-        let current = {
-            x: diff.map((_, i) => i+year),
-              y: diff,
-              type: 'line',
-              mode: 'lines+markers',
-              marker: { color: colors[0] },
-              hovertemplate: `Year: %{x}<br>${units} of CO<sub>2</sub>: %{y}<extra></extra>`,
+          if (longterm){
+            maxIndex = Math.min(300, npvVals.length, bauVals.length);
           }
-        setData([current]);
-        findBreakeven(diff);
+          else{
+            maxIndex = parseInt(compare[i].totalYears)+parseInt(compare[i].delay)+1;
+          }
+          console.log(compare[i]);
+          
+          for (let j = 0; j < parseInt(compare[i].delay); j++){
+            diff.push(0);
+          }
+          
+          for (let j = parseInt(compare[i].delay); j < maxIndex; j++){
+            const npvVal = parseFloat(npvVals[j]) || 0;
+            const bauVal = parseFloat(bauVals[j]) || 0;
+            const difference = -(npvVal - bauVal);
+            diff.push(+difference.toFixed(10));
+          }
+
+          
+
+          let current = {
+              x: diff.map((_, k) => k+year),
+                y: diff,
+                type: 'line',
+                mode: 'lines+markers',
+                name: compare[i].name,
+                marker: { color: colors[i%7] },
+                hovertemplate: `${compare[i].name} </br>Year: %{x}<br>${units} of CO<sub>2</sub>: %{y}<extra></extra>`,
+            }
+
+          newData.push(current)
+        }
+        setData(newData);
       }
     else{
       setData([]);
@@ -131,10 +168,9 @@ const Decarbonization = ({bau, scenarios, units, update, compare, setCompare}) =
 
     return (
       <div className = {styles.section}>
-        <h2 className = {styles.sectionTitle}>Visualizing Effective Decarbonization</h2>
-        <div className = {styles.deff}><span className = {styles.info}><i class="material-icons" onClick = {() => {setShowInfo(true);}}>info_outline</i>
-                            </span>D<sub>Eff</sub>: {deff} {units} Today</div>
-        <SelectScenario scenarios = {scenarios} compare = {compare} setCompare = {setCompare} bau = {bau} setDeff = {setDeff}/>
+        <h2 className = {styles.sectionTitle}><span className = {styles.info}><i class="material-icons" onClick = {() => {setShowInfo(true);}}>info_outline</i>
+                            </span> Visualizing Effective Decarbonization</h2>
+        <SelectScenario scenarios = {scenarios} compare = {compare} setCompare = {setCompare} bau = {bau} setBAU = {setBAU} setDeff = {setDeff}/>
         
         <div className = {styles.visualSection}>
       
@@ -143,6 +179,7 @@ const Decarbonization = ({bau, scenarios, units, update, compare, setCompare}) =
           <Plot
         data={data}
         layout={{
+          showlegend: true,
           xaxis: {
             title: {
               text: 'Year',
@@ -165,7 +202,7 @@ const Decarbonization = ({bau, scenarios, units, update, compare, setCompare}) =
             },
           },
           title: {
-            text:`Effective Decarbonization (D<sub>Eff</sub>) from (BAU) ${bau.name} to ${compare.name || "_____"}`,
+            text:`Effective Decarbonization (D<sub>Eff</sub>) from BAU ${bau.name ? "(" + bau.name + ")": ""}`,
             font: {
               family: 'Verdana, sans-serif',
               color: 'black',
@@ -174,25 +211,16 @@ const Decarbonization = ({bau, scenarios, units, update, compare, setCompare}) =
             xref: 'paper',
             xanchor: 'center'
           },
-          margin: { t: 60, l: 60, r: 40, b: 40 },
+          margin: { t: 40, l: 60, r: 40, b: 30 },
             paper_bgcolor: '#aed9ea',
             plot_bgcolor: '#94c8dc',
-            annotations: breakEven !== null ? [
-              {
-                x: breakEven,
-                y: 0,
-                text: 'Breakeven at <br> Year ' + breakEven.toFixed(0),
-                showarrow: true,
-                arrowhead: 2,
-                align: 'center',
-                bgcolor: 'white',
-                bordercolor: 'red',
-                borderwidth: 1,
-                borderpad: 4,
-                opacity: 0.9,
-                cliponaxis: false,
-                font: { color: 'red' }
-              }] : []
+            legend: {
+              orientation: 'h',
+              x: 0,
+              y: -0.2,
+              xanchor: 'left',
+              yanchor: 'top'
+            }
           }}
         style={{ width: '100%', height: '100%' }}
         useResizeHandler={true}

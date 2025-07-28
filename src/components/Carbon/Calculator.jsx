@@ -2,7 +2,7 @@ import React, {useState, useRef, useEffect} from 'react';
 
 import styles from '../../css/NPV.module.css'
 
-const Calculator = ({bauScenario, vertical, scenario, saveToStorage, updateScenario, units}) => {
+const Calculator = ({vertical, scenario, saveToStorage, updateScenario, units}) => {
     const [scenarioName, setName] = useState(scenario.name);
     const [upfrontEmissions, setupfrontEmissions] = useState(scenario.upfrontEmissions);
     const [discountRate, setDiscountRate] = useState(scenario.discountRate);
@@ -12,7 +12,6 @@ const Calculator = ({bauScenario, vertical, scenario, saveToStorage, updateScena
     const [activeTab, setActiveTab] = useState(scenario.activeTab);
     const [delay, setDelay] = useState(scenario.delay);
     const [createdAt, setCreatedAt] = useState(scenario.createdAt);
-    const [bau, setBAU] = useState(bauScenario)
     
 
     const basicValuesRef = useRef([...scenario.yearlyValuesRef.current]);
@@ -26,11 +25,10 @@ const Calculator = ({bauScenario, vertical, scenario, saveToStorage, updateScena
 
     const [update, setUpdate] = useState(true);
 
-    const [showPopup, setShowPopup] = useState(false);
-    const [rename, setRename] = useState(false);
+    const [showPopup, setShowPopup] = useState(scenario.name === "" ? true : false);
+    const [rename, setRename] = useState(scenario.name === "" ? true : false);
     const [save, setSave] = useState(false);
     const [saveAs, setSaveAs] = useState(false);
-    const [saveBAU, setSaveBAU] = useState(false);
 
     const [showInfo, setShowInfo] = useState(false);
     const [infoKey, setInfoKey] = useState();
@@ -87,7 +85,7 @@ const Calculator = ({bauScenario, vertical, scenario, saveToStorage, updateScena
 
         return(
             <div className = {styles.inputCenter}>
-                <label htmlFor="year">{endYear === 1 ? 'Year 1: ' : 'Year ' + startYear + ' - ' + endYear + ': '}</label>
+                <label htmlFor="year">{endYear === 1 ? 'Year 1: ' : 'Years ' + startYear + ' - ' + endYear + ': '}</label>
                 <input id="year" 
                     ref={el => {
                         if (el) inputRefs.current[refIndex] = el;
@@ -125,6 +123,7 @@ useEffect(() => {
         const next = inputRefs.current[focusIndex];
         if (next && document.contains(next)) {
             next.focus();
+            next.select();
         }
         else{
           inputRefs.current[0].focus();
@@ -187,6 +186,10 @@ useEffect(() => {
 
         let cleaned = val.replace(/[^0-9]/g, '');
 
+        if (parseInt(cleaned)+parseInt(delay) > 300){
+            cleaned = String(300-parseInt(delay));
+        }
+
         if (cleaned.startsWith('0') && cleaned !== '0') {
             cleaned = cleaned.replace(/^0+/, '');
         }
@@ -204,6 +207,10 @@ useEffect(() => {
         }
 
         let cleaned = val.replace(/[^0-9]/g, '');
+
+        if (parseInt(cleaned)+parseInt(totalYears) > 300){
+            cleaned = String(300-parseInt(totalYears));
+        }
 
         if (cleaned.startsWith('0') && cleaned !== '0') {
             cleaned = cleaned.replace(/^0+/, '');
@@ -227,7 +234,7 @@ useEffect(() => {
         else{
             yearlyValuesRef.current = [...advancedValuesRef.current]
         }
-        const baseValues = yearlyValuesRef.current.slice(0, parseInt(totalYears));
+        const baseValues = yearlyValuesRef.current.slice(0, Math.min(300, parseInt(totalYears)));
 
           const lastVal = baseValues[baseValues.length - 1];
           const extendedVals = Array(300 - baseValues.length-parseInt(delay)).fill(lastVal);
@@ -240,7 +247,7 @@ useEffect(() => {
 
 
     const renderYears = () => {
-        const maxIndex = parseInt(totalYears);
+        const maxIndex = Math.min(300, parseInt(totalYears));
 
         if (activeTab === 'Basic'){
             if (!basicValuesRef.current[0]) {
@@ -261,14 +268,14 @@ useEffect(() => {
         if (activeTab === 'Basic') {
           return (
             <div>
-                <div className = {styles.inputCenter}>Annual CO<sub>2</sub> Emissions ({units}):</div>
-                <BasicYear startYear = {1+parseInt(delay)} endYear = {parseInt(totalYears)+parseInt(delay)} value={basicValuesRef.current[0]} />
+                <div className = {styles.inputCenter}>Annual CO<sub>2</sub> Emissions <br/>({units}/Year):</div>
+                <BasicYear startYear = {Math.min(1+parseInt(delay), 300)} endYear = {Math.min(maxIndex+parseInt(delay), 300)} value={basicValuesRef.current[0]} />
             </div>
           );
         } else {
           return (
             <div>
-                <div className = {styles.inputCenter}>Annual CO<sub>2</sub> Emissions ({units}):</div>
+                <div className = {styles.inputCenter}>Annual CO<sub>2</sub> Emissions <br/>({units}/Year):</div>
               {Array.from({ length: maxIndex }).map((_, index) => (
                 <AdvancedYear key={index} index={index+parseInt(delay)} value={advancedValuesRef.current[index]} />
               ))}
@@ -281,9 +288,7 @@ useEffect(() => {
         <div>
         {vertical && (<div className = {styles.section}>
             <div className = {styles.naming}>
-                {bau && <h2 className = {styles.scenarioTitle}><span className = {styles.info}><i class="material-icons" onClick = {() => {setInfoKey('BAU (Business As Usual)'); setShowInfo(true);}}>info_outline</i>
-                            </span> (BAU) Name: {scenarioName}</h2>}
-                {!bau && <h2 className = {styles.scenarioTitle}>Name: {scenarioName}</h2>}
+                <h2 className = {styles.scenarioTitle} onClick= {(e) => {if (e.detail === 2) {setShowPopup(true); setRename(true);}}}>Name: {scenarioName}</h2>
                 <button className = {styles.renameButton} onClick = {() => {setShowPopup(true); setRename(true);}}>Edit Name</button>
             </div>
             <div className = {styles.calcColumns}>
@@ -403,17 +408,14 @@ useEffect(() => {
                 </div>
             </div>
             <div className = {styles.cols}>
-            {bau && (<button className = {styles.npvButton} onClick = {() => {setSaveBAU(true);}}><span>Save BAU</span></button>)}
-            {localStorage.getItem("scenario-" + createdAt) && !bau && (<button className = {styles.npvButton} onClick = {() => {setShowPopup(true); setSave(true);}}><span>Save</span></button>)}
+            {localStorage.getItem("scenario-" + createdAt) && (<button className = {styles.npvButton} onClick = {() => {setShowPopup(true); setSave(true);}}><span>Save</span></button>)}
             <button className = {styles.npvButton} onClick = {() => {setShowPopup(true); setSaveAs(true);}}><span>Save As...</span></button>
             </div>
         </div>)}
 
         {!vertical && (<div className = {styles.section}>
             <div className = {styles.naming} >
-                {bau && <h2 className = {styles.scenarioTitle}><span className = {styles.info}><i class="material-icons" onClick = {() => {setInfoKey('BAU (Business As Usual)'); setShowInfo(true);}}>info_outline</i>
-                            </span> (BAU) Name: {scenarioName}</h2>}
-                {!bau && <h2 className = {styles.scenarioTitle}>Name: {scenarioName}</h2>}
+                <h2 className = {styles.scenarioTitle} onClick= {(e) => {if (e.detail === 2) {setShowPopup(true); setRename(true);}}}>Name: {scenarioName}</h2>
                 <button className = {styles.renameButton} onClick = {() => {setShowPopup(true); setRename(true);}}>Edit Name</button>
             </div>
             <div className = {styles.calcColumns}>
@@ -534,8 +536,7 @@ useEffect(() => {
                 </div>
             </div>
             <div className = {styles.cols}>
-            {bau && (<button className = {styles.npvButton} onClick = {() => {setSaveBAU(true);}}><span>Save BAU</span></button>)}
-            {!bau && localStorage.getItem("scenario-" + createdAt) && (<button className = {styles.npvButton} onClick = {() => {setShowPopup(true); setSave(true);}}><span>Save</span></button>)}
+            {localStorage.getItem("scenario-" + createdAt) && (<button className = {styles.npvButton} onClick = {() => {setShowPopup(true); setSave(true);}}><span>Save</span></button>)}
             <button className = {styles.npvButton} onClick = {() => {setShowPopup(true); setSaveAs(true);}}><span>Save As...</span></button>
             </div>
         </div>)}
@@ -572,22 +573,6 @@ useEffect(() => {
                 </div>
             )}
 
-{saveBAU && (
-                <div className={styles.overlay}>
-                    <div className={styles.popup}>
-                        <h2>Edit Name and/or Save As:</h2>
-                        <input id="scenarioName" 
-                                value = {scenarioName} 
-                                onChange={(e) => setName(e.target.value)} 
-                                type="text" />
-                        <div className = {styles.popupButtonContainer}> 
-                            <button className = {styles.popupButton} onClick={() => {setSaveBAU(false);}}>Close</button>
-                            <button className = {styles.popupButton} onClick={() => {setSaveBAU(false); saveToStorage(scenarioName, "bau", upfrontEmissions, discountRate, totalYears, { current: getFullYearlyValues() }, longTerm, activeTab, delay); setSaveAs(false); setUpdate(prev => !prev);}}>Save BAU</button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
             {showPopup && rename && (
                 <div className={styles.overlay}>
                     <div className={styles.popup}>
@@ -597,7 +582,7 @@ useEffect(() => {
                                 onChange={(e) => setName(e.target.value)} 
                                 type="text" />
                         <div className = {styles.popupSaveButtonContainer}>         
-                            <button className = {styles.popupButton} onClick={() => {setShowPopup(false); setRename(false); setUpdate(prev => !prev);}}>Rename</button>
+                            <button className = {styles.popupButton} onClick={() => {if (scenarioName !== "") {setShowPopup(false); setRename(false); setUpdate(prev => !prev);}}}>Confirm</button>
                         </div>
                     </div>
                 </div>
@@ -610,7 +595,7 @@ useEffect(() => {
                         <p>{info[infoKey]}</p>
                         <div className = {styles.popup2Container}> 
                             <button className = {styles.popupButton} onClick={() => {setShowInfo(false);}}>Close</button>
-                            <button className = {styles.popupButton} onClick={() => {setShowInfo(false);}}>Read More</button>
+                            <button className = {styles.popupButton} onClick={() => {setShowInfo(false); }}>Read More</button>
                         </div>
                     </div>
                 </div>
