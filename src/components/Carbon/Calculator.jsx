@@ -2,7 +2,7 @@ import React, {useState, useRef, useEffect} from 'react';
 
 import styles from '../../css/NPV.module.css'
 
-const Calculator = ({vertical, scenario, saveToStorage, updateScenario, units}) => {
+const Calculator = ({vertical, scenario, saveToStorage, updateScenario, units, newOpen}) => {
     const [scenarioName, setName] = useState(scenario.name);
     const [upfrontEmissions, setupfrontEmissions] = useState(scenario.upfrontEmissions);
     const [discountRate, setDiscountRate] = useState(scenario.discountRate);
@@ -572,8 +572,9 @@ useEffect(() => {
                     </div>
                 </div>
             )}
+            
 
-            {showPopup && rename && (
+            {showPopup && rename && (localStorage.getItem("startingPopup") === "false" || !newOpen) && (
                 <div className={styles.overlay}>
                     <div className={styles.popup}>
                         <h2>Enter a Name for the Scenario:</h2>

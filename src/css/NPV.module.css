@@ -194,6 +194,22 @@ html, body, #root {
   gap: 20px;
 }
 
+.compareCols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  width: 100%;
+}
+
+@media (max-width: 1200px) {
+  .compareCols {
+    grid-template-columns: 1fr;
+    row-gap: 1rem;
+    justify-items: center;
+    width: 100%;
+  }
+}
+
+
 .cols2 {
   align-items: flex-start;
   display: grid;
@@ -310,11 +326,11 @@ html, body, #root {
   transform: translateX(-50%);
   margin-bottom: 2%;
   background-color: #aed9ea;
-  font-size: 1.5rem;
+  font-size: 1.4rem;
   padding-left: 5%;
   padding-right: 5%;
   width: fit-content;
-  border-radius: 6px;z-index: 10;
+  border-radius: 6px;
   text-align: center;
 }
 
@@ -393,10 +409,18 @@ html, body, #root {
     border-radius: 5px;
   }
 
+  .visualHeader{
+    width: max-content;
+    margin: auto;
+    text-align: center;
+    font-size: 1.5rem;
+  }
+
 
 .visualSection {
-  width: 80%;
-  height: 550px;
+  width: 90%;
+  height: 520px;
+  overflow: hidden;
   background-color: #aed9ea;
   padding: 1rem;
   box-sizing: border-box;
@@ -541,6 +565,7 @@ html, body, #root {
   align-items: center;
   z-index: 999;
 }
+
 
 .popup {
   background-color: #94c8dc;

@@ -3,56 +3,11 @@ import React, {useState, useEffect} from "react";
 import styles from '../../css/NPV.module.css'
 import Plot from 'react-plotly.js';
 
-const CompareGraph = ({scenarios, update, units, emissions}) => {
-    const [data, setData] = useState([]);
-    const year = new Date().getFullYear();
-
-    const [longterm, setLongterm] = useState(false);
-
-    const colors =["#000000", "#E69F00", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7"];
-
-    useEffect(() => {
-      let newData = [];
-      if (scenarios){
-        for (let i = 0; i < scenarios.length; i++){
-          if (scenarios[i].npvTotalValues){
-            let setY;
-            if (longterm){
-              setY = emissions ? (scenarios[i].npvTotalValues) : (scenarios[i].npvTotalValues.map(i => -i));
-            }
-            else{
-              setY = emissions ? (scenarios[i].npvTotalValues.slice(0, parseInt(scenarios[i].totalYears)+parseInt(scenarios[i].delay)+1)) : (scenarios[i].npvTotalValues.slice(0, parseInt(scenarios[i].totalYears)+parseInt(scenarios[i].delay)+1).map(i => -i));
-            }
-            let current = {
-              x: scenarios[i].npvTotalValues.map((_, i) => i+year).slice(0, setY.length),
-                y: setY,
-                type: 'line',
-                mode: 'lines+markers',
-                marker: { color: colors[i % 10] },
-                name: scenarios[i].name,
-                hovertemplate: `${scenarios[i].name}<br> Year: %{x}<br>${units} of CO<sub>2</sub>: %{y}<extra></extra>`,
-                hoverlabel: {
-                    align: 'left'
-                  }
-            }
-            newData.push(current);
-          }
-        }
-        setData(newData);
-      }
-    else{
-      setData([]);
-    }
-  }, [scenarios, update, emissions, units, longterm]);
-
-
-  function handleToggle(){
-    setLongterm(prev => !prev);
-  }
+const CompareGraph = ({data, handleToggle, longterm, units, emissions}) => {
 
     return (
         <div className = {styles.visualSection}>
-          <div>
+          <div >
             <Plot
         data={data}
         layout={{
@@ -89,7 +44,7 @@ const CompareGraph = ({scenarios, update, units, emissions}) => {
             standoff: 40
           },
           margin: { t: 40, l: 60, r: 40, b: 30 },
-            paper_bgcolor: '#aed9ea',
+          paper_bgcolor: 'transparent',
             plot_bgcolor: '#94c8dc',
             legend: {
               orientation: 'h',
@@ -104,11 +59,13 @@ const CompareGraph = ({scenarios, update, units, emissions}) => {
         config={{ responsive: true}}
       /></div><div className = {styles.longterm}>
       <label>
-          Include Long-Term Value:
+          Long-Term Value:
           <input 
       type="checkbox" id = "longterm" checked={longterm} onChange={handleToggle} />
       </label>
+
   </div>
+
         </div>
     );
 };

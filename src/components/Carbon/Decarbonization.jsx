@@ -77,10 +77,14 @@ const SelectScenario = ({scenarios, compare, setCompare, bau, setBAU}) => {
 };
 
 const Decarbonization = ({scenarios, units, update, bau, setBAU, compare, setCompare}) => {
-  const [breakEven, setBreakEven] = useState(null);
   const [data, setData] = useState([]);
   const year = new Date().getFullYear();
   const [showInfo, setShowInfo] = useState(false);
+
+  const [names, setNames] = useState(['', '', '', '', '']);
+  const [deffs, setDeffs] = useState(['', '', '', '', '']);
+  const [longs, setLongs] = useState(['', '', '', '', '']);
+  const [breakEvens, setBreakEvens] = useState(['', '', '', '', '']);
 
   const [longterm, setLongterm] = useState(false);
 
@@ -90,6 +94,10 @@ const Decarbonization = ({scenarios, units, update, bau, setBAU, compare, setCom
 
     useEffect(() => {
       let newData = [];
+      let newNames = [];
+      let newDeffs = []
+      let newLongs = [];
+      let newBreakEvens = [];
 
       if (compare && bau && bau?.npvTotalValues && compare[0]?.npvTotalValues){
         let bauVals = [...bau.npvTotalValues];
@@ -98,32 +106,25 @@ const Decarbonization = ({scenarios, units, update, bau, setBAU, compare, setCom
           let npvVals = [...compare[i].npvTotalValues];
           let diff = [];
 
-          let maxIndex;
+          let longIndex = Math.min(300, npvVals.length, bauVals.length);
 
-          if (longterm){
-            maxIndex = Math.min(300, npvVals.length, bauVals.length);
-          }
-          else{
-            maxIndex = parseInt(compare[i].totalYears)+parseInt(compare[i].delay)+1;
-          }
-          console.log(compare[i]);
+          let shortIndex = parseInt(compare[i].totalYears)+parseInt(compare[i].delay)+1;
           
           for (let j = 0; j < parseInt(compare[i].delay); j++){
             diff.push(0);
           }
           
-          for (let j = parseInt(compare[i].delay); j < maxIndex; j++){
+          for (let j = parseInt(compare[i].delay); j < longIndex; j++){
             const npvVal = parseFloat(npvVals[j]) || 0;
             const bauVal = parseFloat(bauVals[j]) || 0;
             const difference = -(npvVal - bauVal);
             diff.push(+difference.toFixed(10));
           }
-
           
 
           let current = {
-              x: diff.map((_, k) => k+year),
-                y: diff,
+              x: longterm ? diff.map((_, k) => k+year) : diff.slice(0, shortIndex).map((_, k) => k+year),
+                y: longterm ? diff : diff.slice(0, shortIndex),
                 type: 'line',
                 mode: 'lines+markers',
                 name: compare[i].name,
@@ -131,35 +132,56 @@ const Decarbonization = ({scenarios, units, update, bau, setBAU, compare, setCom
                 hovertemplate: `${compare[i].name} </br>Year: %{x}<br>${units} of CO<sub>2</sub>: %{y}<extra></extra>`,
             }
 
-          newData.push(current)
+          newData.push(current);
+          newNames.push(compare[i].name);
+          newDeffs.push(diff.slice(0, shortIndex).at(-1).toFixed(2));
+          newLongs.push(diff.at(-1).toFixed(2));
+          newBreakEvens.push(findBreakeven(diff));
         }
         setData(newData);
+        setNames([...newNames, ...Array(Math.max(0, 5 - newNames.length)).fill('')]);
+        setDeffs([...newDeffs, ...Array(Math.max(0, 5 - newDeffs.length)).fill('')]);
+        setLongs([...newLongs, ...Array(Math.max(0, 5 - newLongs.length)).fill('')]);
+        setBreakEvens([...newBreakEvens, ...Array(Math.max(0, 5 - newBreakEvens.length)).fill('')]);
       }
     else{
       setData([]);
+      setNames(['', '', '', '', '']);
+      setDeffs(['', '', '', '', '']);
+      setLongs(['', '', '', '', '']);
+      setBreakEvens(['', '', '', '', '']);
     }
   }, [compare, bau, units, update, longterm]);
 
  function findBreakeven(diff) {
     if (diff){
+      if (Math.min(...diff) >= 0){
+        let xZero = 0;
+        return xZero.toFixed(2);
+      }
       let found = false;
+      let lastFound;
       for (let i = 0; i < diff.length - 1; i++) {
           const y1 = diff[i];
           const y2 = diff[i + 1];
   
-          if ((y1 < 0 && y2 > 0) || (y1 > 0 && y2 < 0)) {
+          if ((y1 < 0 && y2 > 0)) {
               const x1 = i;
               const x2 = i + 1;
   
               let xZero = x1 + (0 - y1) * (x2 - x1) / (y2 - y1) + year;
-              setBreakEven(xZero);
+              lastFound = xZero.toFixed(2);
               found = true;
           }
       }
       if(!found){
-          setBreakEven(null);
+          return 'N/A';
+      }
+      else{
+        return lastFound;
       }
     }
+    return 'N/A'
   }
 
   function handleToggle(){
@@ -172,6 +194,7 @@ const Decarbonization = ({scenarios, units, update, bau, setBAU, compare, setCom
                             </span> Visualizing Effective Decarbonization</h2>
         <SelectScenario scenarios = {scenarios} compare = {compare} setCompare = {setCompare} bau = {bau} setBAU = {setBAU} setDeff = {setDeff}/>
         
+        <div className = {styles.compareCols}>
         <div className = {styles.visualSection}>
       
             <div> 
@@ -212,8 +235,8 @@ const Decarbonization = ({scenarios, units, update, bau, setBAU, compare, setCom
             xanchor: 'center'
           },
           margin: { t: 40, l: 60, r: 40, b: 30 },
-            paper_bgcolor: '#aed9ea',
-            plot_bgcolor: '#94c8dc',
+          paper_bgcolor: 'transparent',
+          plot_bgcolor: '#94c8dc',
             legend: {
               orientation: 'h',
               x: 0,
@@ -228,11 +251,57 @@ const Decarbonization = ({scenarios, units, update, bau, setBAU, compare, setCom
       /> </div>
       <div className = {styles.longterm}>
         <label>
-            Include Long-Term Value:
+            Long-Term Value:
             <input 
         type="checkbox" id = "longterm" checked={longterm} onChange={handleToggle} />
         </label>
     </div>
+        </div>
+        <div className = {styles.visualSection}>
+            <h3 className = {styles.visualHeader}>
+            D<sub>Eff</sub> Comparison Table ({units})
+        </h3>
+
+          <Plot
+      data={[
+        {
+          type: 'table',
+          columnwidth: [90, 70, 100, 90],
+          header: {
+            values: [['<b>Scenario</b>'], [`<b>D<sub>Eff</sub></b>`], [`<b>Long-Term D<sub>Eff</sub></b>`], [`<b>Breakeven</b>`]],
+            align: 'center',
+            line: { width: 1, color: 'black' },
+            fill: { color: 'lightgrey' },
+            font: { family: 'Arial', size: 16, color: 'black' }
+          },
+          cells: {
+            values: [
+              names,
+              deffs,
+              longs,
+              breakEvens
+            ],
+            align: 'center',
+            height: 30,
+            line: { color: 'black', width: 1 },
+            fill: { color: ['white', 'white', 'white'] },
+            font: { family: 'Arial', size: 14, color: 'black' }
+          }
+        }
+      ]}
+      layout={{
+        margin: { t: 10, b: 10, r: 10, l: 10 },
+        paper_bgcolor: 'transparent',
+        plot_bgcolor: 'transparent',
+      }}
+      config={{
+        responsive: true,
+      }}
+      useResizeHandler={true}
+      style={{ width: "100%", height: "100%" }}
+    />
+
+        </div>
         </div>
         {showInfo && (
                 <div className={styles.overlay}>

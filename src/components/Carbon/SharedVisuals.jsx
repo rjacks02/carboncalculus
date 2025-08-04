@@ -2,6 +2,7 @@ import React, {useState, useEffect, useRef} from "react";
 import styles from '../../css/NPV.module.css';
 
 import CompareGraph from './CompareGraph';
+import CompareTable from "./CompareTable";
 
 const SelectScenarios = ({scenarios, selected, setSelected, update }) => {
     const [isOpen, setIsOpen] = useState(true);
@@ -34,7 +35,7 @@ const SelectScenarios = ({scenarios, selected, setSelected, update }) => {
                   checked={selected.some(sel => sel.createdAt === option.createdAt)}
                   onChange={() => toggleOption(option)}
                 />
-                {ind === 0 ? `(BAU) ${option.name}` : option.name}
+                {option.name}
               </label>
             ))}
           </div>
@@ -45,13 +46,91 @@ const SelectScenarios = ({scenarios, selected, setSelected, update }) => {
 
 const SharedVisuals = ({scenarioData, selected, setSelected, update, units, emissions}) => {
 
+  const [data, setData] = useState([]);
+  const [names, setNames] = useState(['', '', '', '', '']);
+  const [npvs, setNPVs] = useState(['', '', '', '', '']);
+  const [longTerms, setLongTerms] = useState(['', '', '', '', '']);
+  const year = new Date().getFullYear();
+  const [showInfo, setShowInfo] = useState(false);
+
+  const [longterm, setLongterm] = useState(false);
+
+  const colors =["#000000", "#E69F00", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7"];
+
+  useEffect(() => {
+    let newData = [];
+    let newNames = [];
+    let newNPVs = [];
+    let newLongTerms = [];
+
+    if (selected){
+      for (let i = 0; i < selected.length; i++){
+        if (selected[i].npvTotalValues){
+          let shortY, longY;
+
+          longY = emissions ? (selected[i].npvTotalValues) : (selected[i].npvTotalValues.map(i => -i));
+          newLongTerms.push(longY.at(-1).toFixed(2));
+
+          shortY = emissions ? (selected[i].npvTotalValues.slice(0, parseInt(selected[i].totalYears)+parseInt(selected[i].delay)+1)) : (selected[i].npvTotalValues.slice(0, parseInt(selected[i].totalYears)+parseInt(selected[i].delay)+1).map(i => -i));
+          newNPVs.push(shortY.at(-1).toFixed(2));
+
+          let current = {
+            x: selected[i].npvTotalValues.map((_, i) => i+year).slice(0, longterm ? longY.length : shortY.length),
+              y: longterm ? longY : shortY,
+              type: 'line',
+              mode: 'lines+markers',
+              marker: { color: colors[i % 10] },
+              name: selected[i].name,
+              hovertemplate: `${selected[i].name}<br> Year: %{x}<br>${units} of CO<sub>2</sub>: %{y}<extra></extra>`,
+              hoverlabel: {
+                  align: 'left'
+                }
+          }
+          newData.push(current);
+          newNames.push(selected[i].name);
+        }
+      }
+      setData(newData);
+      setNames([...newNames, ...Array(Math.max(0, 5 - newNames.length)).fill('')]);
+      setNPVs([...newNPVs, ...Array(Math.max(0, 5 - newNPVs.length)).fill('')]);
+      setLongTerms([...newLongTerms, ...Array(Math.max(0, 5 - newLongTerms.length)).fill('')]);
+    }
+  else{
+    setData([]);
+    setNames(['', '', '', '', '']);
+    setNPVs(['', '', '', '', '']);
+    setLongTerms(['', '', '', '', '']);
+  }
+}, [selected, update, emissions, units, longterm]);
+
+
+function handleToggle(){
+  setLongterm(prev => !prev);
+}
     
     return (
         <div className = {styles.section}>
-            <h2 className = {styles.sectionTitle} >Comparing Results and Visualizations</h2>
+            <h2 className = {styles.sectionTitle} ><span className = {styles.info}><i class="material-icons" onClick = {() => {setShowInfo(true);}}>info_outline</i>
+                            </span>Visualizing Net Present Value of CO<sub>2</sub></h2>
             <SelectScenarios scenarios = {scenarioData} selected = {selected} setSelected = {setSelected}/>
-            <CompareGraph scenarios ={selected} update = {update} units = {units} emissions = {emissions}/>
+            <div className = {styles.compareCols}>
+              <CompareGraph data ={data} handleToggle = {handleToggle} longterm = {longterm} units = {units} emissions = {emissions}/>
+              <CompareTable names = {names} npvs = {npvs} longTerms = {longTerms} units = {units}/>
+            </div>
+            {showInfo && (
+                <div className={styles.overlay}>
+                    <div className={styles.popup}>
+                    <h2>NPV<sub>CO<sub>2</sub></sub></h2>
+                    <p>This is the cumulative net discounted CO2 emitted into the atmosphere per your scenario, valued from the perspective of emissions today. For example, at a 3.355% annual discount rate, 1 ton of CO2 emitted annually, indefinitely, has a net present value (NPV_CO_2) of 30.8 tons of CO2 emitted only once, today. The term “value” here is a proxy for “impact,” as quantity emitted, when those emissions occur, and the rate at which those emissions dissipate all contribute to the impact that CO2 in the atmosphere has on global radiative forcing (the greenhouse effect, global average temperature increase).</p>
+                        <div className = {styles.popup2Container}> 
+                            <button className = {styles.popupButton} onClick={() => {setShowInfo(false);}}>Close</button>
+                            <button className = {styles.popupButton} onClick={() => {setShowInfo(false);}}>Read More</button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
+        
     );
 };
 

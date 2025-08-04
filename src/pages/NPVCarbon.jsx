@@ -472,40 +472,6 @@ const NPV = () => {
     <div>
       <Header setPage = {setPage}/>
 
-      {(localStorage.getItem("startingPopup") === null || localStorage.getItem("startingPopup") === "true") && newOpen && (
-        <div className={styles.overlay}>
-          <div className={styles.popup}>
-            <h2>Welcome to the Carbon Calculus Calculator!</h2>
-            <p> <br/> </p>
-            <p>If this is your first time, we highly recommend viewing our tutorial and/or FAQs before beginning your calculations. </p>
-            <p> <br/> </p>
-            <label>
-              Don't Show This Again:
-              <input type="checkbox" checked={!showAgain} onChange={handleToggle} />
-            </label>
-            <div className = {styles.popup2Container}> 
-              <button className = {styles.popupButton} onClick={() => {
-                if (!showAgain){
-                  localStorage.setItem("startingPopup", false);
-                }
-                else {
-                  localStorage.setItem("startingPopup", true);
-                }
-                setNewOpen(false);}}>Open Calculator</button>
-              <button className = {styles.popupButton} onClick={() => {
-                if (!showAgain){
-                  localStorage.setItem("startingPopup", false);
-                }
-                else {
-                  localStorage.setItem("startingPopup", true);
-                }
-                setNewOpen(false);
-                setPage('faqs')}}>View Tutorial/FAQs</button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {page === 'npv' && vertical && (
         <div className = {styles.mainContainer}>
           <div style={{ height: '80vh'}}>
@@ -548,7 +514,7 @@ const NPV = () => {
                 </div>
               </div>
               {(currentScenarios?.length > 0) && (<div>
-              <Calculator key={`${index}-${units}`} vertical = {vertical} scenario = {currentScenarios[index]} saveToStorage = {saveToStorage} updateScenario = {updateScenario} units = {units}/>
+              <Calculator key={`${index}-${units}`} vertical = {vertical} scenario = {currentScenarios[index]} saveToStorage = {saveToStorage} updateScenario = {updateScenario} units = {units} newOpen = {newOpen}/>
               <Visuals scenarioData = {currentScenarios} index = {index} units = {units} delay = {parseInt(currentScenarios[index].delay)} vertical = {vertical} emissions = {emissions}/>
               <SharedVisuals scenarioData = {currentScenarios} selected = {selected} setSelected = {setSelected} update = {update} units = {units} emissions = {emissions}/>
               <Decarbonization scenarios = {currentScenarios} units = {units} update = {update} bau = {bau} setBAU = {setBAU} compare = {compare} setCompare = {setCompare}/></div>)}
@@ -644,7 +610,7 @@ const NPV = () => {
                 </div>
               </div>
               {(currentScenarios?.length > 0) && (<div><div className = {styles.horizontal}>
-                <Calculator key={`${index}-${units}`} vertical = {vertical} scenario = {currentScenarios[index]} saveToStorage = {saveToStorage} updateScenario = {updateScenario} units = {units}/>
+                <Calculator key={`${index}-${units}`} vertical = {vertical} scenario = {currentScenarios[index]} saveToStorage = {saveToStorage} updateScenario = {updateScenario} units = {units} newOpen = {newOpen}/>
                 <Visuals scenarioData = {currentScenarios} index = {index} units = {units} delay = {parseInt(currentScenarios[index].delay)} vertical = {vertical} emissions = {emissions}/>
               </div>
               <SharedVisuals scenarioData = {currentScenarios} selected = {selected} setSelected = {setSelected} update = {update} units = {units} emissions = {emissions}/>
@@ -699,6 +665,40 @@ const NPV = () => {
       {page === 'saved' && (<Saved addScenario = {addScenario} setPage = {setPage}/>)}
 
       {page === 'faqs' && (<FAQS/>)}
+
+      {(localStorage.getItem("startingPopup") === null || localStorage.getItem("startingPopup") === "true") && newOpen && (
+        <div className={styles.overlay}>
+          <div className={styles.popup}>
+            <h2>Welcome to the Carbon Calculus Calculator!</h2>
+            <p> <br/> </p>
+            <p>If this is your first time, we highly recommend viewing our tutorial and/or FAQs before beginning your calculations. </p>
+            <p> <br/> </p>
+            <label>
+              Don't Show This Again:
+              <input type="checkbox" checked={!showAgain} onChange={handleToggle} />
+            </label>
+            <div className = {styles.popup2Container}> 
+              <button className = {styles.popupButton} onClick={() => {
+                if (!showAgain){
+                  localStorage.setItem("startingPopup", false);
+                }
+                else {
+                  localStorage.setItem("startingPopup", true);
+                }
+                setNewOpen(false);}}>Open Calculator</button>
+              <button className = {styles.popupButton} onClick={() => {
+                if (!showAgain){
+                  localStorage.setItem("startingPopup", false);
+                }
+                else {
+                  localStorage.setItem("startingPopup", true);
+                }
+                setNewOpen(false);
+                setPage('faqs')}}>View Tutorial/FAQs</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div> 
   );
 };
