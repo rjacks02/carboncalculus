@@ -79,12 +79,14 @@ const SelectScenario = ({scenarios, compare, setCompare, bau, setBAU}) => {
 const Decarbonization = ({scenarios, units, update, bau, setBAU, compare, setCompare}) => {
   const [data, setData] = useState([]);
   const year = new Date().getFullYear();
+  const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
   const [showInfo, setShowInfo] = useState(false);
 
   const [names, setNames] = useState(['', '', '', '', '']);
   const [deffs, setDeffs] = useState(['', '', '', '', '']);
   const [longs, setLongs] = useState(['', '', '', '', '']);
   const [breakEvens, setBreakEvens] = useState(['', '', '', '', '']);
+  const [IRRs, setIRRs] = useState(['', '', '', '', '']);
 
   const [longterm, setLongterm] = useState(false);
 
@@ -98,6 +100,8 @@ const Decarbonization = ({scenarios, units, update, bau, setBAU, compare, setCom
       let newDeffs = []
       let newLongs = [];
       let newBreakEvens = [];
+      let newIRRs = [];
+      let curBreak;
 
       if (compare && bau && bau?.npvTotalValues && compare[0]?.npvTotalValues){
         let bauVals = [...bau.npvTotalValues];
@@ -106,7 +110,7 @@ const Decarbonization = ({scenarios, units, update, bau, setBAU, compare, setCom
           let npvVals = [...compare[i].npvTotalValues];
           let diff = [];
 
-          let longIndex = Math.min(300, npvVals.length, bauVals.length);
+          let longIndex = Math.min(101, npvVals.length, bauVals.length);
 
           let shortIndex = parseInt(compare[i].totalYears)+parseInt(compare[i].delay)+1;
           
@@ -121,6 +125,19 @@ const Decarbonization = ({scenarios, units, update, bau, setBAU, compare, setCom
             diff.push(+difference.toFixed(10));
           }
           
+          let fullBreak = findBreakeven(diff);
+
+          if (fullBreak !== 'N/A'){
+            console.log(fullBreak);
+            curBreak = (fullBreak - year).toFixed(2);
+            let monthVal = fullBreak - Math.floor(fullBreak);
+            let monthInd = Math.floor(monthVal * 12);
+            let yearVal = parseInt(fullBreak)
+            fullBreak = months[monthInd] + ' ' + yearVal;
+          }
+          else{
+            curBreak = 'N/A';
+          }
 
           let current = {
               x: longterm ? diff.map((_, k) => k+year) : diff.slice(0, shortIndex).map((_, k) => k+year),
@@ -129,20 +146,28 @@ const Decarbonization = ({scenarios, units, update, bau, setBAU, compare, setCom
                 mode: 'lines+markers',
                 name: compare[i].name,
                 marker: { color: colors[i%7] },
-                hovertemplate: `${compare[i].name} </br>Year: %{x}<br>${units} of CO<sub>2</sub>: %{y}<extra></extra>`,
+                hovertemplate: `${compare[i].name} </br>Year: %{x}<br>${units} of CO<sub>2</sub>: %{y}<br>Breakeven: ${fullBreak}<extra></extra>`,
             }
 
           newData.push(current);
           newNames.push(compare[i].name);
           newDeffs.push(diff.slice(0, shortIndex).at(-1).toFixed(2));
           newLongs.push(diff.at(-1).toFixed(2));
-          newBreakEvens.push(findBreakeven(diff));
+
+          newBreakEvens.push(curBreak);
+          if (curBreak === 'N/A' || parseFloat(curBreak) === 0 ){
+            newIRRs.push('N/A');
+          }
+          else{
+            newIRRs.push(IRR(compare[i], bau, shortIndex-1));
+          }
         }
         setData(newData);
         setNames([...newNames, ...Array(Math.max(0, 5 - newNames.length)).fill('')]);
         setDeffs([...newDeffs, ...Array(Math.max(0, 5 - newDeffs.length)).fill('')]);
         setLongs([...newLongs, ...Array(Math.max(0, 5 - newLongs.length)).fill('')]);
         setBreakEvens([...newBreakEvens, ...Array(Math.max(0, 5 - newBreakEvens.length)).fill('')]);
+        setIRRs([...newIRRs, ...Array(Math.max(0, 5 - newIRRs.length)).fill('')]);
       }
     else{
       setData([]);
@@ -150,13 +175,14 @@ const Decarbonization = ({scenarios, units, update, bau, setBAU, compare, setCom
       setDeffs(['', '', '', '', '']);
       setLongs(['', '', '', '', '']);
       setBreakEvens(['', '', '', '', '']);
+      setIRRs(['', '', '', '', '']);
     }
   }, [compare, bau, units, update, longterm]);
 
  function findBreakeven(diff) {
     if (diff){
       if (Math.min(...diff) >= 0){
-        let xZero = 0;
+        let xZero = year;
         return xZero.toFixed(2);
       }
       let found = false;
@@ -170,7 +196,7 @@ const Decarbonization = ({scenarios, units, update, bau, setBAU, compare, setCom
               const x2 = i + 1;
   
               let xZero = x1 + (0 - y1) * (x2 - x1) / (y2 - y1) + year;
-              lastFound = xZero.toFixed(2);
+              lastFound = xZero;
               found = true;
           }
       }
@@ -183,6 +209,48 @@ const Decarbonization = ({scenarios, units, update, bau, setBAU, compare, setCom
     }
     return 'N/A'
   }
+
+  function IRR(c, b, ind) {
+    let min = 0.0;
+    let max = 1.0;
+    let guess = 0;
+    let NPV = 0;
+    let epsilon = 0.000001;
+    let maxIterations = 1000;
+    let iter = 0;
+
+    let up = -(parseFloat(c.upfrontEmissions)-parseFloat(b.upfrontEmissions));
+    let vals = [+up];
+
+    for (let i = 0; i < ind; i++){
+      let difference = -(parseFloat(c.yearlyValuesRef.current[i]) - parseFloat(b.yearlyValuesRef.current[i]));
+      vals.push(+difference);
+    }
+  
+    while (iter < maxIterations) {
+      guess = (min + max) / 2;
+      NPV = 0;
+  
+      for (let i = 0; i < vals.length; i++) {
+        NPV += vals[i] / Math.pow(1 + guess, i);
+      }
+  
+      if (Math.abs(NPV) < epsilon) {
+        return (guess * 100).toFixed(2) + '%';
+      }
+  
+      if (NPV > 0) {
+        min = guess;
+      } else {
+        max = guess;
+      }
+  
+      iter++;
+    }
+
+    return 'N/A';
+  }
+
 
   function handleToggle(){
     setLongterm(prev => !prev);
@@ -266,20 +334,21 @@ const Decarbonization = ({scenarios, units, update, bau, setBAU, compare, setCom
       data={[
         {
           type: 'table',
-          columnwidth: [90, 70, 100, 90],
+          columnwidth: [90, 60, 100, 70, 60],
           header: {
-            values: [['<b>Scenario</b>'], [`<b>D<sub>Eff</sub></b>`], [`<b>Long-Term D<sub>Eff</sub></b>`], [`<b>Breakeven</b>`]],
+            values: [['<b>Scenario</b>'], [`<b>D<sub>Eff</sub></b>`], [`<b>Long-Term D<sub>Eff</sub></b>`], [`<b>Breakeven</b>`], [`<b>IRR</b>`]],
             align: 'center',
             line: { width: 1, color: 'black' },
             fill: { color: 'lightgrey' },
-            font: { family: 'Arial', size: 16, color: 'black' }
+            font: { family: 'Arial', size: 15, color: 'black' }
           },
           cells: {
             values: [
               names,
               deffs,
               longs,
-              breakEvens
+              breakEvens,
+              IRRs
             ],
             align: 'center',
             height: 30,

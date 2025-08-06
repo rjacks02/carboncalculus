@@ -158,6 +158,7 @@ html, body, #root {
   grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
   gap: 0;
   overflow-y: clip;
+  padding-top: 2%;
 }
 
 .horizontal > * {
@@ -240,6 +241,7 @@ html, body, #root {
   box-sizing: border-box;
   gap: 0.5rem;
   overflow-x: hidden;
+  overflow-y: hidden;
 }
 
 .sectionHorizontal {
@@ -563,7 +565,7 @@ html, body, #root {
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 999;
+  z-index: 9999999;
 }
 
 
@@ -586,7 +588,6 @@ html, body, #root {
 
 .popupButton{
   background-color: #aed9ea;
-
   cursor: pointer;
   margin: auto;
   font-size: 1.2rem;
@@ -832,6 +833,61 @@ html, body, #root {
   margin-top: 1.5rem;
 }
 
+.mainRibbonContainer {
+  position: sticky;
+  top: 0;
+  background: #94c8dc;
+  z-index: 999999;
+  padding: 1rem;
+  display: flex;
+  gap: 5%;
+  border-bottom: .3rem solid #5c99b7;
+}
+
+.mainRibbonButton {
+  width: fit-content;
+  min-width: 10%;
+  position: relative;
+  padding: 0.5rem 1rem;
+  background: #2e7c53;
+  color: white;
+  font-size: 1.2vw;
+  cursor: pointer;
+  border-radius: 6px;
+  text-align: center;
+}
+
+.ribbonContent {
+  display: none;
+  position: absolute;
+  top: 100%;
+  width: 100%;
+  left: 0;
+  background: #f9f9f9;
+  color: black;
+  font-size: 1.2vw;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+  z-index: 100;
+  border-radius: 6px;
+}
+
+.ribbonContent a:hover{
+  background-color: #e0f3ec;
+}
+
+.ribbonContent a {
+  display: block;
+  padding: 0.8rem 1rem;
+}
+
+.mainRibbonButton:hover .ribbonContent {
+  display: block;
+}
+
+.scrollTarget {
+  scroll-margin-top: 40px;
+}
+
 .mainTabsContainer{
   display: grid;
   grid-template-columns: auto;
@@ -1025,7 +1081,7 @@ html, body, #root {
   grid-template-columns: 1fr 1fr;
   margin-bottom: 0;
   gap: 2%;
-  margin-top: 3%;
+  margin-top: 50px;
 }
 
 

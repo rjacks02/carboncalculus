@@ -186,8 +186,8 @@ useEffect(() => {
 
         let cleaned = val.replace(/[^0-9]/g, '');
 
-        if (parseInt(cleaned)+parseInt(delay) > 300){
-            cleaned = String(300-parseInt(delay));
+        if (parseInt(cleaned)+parseInt(delay) > 100){
+            cleaned = String(100-parseInt(delay));
         }
 
         if (cleaned.startsWith('0') && cleaned !== '0') {
@@ -208,8 +208,8 @@ useEffect(() => {
 
         let cleaned = val.replace(/[^0-9]/g, '');
 
-        if (parseInt(cleaned)+parseInt(totalYears) > 300){
-            cleaned = String(300-parseInt(totalYears));
+        if (parseInt(cleaned)+parseInt(totalYears) > 100){
+            cleaned = String(100-parseInt(totalYears));
         }
 
         if (cleaned.startsWith('0') && cleaned !== '0') {
@@ -234,10 +234,10 @@ useEffect(() => {
         else{
             yearlyValuesRef.current = [...advancedValuesRef.current]
         }
-        const baseValues = yearlyValuesRef.current.slice(0, Math.min(300, parseInt(totalYears)));
+        const baseValues = yearlyValuesRef.current.slice(0, Math.min(100, parseInt(totalYears)));
 
           const lastVal = baseValues[baseValues.length - 1];
-          const extendedVals = Array(300 - baseValues.length-parseInt(delay)).fill(lastVal);
+          const extendedVals = Array(100 - baseValues.length-parseInt(delay)).fill(lastVal);
           return [...baseValues, ...extendedVals];
       };
 
@@ -247,7 +247,7 @@ useEffect(() => {
 
 
     const renderYears = () => {
-        const maxIndex = Math.min(300, parseInt(totalYears));
+        const maxIndex = Math.min(100, parseInt(totalYears));
 
         if (activeTab === 'Basic'){
             if (!basicValuesRef.current[0]) {
@@ -269,7 +269,7 @@ useEffect(() => {
           return (
             <div>
                 <div className = {styles.inputCenter}>Annual CO<sub>2</sub> Emissions <br/>({units}/Year):</div>
-                <BasicYear startYear = {Math.min(1+parseInt(delay), 300)} endYear = {Math.min(maxIndex+parseInt(delay), 300)} value={basicValuesRef.current[0]} />
+                <BasicYear startYear = {Math.min(1+parseInt(delay), 100)} endYear = {Math.min(maxIndex+parseInt(delay), 100)} value={basicValuesRef.current[0]} />
             </div>
           );
         } else {
@@ -407,10 +407,6 @@ useEffect(() => {
                     </div>
                 </div>
             </div>
-            <div className = {styles.cols}>
-            {localStorage.getItem("scenario-" + createdAt) && (<button className = {styles.npvButton} onClick = {() => {setShowPopup(true); setSave(true);}}><span>Save</span></button>)}
-            <button className = {styles.npvButton} onClick = {() => {setShowPopup(true); setSaveAs(true);}}><span>Save As...</span></button>
-            </div>
         </div>)}
 
         {!vertical && (<div className = {styles.section}>
@@ -534,10 +530,6 @@ useEffect(() => {
                         </div>
                     </div>
                 </div>
-            </div>
-            <div className = {styles.cols}>
-            {localStorage.getItem("scenario-" + createdAt) && (<button className = {styles.npvButton} onClick = {() => {setShowPopup(true); setSave(true);}}><span>Save</span></button>)}
-            <button className = {styles.npvButton} onClick = {() => {setShowPopup(true); setSaveAs(true);}}><span>Save As...</span></button>
             </div>
         </div>)}
 
