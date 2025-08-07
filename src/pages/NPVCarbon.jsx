@@ -55,6 +55,8 @@ const NPV = () => {
   const [save, setSave] = useState(false); //show save as popup if saving edited scenario
   const [saveAs, setSaveAs] = useState(false); //show save as popup if saving edited scenario
   const [newName, setNewName] = useState(''); //setting new name for a 'save as' scenario
+  const [autoSave, setAutoSave] = useState(localStorage.getItem('autoSave') || true);
+  //const [currentlyOpen, setCurrentlyOpen] = useState(localStorage.getItem('currentlyOpen') || []);
 
 
   //comparing scenarios
@@ -85,7 +87,7 @@ const NPV = () => {
       }
 
       //fully update the scenario
-      updateScenario(updated.name, updated.upfrontEmissions, updated.discountRate, updated.totalYears, updated.yearlyValuesRef, updated.longTerm, updated.activeTab, updated.delay, getFullYearlyValues(updated), i)
+      updateScenario(updated.name, updated.createdAt, updated.upfrontEmissions, updated.discountRate, updated.totalYears, updated.yearlyValuesRef, updated.longTerm, updated.activeTab, updated.delay, getFullYearlyValues(updated), i)
     }
   }
 
@@ -106,7 +108,7 @@ const NPV = () => {
       }
 
       //fully update the scenario
-      updateScenario(updated.name, updated.upfrontEmissions, updated.discountRate, updated.totalYears, updated.yearlyValuesRef, updated.longTerm, updated.activeTab, updated.delay, getFullYearlyValues(updated), i)
+      updateScenario(updated.name, updated.createdAt, updated.upfrontEmissions, updated.discountRate, updated.totalYears, updated.yearlyValuesRef, updated.longTerm, updated.activeTab, updated.delay, getFullYearlyValues(updated), i)
     }
   }
 
@@ -457,7 +459,7 @@ const NPV = () => {
   }
 
   //update scenario based on new values
-  function updateScenario(name, upfrontEmissions, discountRate, totalYears, yearlyValuesRef, longTerm, activeTab, delay, fullYears, i = index) {
+  function updateScenario(name, createdAt, upfrontEmissions, discountRate, totalYears, yearlyValuesRef, longTerm, activeTab, delay, fullYears, i = index) {
     let updatedScenario = calculateNPV(upfrontEmissions, fullYears, discountRate, delay, totalYears, longTerm, i);
     const fullScenario = {
       ...updatedScenario,
@@ -482,6 +484,9 @@ const NPV = () => {
     updateSelected(fullScenario);
     updateCompare(fullScenario);
     updateBAU(fullScenario);
+    if (autoSave){
+      saveToStorage(name, createdAt, upfrontEmissions, discountRate, totalYears, yearlyValuesRef, longTerm, activeTab, delay);
+    }
   }
 
   //updates an already saved scenario in local storage
@@ -536,6 +541,7 @@ const NPV = () => {
                   <div className={styles.ribbonContent}>
                       {localStorage.getItem("scenario-" + currentScenarios[index]?.createdAt) && (<a onClick = {() => {setNewName(currentScenarios[index].name); setSave(true);}}><span>Save</span></a>)}
                       <a onClick={() => {setNewName(currentScenarios[index].name); setSaveAs(true);}}>Save As...</a>
+                      <a onClick={() => {setAutoSave(prev => {let newValue = !prev; localStorage.setItem("autoSave", JSON.stringify(newValue)); return newValue;});}}>AutoSave {autoSave ? <i className='	fa fa-check'></i> : ''}</a>
                     </div>
                 </div>
                 <div className = {styles.mainRibbonButton} onClick = {duplicateScenario}>
@@ -682,6 +688,7 @@ const NPV = () => {
                   <div className={styles.ribbonContent}>
                       {localStorage.getItem("scenario-" + currentScenarios[index]?.createdAt) && (<a onClick = {() => {setNewName(currentScenarios[index].name); setSave(true);}}><span>Save</span></a>)}
                       <a onClick={() => {setNewName(currentScenarios[index].name); setSaveAs(true);}}>Save As...</a>
+                      <a onClick={() => {setAutoSave(prev => {let newValue = !prev; localStorage.setItem("autoSave", JSON.stringify(newValue)); return newValue;});}}>AutoSave {autoSave ? <i className='	fa fa-check'></i> : ''}</a>
                     </div>
                 </div>
                 <div className = {styles.mainRibbonButton} onClick = {duplicateScenario}>

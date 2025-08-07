@@ -242,7 +242,7 @@ useEffect(() => {
       };
 
     useEffect(() => {
-        updateScenario(scenarioName, upfrontEmissions, discountRate, totalYears, { current: getFullYearlyValues() }, longTerm, activeTab, delay, getFullYearlyValues());
+        updateScenario(scenarioName, createdAt, upfrontEmissions, discountRate, totalYears, { current: getFullYearlyValues() }, longTerm, activeTab, delay, getFullYearlyValues());
     }, [update, activeTab]);
 
 
