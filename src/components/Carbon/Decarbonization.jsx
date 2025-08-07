@@ -9,7 +9,9 @@ const SelectScenario = ({scenarios, compare, setCompare, bau, setBAU}) => {
   const dropdownRef = useRef();
 
   const toggleOptionBAU = (option) => {
-    if (bau && bau.createdAt === option.createdAt){
+    console.log(bau);
+    console.log(option);
+    if (bau && bau.openedAt === option.openedAt){
       setBAU({})
     }
     else{
@@ -19,9 +21,9 @@ const SelectScenario = ({scenarios, compare, setCompare, bau, setBAU}) => {
 
   const toggleOptionCompare = (option) => {
     setCompare((prev) => {
-      const exists = prev.some((o) => o.createdAt === option.createdAt);
+      const exists = prev.some((o) => o.openedAt === option.openedAt);
       return exists
-        ? prev.filter((o) => o.createdAt !== option.createdAt)
+        ? prev.filter((o) => o.openedAt !== option.openedAt)
         : [...prev, option];
     });
   };
@@ -38,10 +40,10 @@ const SelectScenario = ({scenarios, compare, setCompare, bau, setBAU}) => {
       {isOpen && (
         <div className={styles.SelectContent}>
           {scenarios.map((option, ind) => (
-            <label className={styles.multiSelectItem} key={option.createdAt}>
+            <label className={styles.multiSelectItem} key={option.openedAt}>
               <input
                 type="checkbox"
-                checked={bau && bau.createdAt === option.createdAt}
+                checked={bau && bau.openedAt === option.openedAt}
                 onChange={() => toggleOptionBAU(option)}
               />
               {option.name}
@@ -60,10 +62,10 @@ const SelectScenario = ({scenarios, compare, setCompare, bau, setBAU}) => {
       {isOpen && (
         <div className={styles.SelectContent}>
           {scenarios.map((option, ind) => (
-            <label className={styles.multiSelectItem} key={option.createdAt}>
+            <label className={styles.multiSelectItem} key={option.openedAt}>
               <input
                 type="checkbox"
-                checked={compare.some(sel => sel.createdAt === option.createdAt)}
+                checked={compare.some(sel => sel.openedAt === option.openedAt)}
                 onChange={() => toggleOptionCompare(option)}
               />
               {option.name}
@@ -92,7 +94,8 @@ const Decarbonization = ({scenarios, units, update, bau, setBAU, compare, setCom
 
   const [deff, setDeff] = useState(0);
 
-    const colors =["#000000", "#E69F00", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7"];
+  const colors =["#000000", "#E69F00", "#009E73", "#F0E442", "#0072B2", "#CC79A7"];
+  const pales = ["#D3D3D3", "#F4D7A8", "#BFEAD9", "#F9F4B0", "#BFDBEC", "#EFC3DC"];
 
     useEffect(() => {
       let newData = [];
@@ -145,7 +148,7 @@ const Decarbonization = ({scenarios, units, update, bau, setBAU, compare, setCom
                 type: 'line',
                 mode: 'lines+markers',
                 name: compare[i].name,
-                marker: { color: colors[i%7] },
+                marker: { color: colors[i%6] },
                 hovertemplate: `${compare[i].name} </br>Year: %{x}<br>${units} of CO<sub>2</sub>: %{y}<br>Breakeven: ${fullBreak}<extra></extra>`,
             }
 
@@ -258,7 +261,7 @@ const Decarbonization = ({scenarios, units, update, bau, setBAU, compare, setCom
 
     return (
       <div className = {styles.section}>
-        <h2 className = {styles.sectionTitle}><span className = {styles.info}><i class="material-icons" onClick = {() => {setShowInfo(true);}}>info_outline</i>
+        <h2 className = {styles.sectionTitle}><span className = {styles.info}><i className="material-icons" onClick = {() => {setShowInfo(true);}}>info_outline</i>
                             </span> Visualizing Effective Decarbonization</h2>
         <SelectScenario scenarios = {scenarios} compare = {compare} setCompare = {setCompare} bau = {bau} setBAU = {setBAU} setDeff = {setDeff}/>
         
@@ -339,7 +342,7 @@ const Decarbonization = ({scenarios, units, update, bau, setBAU, compare, setCom
             values: [['<b>Scenario</b>'], [`<b>D<sub>Eff</sub></b>`], [`<b>Long-Term D<sub>Eff</sub></b>`], [`<b>Breakeven</b>`], [`<b>IRR</b>`]],
             align: 'center',
             line: { width: 1, color: 'black' },
-            fill: { color: 'lightgrey' },
+            fill: { color: '#94c8dc' },
             font: { family: 'Arial', size: 15, color: 'black' }
           },
           cells: {

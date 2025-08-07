@@ -136,6 +136,7 @@ html, body, #root {
   margin-top: 0;
   background-color: #94c8dc;
   overflow-y: scroll;
+  overflow-x: hidden;
   height: 95%;
   border: .5rem solid #2e7c53;
 }
@@ -839,14 +840,16 @@ html, body, #root {
   background: #94c8dc;
   z-index: 999999;
   padding: 1rem;
-  display: flex;
-  gap: 5%;
+  display: grid;
+  grid-auto-flow: column;
+  gap: 3%;
+  width: 97%;
+  padding-right: 3%;
   border-bottom: .3rem solid #5c99b7;
 }
 
 .mainRibbonButton {
-  width: fit-content;
-  min-width: 10%;
+  width: 90%;
   position: relative;
   padding: 0.5rem 1rem;
   background: #2e7c53;
@@ -873,12 +876,18 @@ html, body, #root {
 
 .ribbonContent a:hover{
   background-color: #e0f3ec;
+  border-radius: 6px;
 }
 
 .ribbonContent a {
   display: block;
   padding: 0.8rem 1rem;
 }
+
+.mainRibbonButton:hover  {
+  background-color: #49bd7f;
+}
+
 
 .mainRibbonButton:hover .ribbonContent {
   display: block;

@@ -11,9 +11,9 @@ const SelectScenarios = ({scenarios, selected, setSelected, update }) => {
 
     const toggleOption = (option) => {
       setSelected((prev) => {
-        const exists = prev.some((o) => o.createdAt === option.createdAt);
+        const exists = prev.some((o) => o.openedAt === option.openedAt);
         return exists
-          ? prev.filter((o) => o.createdAt !== option.createdAt)
+          ? prev.filter((o) => o.openedAt !== option.openedAt)
           : [...prev, option];
       });
     };
@@ -29,10 +29,10 @@ const SelectScenarios = ({scenarios, selected, setSelected, update }) => {
         {isOpen && (
           <div className={styles.SelectContent}>
             {scenarios.map((option, ind) => (
-              <label className={styles.multiSelectItem} key={option.createdAt}>
+              <label className={styles.multiSelectItem} key={option.openedAt}>
                 <input
                   type="checkbox"
-                  checked={selected.some(sel => sel.createdAt === option.createdAt)}
+                  checked={selected.some(sel => sel.openedAt === option.openedAt)}
                   onChange={() => toggleOption(option)}
                 />
                 {option.name}
@@ -52,16 +52,37 @@ const SharedVisuals = ({scenarioData, selected, setSelected, update, units, emis
   const [longTerms, setLongTerms] = useState(['', '', '', '', '']);
   const year = new Date().getFullYear();
   const [showInfo, setShowInfo] = useState(false);
+  const [tableColors, setTableColors] = useState(['white', 'white', 'white', 'white', 'white']);
 
   const [longterm, setLongterm] = useState(false);
 
-  const colors =["#000000", "#E69F00", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7"];
+  const colors =["#000000", "#E69F00", "#009E73", "#F0E442", "#0072B2", "#CC79A7"];
+  const pales = ["#D3D3D3", "#F4D7A8", "#BFEAD9", "#F9F4B0", "#BFDBEC", "#EFC3DC"];
 
   useEffect(() => {
+    let npvsSorted = [];
+
+    for (let i = 0; i < scenarioData.length; i++){
+      if (scenarioData[i].npvTotalValues){
+        npvsSorted.push([parseFloat(scenarioData[i]?.npvTotalValues.at(-1)), scenarioData[i].openedAt]);
+      }
+    }
+
+    npvsSorted.sort((a, b) => b[0] - a[0]);
+
+    let sortedColors = {};
+    let curColor = 0;
+
+    for (let i = 0; i < npvsSorted.length; i++){
+      sortedColors[npvsSorted[i][1]] = [colors[curColor%6], pales[curColor%6]];
+      curColor++;
+    }
+
     let newData = [];
     let newNames = [];
     let newNPVs = [];
     let newLongTerms = [];
+    let newColors = [];
 
     if (selected){
       for (let i = 0; i < selected.length; i++){
@@ -79,7 +100,7 @@ const SharedVisuals = ({scenarioData, selected, setSelected, update, units, emis
               y: longterm ? longY : shortY,
               type: 'line',
               mode: 'lines+markers',
-              marker: { color: colors[i % 10] },
+              marker: { color: sortedColors[selected[i].openedAt][0] },
               name: selected[i].name,
               hovertemplate: `${selected[i].name}<br> Year: %{x}<br>${units} of CO<sub>2</sub>: %{y}<extra></extra>`,
               hoverlabel: {
@@ -88,12 +109,14 @@ const SharedVisuals = ({scenarioData, selected, setSelected, update, units, emis
           }
           newData.push(current);
           newNames.push(selected[i].name);
+          newColors.push(sortedColors[selected[i].openedAt][1]);
         }
       }
       setData(newData);
       setNames([...newNames, ...Array(Math.max(0, 5 - newNames.length)).fill('')]);
       setNPVs([...newNPVs, ...Array(Math.max(0, 5 - newNPVs.length)).fill('')]);
       setLongTerms([...newLongTerms, ...Array(Math.max(0, 5 - newLongTerms.length)).fill('')]);
+      setTableColors([...newColors,...Array(Math.max(0, 5 - newColors.length)).fill('white')])
     }
   else{
     setData([]);
@@ -101,7 +124,7 @@ const SharedVisuals = ({scenarioData, selected, setSelected, update, units, emis
     setNPVs(['', '', '', '', '']);
     setLongTerms(['', '', '', '', '']);
   }
-}, [selected, update, emissions, units, longterm]);
+}, [scenarioData, selected, update, emissions, units, longterm]);
 
 
 function handleToggle(){
@@ -110,12 +133,12 @@ function handleToggle(){
     
     return (
         <div className = {styles.section}>
-            <h2 className = {styles.sectionTitle} ><span className = {styles.info}><i class="material-icons" onClick = {() => {setShowInfo(true);}}>info_outline</i>
+            <h2 className = {styles.sectionTitle} ><span className = {styles.info}><i className="material-icons" onClick = {() => {setShowInfo(true);}}>info_outline</i>
                             </span>Visualizing Net Present Value of CO<sub>2</sub></h2>
             <SelectScenarios scenarios = {scenarioData} selected = {selected} setSelected = {setSelected}/>
             <div className = {styles.compareCols}>
               <CompareGraph data ={data} handleToggle = {handleToggle} longterm = {longterm} units = {units} emissions = {emissions}/>
-              <CompareTable names = {names} npvs = {npvs} longTerms = {longTerms} units = {units}/>
+              <CompareTable names = {names} npvs = {npvs} longTerms = {longTerms} colors = {tableColors} units = {units}/>
             </div>
             {showInfo && (
                 <div className={styles.overlay}>

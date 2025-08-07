@@ -310,7 +310,7 @@ useEffect(() => {
                             value = {upfrontEmissions} 
                             onChange={(e) => setupfrontEmissions(e.target.value)}
                             onBlur = {(e) => {setupfrontEmissions(handleValueChange(e.target.value)); setUpdate(prev => !prev);}} 
-                            type="text" inputMode="decimal"/><div className = {styles.info}><i class="material-icons" onClick = {() => {setInfoKey('Upfront Emissions'); setShowInfo(true);}}>info_outline</i></div>
+                            type="text" inputMode="decimal"/><div className = {styles.info}><i className="material-icons" onClick = {() => {setInfoKey('Upfront Emissions'); setShowInfo(true);}}>info_outline</i></div>
                     </div>
                     <div className = {styles.totalYears}>
                         <label htmlFor="discountRate">Discount Rate (%): </label>
@@ -329,7 +329,7 @@ useEffect(() => {
                             value = {discountRate} 
                             onChange={(e) => setDiscountRate(e.target.value)} 
                             onBlur = {(e) => {setDiscountRate(handlePercentChange(e.target.value)); setUpdate(prev => !prev);}}
-                            type="text" inputMode="decimal"/><div className = {styles.info}><i class="material-icons" onClick = {() => {setInfoKey('Discount Rate'); setShowInfo(true);}}>info_outline</i></div>
+                            type="text" inputMode="decimal"/><div className = {styles.info}><i className="material-icons" onClick = {() => {setInfoKey('Discount Rate'); setShowInfo(true);}}>info_outline</i></div>
                     </div>
                     <div className = {styles.totalYears}>
                             <label htmlFor="totalYears">Total Years: </label>
@@ -349,7 +349,7 @@ useEffect(() => {
                                 onChange={(e) => setTotalYears(e.target.value)} 
                                 onBlur = {(e) => {setTotalYears(handleIntegerChange(e.target.value)); setUpdate(prev => !prev);}}
                                 type="text" 
-                                inputMode="decimal"/><div className = {styles.info}><i class="material-icons" onClick = {() => {setInfoKey('Total Years'); setShowInfo(true);}}>info_outline</i></div>
+                                inputMode="decimal"/><div className = {styles.info}><i className="material-icons" onClick = {() => {setInfoKey('Total Years'); setShowInfo(true);}}>info_outline</i></div>
                     </div>
                     <div className = {styles.totalYears}>
                             <label htmlFor="delay">Years Delayed: </label>
@@ -369,7 +369,7 @@ useEffect(() => {
                                 onChange={(e) => setDelay(e.target.value)} 
                                 onBlur = {(e) => {setDelay(handleDelayChange(e.target.value)); setUpdate(prev => !prev);}}
                                 type="text" 
-                                inputMode="decimal"/><div className = {styles.info}><i class="material-icons" onClick = {() => {setInfoKey('Years Delayed'); setShowInfo(true);}}>info_outline</i></div>
+                                inputMode="decimal"/><div className = {styles.info}><i className="material-icons" onClick = {() => {setInfoKey('Years Delayed'); setShowInfo(true);}}>info_outline</i></div>
                     </div>
                     <div className = {styles.totalYears}>
                         <label>
@@ -386,7 +386,7 @@ useEffect(() => {
                             }
                         }}
                     type="checkbox" id = "longterm" checked={longTerm} onChange={handleToggle} />
-                        </label><div className = {styles.info}><i class="material-icons" onClick = {() => {setInfoKey('Long-Term Value'); setShowInfo(true);}}>info_outline</i></div>
+                        </label><div className = {styles.info}><i className="material-icons" onClick = {() => {setInfoKey('Long-Term Value'); setShowInfo(true);}}>info_outline</i></div>
                     </div>
                 </div>
                 <div>
@@ -433,7 +433,7 @@ useEffect(() => {
                             value = {upfrontEmissions} 
                             onChange={(e) => setupfrontEmissions(e.target.value)}
                             onBlur = {(e) => {setupfrontEmissions(handleValueChange(e.target.value)); setUpdate(prev => !prev);}} 
-                            type="text" inputMode="decimal"/><div className = {styles.info}><i class="material-icons" onClick = {() => {setInfoKey('Upfront Emissions'); setShowInfo(true);}}>info_outline</i>
+                            type="text" inputMode="decimal"/><div className = {styles.info}><i className="material-icons" onClick = {() => {setInfoKey('Upfront Emissions'); setShowInfo(true);}}>info_outline</i>
                             </div>
                     </div>
                     <div className = {styles.totalYears}>
@@ -453,7 +453,7 @@ useEffect(() => {
                             value = {discountRate} 
                             onChange={(e) => setDiscountRate(e.target.value)} 
                             onBlur = {(e) => {setDiscountRate(handlePercentChange(e.target.value)); setUpdate(prev => !prev);}}
-                            type="text" inputMode="decimal"/><div className = {styles.info}><i class="material-icons" onClick = {() => {setInfoKey('Discount Rate'); setShowInfo(true);}}>info_outline</i></div>
+                            type="text" inputMode="decimal"/><div className = {styles.info}><i className="material-icons" onClick = {() => {setInfoKey('Discount Rate'); setShowInfo(true);}}>info_outline</i></div>
                     </div>
                     <div className = {styles.totalYears}>
                             <label htmlFor="totalYears">Total Years: </label>
@@ -473,7 +473,7 @@ useEffect(() => {
                                 onChange={(e) => setTotalYears(e.target.value)} 
                                 onBlur = {(e) => {setTotalYears(handleIntegerChange(e.target.value)); setUpdate(prev => !prev);}}
                                 type="text" 
-                                inputMode="decimal"/><div className = {styles.info}><i class="material-icons" onClick = {() => {setInfoKey('Total Years'); setShowInfo(true);}}>info_outline</i></div>
+                                inputMode="decimal"/><div className = {styles.info}><i className="material-icons" onClick = {() => {setInfoKey('Total Years'); setShowInfo(true);}}>info_outline</i></div>
                     </div>
                     <div className = {styles.totalYears}>
                             <label htmlFor="delay">Years Delayed: </label>
@@ -493,7 +493,7 @@ useEffect(() => {
                                 onChange={(e) => setDelay(e.target.value)} 
                                 onBlur = {(e) => {setDelay(handleDelayChange(e.target.value)); setUpdate(prev => !prev);}}
                                 type="text" 
-                                inputMode="decimal"/><div className = {styles.info}><i class="material-icons" onClick = {() => {setInfoKey('Years Delayed'); setShowInfo(true);}}>info_outline</i></div>
+                                inputMode="decimal"/><div className = {styles.info}><i className="material-icons" onClick = {() => {setInfoKey('Years Delayed'); setShowInfo(true);}}>info_outline</i></div>
                     </div>
                     <div className = {styles.totalYears}>
                         <label>
@@ -510,7 +510,7 @@ useEffect(() => {
                             }
                         }}
                         type="checkbox" id = "longterm" checked={longTerm} onChange={handleToggle} />
-                        </label><div className = {styles.info}><i class="material-icons" onClick = {() => {setInfoKey('Long-Term Value'); setShowInfo(true);}}>info_outline</i></div>
+                        </label><div className = {styles.info}><i className="material-icons" onClick = {() => {setInfoKey('Long-Term Value'); setShowInfo(true);}}>info_outline</i></div>
                     </div>
                 </div>
                 <div>

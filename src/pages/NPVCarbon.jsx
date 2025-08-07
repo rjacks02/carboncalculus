@@ -14,8 +14,8 @@ import Decarbonization from "../components/Carbon/Decarbonization";
 
 const NPV = () => {
   //base scenarios in kilograms and metric tons
-  const baseScenarioKG = {createdAt: Date.now(), name: '', upfrontEmissions: '3000.00', discountRate: '3.355', totalYears: '5', yearlyValuesRef: {current: ['1000.00', '1000.00', '1000.00', '1000.00', '1000.00']}, longTerm: false, activeTab: 'Basic', delay: '0', units: 'Kilograms'};
-  const baseScenarioMT = {createdAt: Date.now(), name: '', upfrontEmissions: '3.0', discountRate: '3.355', totalYears: '5', yearlyValuesRef: {current: ['1.0', '1.0', '1.0', '1.0', '1.0']}, longTerm: false, activeTab: 'Basic', delay: '0', units: 'Metric Tons'};
+  const baseScenarioKG = {createdAt: Date.now(), openedAt: Date.now(), name: '', upfrontEmissions: '3000.00', discountRate: '3.355', totalYears: '5', yearlyValuesRef: {current: ['1000.00', '1000.00', '1000.00', '1000.00', '1000.00']}, longTerm: false, activeTab: 'Basic', delay: '0', units: 'Kilograms'};
+  const baseScenarioMT = {createdAt: Date.now(), openedAt: Date.now(), name: '', upfrontEmissions: '3.0', discountRate: '3.355', totalYears: '5', yearlyValuesRef: {current: ['1.0', '1.0', '1.0', '1.0', '1.0']}, longTerm: false, activeTab: 'Basic', delay: '0', units: 'Metric Tons'};
 
 
   //main variables
@@ -119,6 +119,15 @@ const NPV = () => {
     ref?.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
+  const handleDragEnd = (result) => {
+    if (!result.destination) return;
+  
+    const reordered = Array.from(currentScenarios);
+    const [removed] = reordered.splice(result.source.index, 1);
+    reordered.splice(result.destination.index, 0, removed);
+    setCurrentScenarios(reordered);
+  };
+
 
   //extend yearly values to 100 years (long term value)
   const getFullYearlyValues = (s) => {
@@ -193,7 +202,8 @@ const NPV = () => {
           activeTab: currentScenarios[index].activeTab,
           delay: currentScenarios[index].delay,
           units: currentScenarios[index].units,
-          createdAt: Date.now()
+          createdAt: Date.now(),
+          openedAt: Date.now(),
         };
 
         const newList = [...prev, newScenario];
@@ -220,7 +230,8 @@ const NPV = () => {
             activeTab: baseScenarioKG.activeTab,
             delay: baseScenarioKG.delay,
             units: 'Kilograms',
-            createdAt: Date.now()
+            createdAt: Date.now(),
+            openedAt: Date.now()
           };
         }
         else{
@@ -234,7 +245,8 @@ const NPV = () => {
             activeTab: baseScenarioMT.activeTab,
             delay: baseScenarioMT.delay,
             units: 'Metric Tons',
-            createdAt: Date.now()
+            createdAt: Date.now(),
+            openedAt: Date.now()
           };
         }
       } 
@@ -257,7 +269,8 @@ const NPV = () => {
             activeTab: data.activeTab,
             delay: data.delay,
             createdAt: data.createdAt,
-            units: 'Kilograms'
+            units: 'Kilograms',
+            openedAt: Date.now(),
           };
         }
         else {
@@ -271,7 +284,8 @@ const NPV = () => {
             activeTab: data.activeTab,
             delay: data.delay,
             createdAt: data.createdAt,
-            units: 'Kilograms'
+            units: 'Kilograms',
+            openedAt: Date.now()
           };
         }
         
@@ -288,11 +302,11 @@ const NPV = () => {
   //remove scenario at ind
   function removeScenario(ind) {
     //if scenario was selected for comparison graph or decarvonization, remove it
-    setSelected(prev => prev.filter(sel => sel.createdAt !== currentScenarios[ind].createdAt));
-    setCompare(prev => prev.filter(sel => sel.createdAt !== currentScenarios[ind].createdAt));
+    setSelected(prev => prev.filter(sel => sel.openedAt !== currentScenarios[ind].openedAt));
+    setCompare(prev => prev.filter(sel => sel.openedAt !== currentScenarios[ind].openedAt));
 
     //if scenario was selected as BAU for decarbonization graph, remove it
-    if (bau.createdAt === currentScenarios[ind].createdAt){
+    if (bau.openedAt === currentScenarios[ind].openedAt){
       setBAU({});
     }
 
@@ -407,12 +421,12 @@ const NPV = () => {
   //update selected if scenario changed
   function updateSelected(option){
     setSelected((prev) => {
-      const exists = prev.some((o) => o.createdAt === option.createdAt); //if scenario is in selected
+      const exists = prev.some((o) => o.openedAt === option.openedAt); //if scenario is in selected
       
       if (!exists) return prev;
     
       return prev.map((o) =>
-        o.createdAt === option.createdAt ? option : o //replace old version of scenario with updated
+        o.openedAt === option.openedAt ? option : o //replace old version of scenario with updated
       );
     });
     
@@ -421,12 +435,12 @@ const NPV = () => {
 
   function updateCompare(option){
     setCompare((prev) => {
-      const exists = prev.some((o) => o.createdAt === option.createdAt); //if scenario is in compare
+      const exists = prev.some((o) => o.openedAt === option.openedAt); //if scenario is in compare
       
       if (!exists) return prev;
     
       return prev.map((o) =>
-        o.createdAt === option.createdAt ? option : o //replace old version of scenario with updated
+        o.openedAt === option.openedAt ? option : o //replace old version of scenario with updated
       );
     });
 
@@ -435,7 +449,7 @@ const NPV = () => {
 
   //update compare (decarbonization) if scenario changed
   function updateBAU(option){
-    if (bau.createdAt === option.createdAt){ //if scenario is in compare, update it
+    if (bau.openedAt === option.openedAt){ //if scenario is in compare, update it
       setBAU(option)
     }
 
@@ -486,7 +500,7 @@ const NPV = () => {
             <div className={styles.mainTabsContainer}>
               {currentScenarios.map((scenario, ind) => {          
                 return (
-                <div key={scenario.createdAt}
+                <div key={scenario.openedAt}
                   className={`${styles.mainTab} ${index === ind ? styles.selected : ''}`}
                   onClick={() => setIndex(ind)}>
                   <div className = {styles.mainTabName}> {scenario.name} </div>
@@ -497,12 +511,12 @@ const NPV = () => {
                     else{
                       removeScenario(ind);
                     }}}>
-                    <i class='fas fa-close'></i>
+                    <i className='fas fa-close'></i>
                     <span className={styles.tooltipRemove}>Remove Scenario</span>
                   </div>
                 </div>)
               })}
-              <div className = {styles.addTab} onClick = {() => {setAddPopup(true);}}><i class='	fas fa-plus'></i>
+              <div className = {styles.addTab} onClick = {() => {setAddPopup(true);}}><i className='	fas fa-plus'></i>
                 <span className={styles.tooltipOpen}>Open Scenario</span>
               </div>
             </div>
@@ -524,25 +538,28 @@ const NPV = () => {
                       <a onClick={() => {setNewName(currentScenarios[index].name); setSaveAs(true);}}>Save As...</a>
                     </div>
                 </div>
+                <div className = {styles.mainRibbonButton} onClick = {duplicateScenario}>
+                  Duplicate Scenario
+                </div>
                 <div className = {styles.mainRibbonButton}>
                   Switch Units
                   <div className={styles.ribbonContent}>
-                    <a onClick={() => {setUnits(prev => {if (prev !== 'Kilograms'){convertToKilograms(); return 'Kilograms'} else{return prev}})}}>Kilograms  {units === 'Kilograms' ? <i class='	fa fa-check'></i> : ''}</a>
-                    <a onClick={() => {setUnits(prev => {if (prev !== 'Metric Tons'){convertToTons(); return 'Metric Tons'} else{return prev}})}}>Metric Tons  {units === 'Metric Tons' ? <i class='	fa fa-check'></i> : ''}</a>
+                    <a onClick={() => {setUnits(prev => {if (prev !== 'Kilograms'){convertToKilograms(); return 'Kilograms'} else{return prev}})}}>Kilograms  {units === 'Kilograms' ? <i className='	fa fa-check'></i> : ''}</a>
+                    <a onClick={() => {setUnits(prev => {if (prev !== 'Metric Tons'){convertToTons(); return 'Metric Tons'} else{return prev}})}}>Metric Tons  {units === 'Metric Tons' ? <i className='	fa fa-check'></i> : ''}</a>
                   </div>
                 </div>
                 <div className = {styles.mainRibbonButton}>
                   Switch Layout
                   <div className={styles.ribbonContent}>
-                      <a onClick={() => {setVertical(prev => {if (prev){return !prev} else{return prev}})}}>Horizontal  {!vertical ? <i class='	fa fa-check'></i> : ''}</a>
-                      <a onClick={() => {setVertical(prev => {if (!prev){ return !prev} else{return prev}})}}>Vertical  {vertical ? <i class='	fa fa-check'></i> : ''}</a>
+                      <a onClick={() => {setVertical(prev => {if (prev){return !prev} else{return prev}})}}>Horizontal  {!vertical ? <i className='	fa fa-check'></i> : ''}</a>
+                      <a onClick={() => {setVertical(prev => {if (!prev){ return !prev} else{return prev}})}}>Vertical  {vertical ? <i className='	fa fa-check'></i> : ''}</a>
                     </div>
                 </div>
                 <div className = {styles.mainRibbonButton}>
                   Change Mode
                   <div className={styles.ribbonContent}>
-                      <a onClick={() => {setEmissions(prev => {if (prev){return !prev} else{return prev}})}}>Reductions  {!emissions ? <i class='	fa fa-check'></i> : ''}</a>
-                      <a onClick={() => {setEmissions(prev => {if (!prev){ return !prev} else{return prev}})}}>Emissions  {emissions ? <i class='	fa fa-check'></i> : ''}</a>
+                      <a onClick={() => {setEmissions(prev => {if (prev){return !prev} else{return prev}})}}>Reductions  {!emissions ? <i className='	fa fa-check'></i> : ''}</a>
+                      <a onClick={() => {setEmissions(prev => {if (!prev){ return !prev} else{return prev}})}}>Emissions  {emissions ? <i className='	fa fa-check'></i> : ''}</a>
                     </div>
                 </div>
               </div>
@@ -630,7 +647,7 @@ const NPV = () => {
             {currentScenarios.map((scenario, ind) => {
                           
               return (
-                <div key={scenario.createdAt}
+                <div key={scenario.openedAt}
                   className={`${styles.mainTab} ${index === ind ? styles.selected : ''}`}
                   onClick={() => setIndex(ind)}>
                   <div className = {styles.mainTabName}> {scenario.name} </div>
@@ -641,12 +658,12 @@ const NPV = () => {
                     else{
                       removeScenario(ind);
                     }}}>
-                    <i class='fas fa-close'></i>
+                    <i className='fas fa-close'></i>
                     <span className={styles.tooltipRemove}>Remove Scenario</span>
                   </div>
                 </div>)
               })}
-              <div className = {styles.addTab} onClick = {() => {setAddPopup(true);}}><i class='	fas fa-plus'></i>
+              <div className = {styles.addTab} onClick = {() => {setAddPopup(true);}}><i className='	fas fa-plus'></i>
                 <span className={styles.tooltipOpen}>Open Scenario</span>
               </div>
             </div>
@@ -667,25 +684,28 @@ const NPV = () => {
                       <a onClick={() => {setNewName(currentScenarios[index].name); setSaveAs(true);}}>Save As...</a>
                     </div>
                 </div>
+                <div className = {styles.mainRibbonButton} onClick = {duplicateScenario}>
+                  Duplicate Scenario
+                </div>
                 <div className = {styles.mainRibbonButton}>
                   Switch Units
                   <div className={styles.ribbonContent}>
-                    <a onClick={() => {setUnits(prev => {if (prev !== 'Kilograms'){convertToKilograms(); return 'Kilograms'} else{return prev}})}}>Kilograms  {units === 'Kilograms' ? <i class='	fa fa-check'></i> : ''}</a>
-                    <a onClick={() => {setUnits(prev => {if (prev !== 'Metric Tons'){convertToTons(); return 'Metric Tons'} else{return prev}})}}>Metric Tons  {units === 'Metric Tons' ? <i class='	fa fa-check'></i> : ''}</a>
+                    <a onClick={() => {setUnits(prev => {if (prev !== 'Kilograms'){convertToKilograms(); return 'Kilograms'} else{return prev}})}}>Kilograms  {units === 'Kilograms' ? <i className='	fa fa-check'></i> : ''}</a>
+                    <a onClick={() => {setUnits(prev => {if (prev !== 'Metric Tons'){convertToTons(); return 'Metric Tons'} else{return prev}})}}>Metric Tons  {units === 'Metric Tons' ? <i className='	fa fa-check'></i> : ''}</a>
                   </div>
                 </div>
                 <div className = {styles.mainRibbonButton}>
                   Switch Layout
                   <div className={styles.ribbonContent}>
-                      <a onClick={() => {setVertical(prev => {if (prev){return !prev} else{return prev}})}}>Horizontal  {!vertical ? <i class='	fa fa-check'></i> : ''}</a>
-                      <a onClick={() => {setVertical(prev => {if (!prev){ return !prev} else{return prev}})}}>Vertical  {vertical ? <i class='	fa fa-check'></i> : ''}</a>
+                      <a onClick={() => {setVertical(prev => {if (prev){return !prev} else{return prev}})}}>Horizontal  {!vertical ? <i className='	fa fa-check'></i> : ''}</a>
+                      <a onClick={() => {setVertical(prev => {if (!prev){ return !prev} else{return prev}})}}>Vertical  {vertical ? <i className='	fa fa-check'></i> : ''}</a>
                     </div>
                 </div>
                 <div className = {styles.mainRibbonButton}>
                   Change Mode
                   <div className={styles.ribbonContent}>
-                      <a onClick={() => {setEmissions(prev => {if (prev){return !prev} else{return prev}})}}>Reductions  {!emissions ? <i class='	fa fa-check'></i> : ''}</a>
-                      <a onClick={() => {setEmissions(prev => {if (!prev){ return !prev} else{return prev}})}}>Emissions  {emissions ? <i class='	fa fa-check'></i> : ''}</a>
+                      <a onClick={() => {setEmissions(prev => {if (prev){return !prev} else{return prev}})}}>Reductions  {!emissions ? <i className='	fa fa-check'></i> : ''}</a>
+                      <a onClick={() => {setEmissions(prev => {if (!prev){ return !prev} else{return prev}})}}>Emissions  {emissions ? <i className='	fa fa-check'></i> : ''}</a>
                     </div>
                 </div>
               </div>
