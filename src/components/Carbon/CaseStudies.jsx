@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 import styles from '../../css/NPV.module.css'
 
-const Item = ({key_, setPage, setCaseStudy, openCaseStudy, refreshKeys}) => {
+const Item = ({key_, setPage, setCaseStudy, openCaseStudy, caseStudy, refreshKeys, badName, setBadName}) => {
     const navigate = useNavigate();
     const [info, setInfo] = useState({});
     const [deleteCase, setDeleteCase] = useState(false);
@@ -29,10 +29,15 @@ const Item = ({key_, setPage, setCaseStudy, openCaseStudy, refreshKeys}) => {
     }
 
     function renameCaseStudy(name){
-        const stored = JSON.parse(localStorage.getItem(key_));
-        localStorage.removeItem(key_);
-        localStorage.setItem('caseStudy-' + name, JSON.stringify(stored));
-        refreshKeys();
+        if (localStorage.getItem('caseStudy-'+name)){
+            setBadName(true);
+        }
+        else{
+            const stored = JSON.parse(localStorage.getItem(key_));
+            localStorage.removeItem(key_);
+            localStorage.setItem('caseStudy-' + name, JSON.stringify(stored));
+            refreshKeys();
+        }
     }
 
     return(
@@ -54,7 +59,7 @@ const Item = ({key_, setPage, setCaseStudy, openCaseStudy, refreshKeys}) => {
                 <div className = {styles.saveActionItem} onClick = {() => {setRename(true);}}>Rename</div>
                 <div className = {styles.saveActionItem} onClick = {() => {setDeleteCase(true);}}>Delete</div>
             </div>
-            {deleteCase && (
+            {deleteCase && caseStudy !== 'caseStudy-Default' && (
             <div className={styles.overlay}>
               <div className={styles.popup}>
               <h2>Are you sure you want to delete this case study? <br/> This will also delete all the scenarios within it.</h2>
@@ -65,7 +70,17 @@ const Item = ({key_, setPage, setCaseStudy, openCaseStudy, refreshKeys}) => {
               </div>
             </div>
           )}
-          {rename && (
+          {deleteCase && caseStudy === 'caseStudy-Default' && (
+            <div className={styles.overlay}>
+              <div className={styles.popup}>
+              <h2>In this version, the Default Case Study cannot be deleted.</h2>
+                <div className = {styles.popupContainer}> 
+                <button className = {styles.popupButton} onClick={() => {setDeleteCase(false);}}>OK</button>
+              </div>
+              </div>
+            </div>
+          )}
+          {rename && caseStudy !== 'caseStudy-Default' && (
                 <div className={styles.overlay}>
                     <div className={styles.popup}>
                     <h2>Enter a New Name for the Case Study:</h2>
@@ -80,6 +95,26 @@ const Item = ({key_, setPage, setCaseStudy, openCaseStudy, refreshKeys}) => {
                     </div>
                 </div>
             )}
+            {rename && caseStudy === 'caseStudy-Default' && (
+                <div className={styles.overlay}>
+                    <div className={styles.popup}>
+                    <h2>In this version, the Default Case Study cannot be renamed.</h2>
+                    <div className = {styles.popupContainer}> 
+                <button className = {styles.popupButton} onClick={() => {setRename(false);}}>OK</button>
+              </div>
+                    </div>
+                </div>
+            )}
+            {badName && (
+            <div className={styles.overlay}>
+              <div className={styles.popup}>
+              <h2>A case study with this name already exists, so the action could not be completed.</h2>
+                <div className = {styles.popupContainer}> 
+                <button className = {styles.popupButton} onClick={() => {setBadName(false);}}>OK</button>
+              </div>
+              </div>
+            </div>
+          )}
         </div>
     )
 }
@@ -89,6 +124,7 @@ const CaseStudies = ({setCaseStudy, addScenario, setPage, openCaseStudy}) => {
     const [addPopup, setAddPopup] = useState(false);
     const [newName, setNewName] = useState('');
     const [refreshCode, setRefreshCode] = useState(0);
+    const [badName, setBadName] = useState(false);
 
     useEffect(() => {
         if (Object.keys(localStorage).filter(k => k.startsWith("caseStudy-")).length === 0){
@@ -99,8 +135,13 @@ const CaseStudies = ({setCaseStudy, addScenario, setPage, openCaseStudy}) => {
 
 
     function newCaseStudy(name){
-        localStorage.setItem('caseStudy-' + name, JSON.stringify({openedAt: Date.now(), scenarios: Object.values([])}));
-        refreshKeys();
+        if (localStorage.getItem('caseStudy-'+name)){
+            setBadName(true);
+        }
+        else{
+            localStorage.setItem('caseStudy-' + name, JSON.stringify({openedAt: Date.now(), scenarios: Object.values([])}));
+            refreshKeys();
+        }
     }
 
     function refreshKeys() {
@@ -117,6 +158,8 @@ const CaseStudies = ({setCaseStudy, addScenario, setPage, openCaseStudy}) => {
         setLocalKeys(keyWithTimestamps);
         setRefreshCode(prev => prev+1);
     }
+
+    
 
     return (
         <div className = {styles.mainContainer}>
@@ -139,7 +182,7 @@ const CaseStudies = ({setCaseStudy, addScenario, setPage, openCaseStudy}) => {
                     Actions:
                 </div>
                 </div>
-                    {localKeys.map((key) => (<Item key={key+refreshCode} key_ = {key} setPage = {setPage} setCaseStudy = {setCaseStudy} openCaseStudy = {openCaseStudy} refreshKeys = {refreshKeys}/>))}
+                    {localKeys.map((key) => (<Item key={key+refreshCode} key_ = {key} setPage = {setPage} setCaseStudy = {setCaseStudy} openCaseStudy = {openCaseStudy} caseStudy = {key} refreshKeys = {refreshKeys} badName = {badName} setBadName={setBadName}/>))}
                     <div className = {styles.caseButtonWrapper}>
                         <button className = {styles.caseButton} onClick = {() => {setAddPopup(true);}}><span>+ Add New Case Study</span></button>
                     </div>
@@ -159,6 +202,16 @@ const CaseStudies = ({setCaseStudy, addScenario, setPage, openCaseStudy}) => {
                   </div>
                 </div>
               </div>
+          )}
+          {badName && (
+            <div className={styles.overlay}>
+              <div className={styles.popup}>
+              <h2>A case study with this name already exists, so the action could not be completed.</h2>
+                <div className = {styles.popupContainer}> 
+                <button className = {styles.popupButton} onClick={() => {setBadName(false);}}>OK</button>
+              </div>
+              </div>
+            </div>
           )}
           
         </div>

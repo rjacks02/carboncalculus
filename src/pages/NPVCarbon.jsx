@@ -23,7 +23,7 @@ const NPV = () => {
   const [currentScenarios, setCurrentScenarios] = useState([]); //list of all open scenarios
   const [caseStudy, setCaseStudy] = useState();
   const [index, setIndex] = useState(0); //current index based on tabs - which scenario to display
-  const [page, setPage] = useState('case study'); //what page to display: case studies, npv, saved, faqs
+  const [page, setPage] = useState('npv'); //what page to display: case studies, npv, saved, faqs
 
 
   //variables for calculating NPV for a scenario
@@ -65,6 +65,13 @@ const NPV = () => {
   const sharedVisualsRef = useRef(null);
   const decarbonizationRef = useRef(null);
 
+  useEffect(() => {
+    if (currentScenarios.length=== 0 && !caseStudy){
+      openCaseStudy('Default');
+      setCaseStudy('Default');
+    }
+  }, [currentScenarios, caseStudy])
+
   function updateCaseStudy(cur = currentScenarios) {
     if (caseStudy){
       let stored = JSON.parse(localStorage.getItem('caseStudy-' + caseStudy));
@@ -81,9 +88,16 @@ const NPV = () => {
 
   function openCaseStudy(caseName = caseStudy){
     let currentCase = JSON.parse(localStorage.getItem('caseStudy-' + caseName));
+    if (!currentCase){
+      localStorage.setItem('caseStudy-'+caseName, JSON.stringify({openedAt: Date.now(), scenarios: Object.values([])}));
+      currentCase = JSON.parse(localStorage.getItem('caseStudy-' + caseName));
+    }
+
     let scenarios = currentCase.scenarios;
+
     if (scenarios.length === 0){
       setCurrentScenarios([baseScenarioKG]);
+      console.log('huh');
     }
     else{
       let newScenarios = [];
