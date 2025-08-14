@@ -11,9 +11,9 @@ const SelectScenarios = ({scenarios, selected, setSelected, update }) => {
 
     const toggleOption = (option) => {
       setSelected((prev) => {
-        const exists = prev.some((o) => o.openedAt === option.openedAt);
+        const exists = prev.some((o) => o.createdAt === option.createdAt);
         return exists
-          ? prev.filter((o) => o.openedAt !== option.openedAt)
+          ? prev.filter((o) => o.createdAt !== option.createdAt)
           : [...prev, option];
       });
     };
@@ -29,10 +29,10 @@ const SelectScenarios = ({scenarios, selected, setSelected, update }) => {
         {isOpen && (
           <div className={styles.SelectContent}>
             {scenarios.map((option, ind) => (
-              <label className={styles.multiSelectItem} key={option.openedAt}>
+              <label className={styles.multiSelectItem} key={option.createdAt}>
                 <input
                   type="checkbox"
-                  checked={selected.some(sel => sel.openedAt === option.openedAt)}
+                  checked={selected.some(sel => sel.createdAt === option.createdAt)}
                   onChange={() => toggleOption(option)}
                 />
                 {option.name}
@@ -64,7 +64,7 @@ const SharedVisuals = ({scenarioData, selected, setSelected, update, units, emis
 
     for (let i = 0; i < scenarioData.length; i++){
       if (scenarioData[i].npvTotalValues){
-        npvsSorted.push([parseFloat(scenarioData[i]?.npvTotalValues.at(-1)), scenarioData[i].openedAt]);
+        npvsSorted.push([parseFloat(scenarioData[i]?.npvTotalValues.at(-1)), scenarioData[i].createdAt]);
       }
     }
 
@@ -100,7 +100,7 @@ const SharedVisuals = ({scenarioData, selected, setSelected, update, units, emis
               y: longterm ? longY : shortY,
               type: 'line',
               mode: 'lines+markers',
-              marker: { color: sortedColors[selected[i].openedAt][0] },
+              marker: { color: sortedColors[selected[i].createdAt][0] },
               name: selected[i].name,
               hovertemplate: `${selected[i].name}<br> Year: %{x}<br>${units} of CO<sub>2</sub>: %{y}<extra></extra>`,
               hoverlabel: {
@@ -109,20 +109,21 @@ const SharedVisuals = ({scenarioData, selected, setSelected, update, units, emis
           }
           newData.push(current);
           newNames.push(selected[i].name);
-          newColors.push(sortedColors[selected[i].openedAt][1]);
+          newColors.push(sortedColors[selected[i].createdAt][1]);
         }
       }
       setData(newData);
       setNames([...newNames, ...Array(Math.max(0, 5 - newNames.length)).fill('')]);
       setNPVs([...newNPVs, ...Array(Math.max(0, 5 - newNPVs.length)).fill('')]);
       setLongTerms([...newLongTerms, ...Array(Math.max(0, 5 - newLongTerms.length)).fill('')]);
-      setTableColors([...newColors,...Array(Math.max(0, 5 - newColors.length)).fill('white')])
+      setTableColors([...newColors,...Array(Math.max(0, 5 - newColors.length)).fill('white')]);
     }
   else{
     setData([]);
     setNames(['', '', '', '', '']);
     setNPVs(['', '', '', '', '']);
     setLongTerms(['', '', '', '', '']);
+    setTableColors(['white', 'white', 'white', 'white', 'white']);
   }
 }, [scenarioData, selected, update, emissions, units, longterm]);
 

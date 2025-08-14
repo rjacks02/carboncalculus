@@ -1,4 +1,4 @@
-import React, {useState, useRef} from "react"; //react imports
+import React, {useState, useRef, useEffect} from "react"; //react imports
 
 import styles from '../css/NPV.module.css' //styling imports
 
@@ -10,18 +10,20 @@ import Header from '../components/Header'
 import Saved from '../components/Saved'
 import SharedVisuals from '../components/Carbon/SharedVisuals'
 import Decarbonization from "../components/Carbon/Decarbonization";
+import CaseStudies from "../components/Carbon/CaseStudies";
 
 
 const NPV = () => {
   //base scenarios in kilograms and metric tons
-  const baseScenarioKG = {createdAt: Date.now(), openedAt: Date.now(), name: '', upfrontEmissions: '3000.00', discountRate: '3.355', totalYears: '5', yearlyValuesRef: {current: ['1000.00', '1000.00', '1000.00', '1000.00', '1000.00']}, longTerm: false, activeTab: 'Basic', delay: '0', units: 'Kilograms'};
-  const baseScenarioMT = {createdAt: Date.now(), openedAt: Date.now(), name: '', upfrontEmissions: '3.0', discountRate: '3.355', totalYears: '5', yearlyValuesRef: {current: ['1.0', '1.0', '1.0', '1.0', '1.0']}, longTerm: false, activeTab: 'Basic', delay: '0', units: 'Metric Tons'};
+  const baseScenarioKG = {createdAt: Date.now(), name: '', upfrontEmissions: '3000.00', discountRate: '3.355', totalYears: '5', yearlyValuesRef: {current: ['1000.00', '1000.00', '1000.00', '1000.00', '1000.00']}, longTerm: false, activeTab: 'Basic', delay: '0', units: 'Kilograms'};
+  const baseScenarioMT = {createdAt: Date.now(), name: '', upfrontEmissions: '3.0', discountRate: '3.355', totalYears: '5', yearlyValuesRef: {current: ['1.0', '1.0', '1.0', '1.0', '1.0']}, longTerm: false, activeTab: 'Basic', delay: '0', units: 'Metric Tons'};
 
 
   //main variables
-  const [currentScenarios, setCurrentScenarios] = useState([baseScenarioKG]); //list of all open scenarios
+  const [currentScenarios, setCurrentScenarios] = useState([]); //list of all open scenarios
+  const [caseStudy, setCaseStudy] = useState();
   const [index, setIndex] = useState(0); //current index based on tabs - which scenario to display
-  const [page, setPage] = useState('npv'); //what page to display: npv, saved, faqs
+  const [page, setPage] = useState('case study'); //what page to display: case studies, npv, saved, faqs
 
 
   //variables for calculating NPV for a scenario
@@ -41,11 +43,6 @@ const NPV = () => {
   const [vertical, setVertical] = useState(false); //set layout: vertical or horizontal
 
 
-  //adding scenarios
-  const [addPopup, setAddPopup] = useState(false); //show popup for adding new scenario
-  const [num, setNum] = useState(2); //number for creating new scenario
-
-
   //removing scenarios
   const [remove, setRemove] = useState(false); //show remove popup if scenario has been edited (delete, save, save as)
   const [toRemove, setToRemove] = useState(0); //save index of scenario to delete after saving
@@ -55,8 +52,6 @@ const NPV = () => {
   const [save, setSave] = useState(false); //show save as popup if saving edited scenario
   const [saveAs, setSaveAs] = useState(false); //show save as popup if saving edited scenario
   const [newName, setNewName] = useState(''); //setting new name for a 'save as' scenario
-  const [autoSave, setAutoSave] = useState(localStorage.getItem('autoSave') || true);
-  //const [currentlyOpen, setCurrentlyOpen] = useState(localStorage.getItem('currentlyOpen') || []);
 
 
   //comparing scenarios
@@ -69,6 +64,51 @@ const NPV = () => {
   const visualsRef = useRef(null);
   const sharedVisualsRef = useRef(null);
   const decarbonizationRef = useRef(null);
+
+  function updateCaseStudy(cur = currentScenarios) {
+    if (caseStudy){
+      let stored = JSON.parse(localStorage.getItem('caseStudy-' + caseStudy));
+      let timeStamps = [];
+      for (let i = 0; i < cur.length; i++){
+        if (cur[i].name){
+          timeStamps.push(cur[i].createdAt);
+        }
+      }
+      stored.scenarios = timeStamps;
+      localStorage.setItem('caseStudy-' + caseStudy, JSON.stringify(stored));
+    }
+  }
+
+  function openCaseStudy(caseName = caseStudy){
+    let currentCase = JSON.parse(localStorage.getItem('caseStudy-' + caseName));
+    let scenarios = currentCase.scenarios;
+    if (scenarios.length === 0){
+      setCurrentScenarios([baseScenarioKG]);
+    }
+    else{
+      let newScenarios = [];
+
+      for (let i = 0; i < scenarios.length; i++){
+        let data = JSON.parse(localStorage.getItem('scenario-' + scenarios[i]));
+        let scenario = {
+          name: data.name,
+          upfrontEmissions: data.upfrontEmissions,
+          discountRate: data.discountRate,
+          totalYears: data.totalYears,
+          yearlyValuesRef: { current: data.yearlyValues || [] },
+          longTerm: data.longTerm,
+          activeTab: data.activeTab,
+          delay: data.delay,
+          createdAt: data.createdAt,
+          units: 'Kilograms',
+        };
+        newScenarios.push(scenario);
+      }
+
+      setCurrentScenarios(newScenarios);
+      updateCaseStudy(newScenarios);
+    }
+  }
 
   //convert all current scenarios to kilograms
   function convertToKilograms(){
@@ -119,15 +159,6 @@ const NPV = () => {
 
   const scrollTo = (ref) => {
     ref?.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  };
-
-  const handleDragEnd = (result) => {
-    if (!result.destination) return;
-  
-    const reordered = Array.from(currentScenarios);
-    const [removed] = reordered.splice(result.source.index, 1);
-    reordered.splice(result.destination.index, 0, removed);
-    setCurrentScenarios(reordered);
   };
 
 
@@ -205,15 +236,14 @@ const NPV = () => {
           delay: currentScenarios[index].delay,
           units: currentScenarios[index].units,
           createdAt: Date.now(),
-          openedAt: Date.now(),
         };
 
         const newList = [...prev, newScenario];
-        setNum(n => n + 1);
         setIndex(newList.length - 1);
         return newList;
       });
   }
+  
   //opens new scenario
   function addScenario(toAdd) {
     setCurrentScenarios(prev => {
@@ -233,12 +263,11 @@ const NPV = () => {
             delay: baseScenarioKG.delay,
             units: 'Kilograms',
             createdAt: Date.now(),
-            openedAt: Date.now()
           };
         }
         else{
           newScenario = {
-            name: 'Scenario #' + num,
+            name: '',
             upfrontEmissions: baseScenarioMT.upfrontEmissions,
             discountRate: baseScenarioMT.discountRate,
             totalYears: baseScenarioMT.totalYears,
@@ -248,9 +277,9 @@ const NPV = () => {
             delay: baseScenarioMT.delay,
             units: 'Metric Tons',
             createdAt: Date.now(),
-            openedAt: Date.now()
           };
         }
+        
       } 
 
       //otherwise, retrieve saved data from local storage
@@ -272,7 +301,6 @@ const NPV = () => {
             delay: data.delay,
             createdAt: data.createdAt,
             units: 'Kilograms',
-            openedAt: Date.now(),
           };
         }
         else {
@@ -287,14 +315,13 @@ const NPV = () => {
             delay: data.delay,
             createdAt: data.createdAt,
             units: 'Kilograms',
-            openedAt: Date.now()
           };
         }
         
         setPage('npv');
       }
       const newList = [...prev, newScenario];
-      setNum(n => n + 1);
+      updateCaseStudy(newList);
       return newList;
     });
 
@@ -303,12 +330,12 @@ const NPV = () => {
 
   //remove scenario at ind
   function removeScenario(ind) {
-    //if scenario was selected for comparison graph or decarvonization, remove it
-    setSelected(prev => prev.filter(sel => sel.openedAt !== currentScenarios[ind].openedAt));
-    setCompare(prev => prev.filter(sel => sel.openedAt !== currentScenarios[ind].openedAt));
+    //if scenario was selected for comparison graph or decarbonization, remove it
+    setSelected(prev => prev.filter(sel => sel.createdAt !== currentScenarios[ind].createdAt));
+    setCompare(prev => prev.filter(sel => sel.createdAt !== currentScenarios[ind].createdAt));
 
     //if scenario was selected as BAU for decarbonization graph, remove it
-    if (bau.openedAt === currentScenarios[ind].openedAt){
+    if (bau.createdAt === currentScenarios[ind].createdAt){
       setBAU({});
     }
 
@@ -322,14 +349,15 @@ const NPV = () => {
     }
 
     setIndex(newIndex);
-
-    const newScenarios = currentScenarios.filter((_, i) => i !== ind);
-      
-    setCurrentScenarios(newScenarios);
-
-    if (newScenarios.length === 0){
-      setAddPopup(true);
-    }
+    localStorage.removeItem('scenario-'+currentScenarios[ind].createdAt);
+    
+    setCurrentScenarios(prev => {
+      const filtered = prev.filter((_, i) => i !== ind);
+      updateCaseStudy(filtered);
+      let newList = filtered.length > 0 ? filtered : (units === 'Kilograms' ? [baseScenarioKG] : [baseScenarioMT]);
+      return newList;
+    });
+    
   }
 
   //check if scenario has changed (if so, gives option to save before removing)
@@ -416,19 +444,20 @@ const NPV = () => {
     }
 
     //items saved as "scenario-time" where time is millisecond of creating/saving
-    localStorage.setItem("scenario-" + date, JSON.stringify({name: scenarioName, upfrontEmissions: initialEdited, discountRate: discountRate, totalYears: totalYears, yearlyValues: yearlyValsEdited, npvYearlyValues: npvValuesEdited, npvTotalValues: npvTotalEdited, npv: npvEdited, longTerm: longTerm, activeTab: activeTab, delay: delay, units: 'Kilograms', createdAt: date}));
+    if (scenarioName !== ""){
+      localStorage.setItem("scenario-" + date, JSON.stringify({name: scenarioName, upfrontEmissions: initialEdited, discountRate: discountRate, totalYears: totalYears, yearlyValues: yearlyValsEdited, npvYearlyValues: npvValuesEdited, npvTotalValues: npvTotalEdited, npv: npvEdited, longTerm: longTerm, activeTab: activeTab, delay: delay, units: 'Kilograms', createdAt: date}));
+    }
   }
-
 
   //update selected if scenario changed
   function updateSelected(option){
     setSelected((prev) => {
-      const exists = prev.some((o) => o.openedAt === option.openedAt); //if scenario is in selected
+      const exists = prev.some((o) => o.createdAt === option.createdAt); //if scenario is in selected
       
       if (!exists) return prev;
     
       return prev.map((o) =>
-        o.openedAt === option.openedAt ? option : o //replace old version of scenario with updated
+        o.createdAt === option.createdAt ? option : o //replace old version of scenario with updated
       );
     });
     
@@ -437,12 +466,12 @@ const NPV = () => {
 
   function updateCompare(option){
     setCompare((prev) => {
-      const exists = prev.some((o) => o.openedAt === option.openedAt); //if scenario is in compare
+      const exists = prev.some((o) => o.createdAt === option.createdAt); //if scenario is in compare
       
       if (!exists) return prev;
     
       return prev.map((o) =>
-        o.openedAt === option.openedAt ? option : o //replace old version of scenario with updated
+        o.createdAt === option.createdAt ? option : o //replace old version of scenario with updated
       );
     });
 
@@ -451,7 +480,7 @@ const NPV = () => {
 
   //update compare (decarbonization) if scenario changed
   function updateBAU(option){
-    if (bau.openedAt === option.openedAt){ //if scenario is in compare, update it
+    if (bau.createdAt === option.createdAt){ //if scenario is in compare, update it
       setBAU(option)
     }
 
@@ -477,6 +506,8 @@ const NPV = () => {
     setCurrentScenarios(prev => {
       const updated = [...prev];
       updated[i] = { ...fullScenario };
+      saveToStorage(name, createdAt, upfrontEmissions, discountRate, totalYears, yearlyValuesRef, longTerm, activeTab, delay);
+      updateCaseStudy(updated);
       return updated;
     });
   
@@ -484,9 +515,6 @@ const NPV = () => {
     updateSelected(fullScenario);
     updateCompare(fullScenario);
     updateBAU(fullScenario);
-    if (autoSave){
-      saveToStorage(name, createdAt, upfrontEmissions, discountRate, totalYears, yearlyValuesRef, longTerm, activeTab, delay);
-    }
   }
 
   //updates an already saved scenario in local storage
@@ -499,29 +527,28 @@ const NPV = () => {
     <div>
       <Header setPage = {setPage}/>
 
+      {page === 'case study' && (
+        <CaseStudies setCaseStudy = {setCaseStudy} setPage = {setPage} openCaseStudy = {openCaseStudy}/>
+      )}
+
       {page === 'npv' && vertical && (
         <div className = {styles.mainContainer}>
           <div style={{ height: '80vh'}}>
             <div className={styles.mainTabsContainer}>
               {currentScenarios.map((scenario, ind) => {          
                 return (
-                <div key={scenario.openedAt}
+                <div key={scenario.createdAt}
                   className={`${styles.mainTab} ${index === ind ? styles.selected : ''}`}
                   onClick={() => setIndex(ind)}>
                   <div className = {styles.mainTabName}> {scenario.name} </div>
                   <div className = {styles.x} onClick={(e) => {e.stopPropagation(); setToRemove(ind); 
-                    if (changed(ind)){
-                      setRemove(true);
-                    }
-                    else{
-                      removeScenario(ind);
-                    }}}>
+                    removeScenario(ind);}}>
                     <i className='fas fa-close'></i>
                     <span className={styles.tooltipRemove}>Remove Scenario</span>
                   </div>
                 </div>)
               })}
-              <div className = {styles.addTab} onClick = {() => {setAddPopup(true);}}><i className='	fas fa-plus'></i>
+              <div className = {styles.addTab} onClick = {() => {addScenario(null);}}><i className='	fas fa-plus'></i>
                 <span className={styles.tooltipOpen}>Open Scenario</span>
               </div>
             </div>
@@ -536,16 +563,8 @@ const NPV = () => {
                   <a onClick={() => scrollTo(decarbonizationRef)}>Decarbonization (D<sub>Eff</sub>)</a>
                     </div>
                 </div>
-                <div className = {styles.mainRibbonButton}>
-                  Save Scenario
-                  <div className={styles.ribbonContent}>
-                      {localStorage.getItem("scenario-" + currentScenarios[index]?.createdAt) && (<a onClick = {() => {setNewName(currentScenarios[index].name); setSave(true);}}><span>Save</span></a>)}
-                      <a onClick={() => {setNewName(currentScenarios[index].name); setSaveAs(true);}}>Save As...</a>
-                      <a onClick={() => {setAutoSave(prev => {let newValue = !prev; localStorage.setItem("autoSave", JSON.stringify(newValue)); return newValue;});}}>AutoSave {autoSave ? <i className='	fa fa-check'></i> : ''}</a>
-                    </div>
-                </div>
-                <div className = {styles.mainRibbonButton} onClick = {duplicateScenario}>
-                  Duplicate Scenario
+                <div className = {styles.mainRibbonButton} onClick = {() => {setPage('case study');}}>
+                  View Case Studies
                 </div>
                 <div className = {styles.mainRibbonButton}>
                   Switch Units
@@ -571,7 +590,7 @@ const NPV = () => {
               </div>
               {(currentScenarios?.length > 0) && (<div>
                 <div ref={calculatorRef} className = {styles.scrollTarget}>
-                  <Calculator key={`${index}-${units}`} vertical = {vertical} scenario = {currentScenarios[index]} saveToStorage = {saveToStorage} updateScenario = {updateScenario} units = {units} newOpen = {newOpen}/>
+                  <Calculator key={`${index}-${units}-${currentScenarios[index].name}`} vertical = {vertical} scenario = {currentScenarios[index]} saveToStorage = {saveToStorage} updateScenario = {updateScenario} units = {units} newOpen = {newOpen} caseStudy = {caseStudy}/>
                 </div>
                 <div ref={visualsRef} className = {styles.scrollTarget}>
                   <Visuals scenarioData = {currentScenarios} index = {index} units = {units} delay = {parseInt(currentScenarios[index].delay)} vertical = {vertical} emissions = {emissions}/>
@@ -584,36 +603,6 @@ const NPV = () => {
                 </div>)}
             </div>
           </div>
-          {addPopup && (
-            <div className={styles.overlay}>
-              <div className={styles.popup}>
-                <h2>Which Type of Scenario to Open?</h2>
-                <div className = {styles.popupAddContainer}> 
-                  <button className = {styles.popupButton} onClick={() => {setAddPopup(false);}}>Case Study</button>
-                  <button className = {styles.popupButton} onClick={() => {setAddPopup(false); setPage('saved');}}>Saved</button>
-                  <button className = {styles.popupButton} onClick={() => {setAddPopup(false); addScenario(null);}}>New</button>
-                </div>
-              </div>
-            </div>
-          )}
-          {remove && (
-            <div className={styles.overlay}>
-              <div className={styles.popup}>
-                <h2>Remove This Scenario Without Saving?</h2>
-                {localStorage.getItem(currentScenarios[toRemove].createdAt) !== null && (
-                  <div className = {styles.popupAddContainer}> 
-                    <button className = {styles.popupButton} onClick={() => {setRemove(false); removeScenario(toRemove);}}>Remove</button>
-                    <button className = {styles.popupButton} onClick={() => {setRemove(false); updateSave(); removeScenario(toRemove);}}>Save</button>
-                    <button className = {styles.popupButton} onClick={() => {setRemove(false); setNewName(currentScenarios[toRemove].name); setSaveAs(true); }}>Save As</button>
-                  </div>)}
-                {localStorage.getItem(currentScenarios[toRemove].createdAt) === null && (
-                  <div className = {styles.popup2Container}> 
-                    <button className = {styles.popupButton} onClick={() => {setRemove(false); removeScenario(toRemove)}}>Remove</button>
-                    <button className = {styles.popupButton} onClick={() => {setRemove(false); setNewName(currentScenarios[toRemove].name); setSaveAs(true); }}>Save As</button>
-                  </div>)}
-              </div>
-            </div>
-          )}
           {saveAs && (
             <div className={styles.overlay}>
               <div className={styles.popup}>
@@ -633,13 +622,9 @@ const NPV = () => {
             <div className={styles.overlay}>
               <div className={styles.popup}>
                 <h2>This will override the currently saved version of this scenario. Are you sure you want to proceed?</h2>
-                <input id="scenarioName" 
-                  value = {newName} 
-                  onChange={(e) => setNewName(e.target.value)} 
-                  type="text" />
                 <div className = {styles.popupButtonContainer}> 
-                  <button className = {styles.popupButton} onClick={() => {setSave(false); setNewName('');}}>No, Cancel</button>
-                  <button className = {styles.popupButton} onClick={() => {setSave(false); saveToStorage(newName, currentScenarios[index].createdAt, currentScenarios[index].upfrontEmissions, currentScenarios[index].discountRate, currentScenarios[index].totalYears, currentScenarios[index].yearlyValuesRef, currentScenarios[index].longTerm, currentScenarios[index].activeTab, currentScenarios[index].delay); setNewName('');}}>Yes, Save</button>
+                  <button className = {styles.popupButton} onClick={() => {setSave(false);}}>No, Cancel</button>
+                  <button className = {styles.popupButton} onClick={() => {setSave(false); saveToStorage(currentScenarios[index].name, currentScenarios[index].createdAt, currentScenarios[index].upfrontEmissions, currentScenarios[index].discountRate, currentScenarios[index].totalYears, currentScenarios[index].yearlyValuesRef, currentScenarios[index].longTerm, currentScenarios[index].activeTab, currentScenarios[index].delay); setNewName('');}}>Yes, Save</button>
                 </div>
               </div>
             </div>
@@ -653,23 +638,18 @@ const NPV = () => {
             {currentScenarios.map((scenario, ind) => {
                           
               return (
-                <div key={scenario.openedAt}
+                <div key={scenario.createdAt}
                   className={`${styles.mainTab} ${index === ind ? styles.selected : ''}`}
                   onClick={() => setIndex(ind)}>
                   <div className = {styles.mainTabName}> {scenario.name} </div>
                   <div className = {styles.x} onClick={(e) => {e.stopPropagation(); setToRemove(ind); 
-                    if (changed(ind)){
-                      setRemove(true);
-                    }
-                    else{
-                      removeScenario(ind);
-                    }}}>
+                    removeScenario(ind);}}>
                     <i className='fas fa-close'></i>
                     <span className={styles.tooltipRemove}>Remove Scenario</span>
                   </div>
                 </div>)
               })}
-              <div className = {styles.addTab} onClick = {() => {setAddPopup(true);}}><i className='	fas fa-plus'></i>
+              <div className = {styles.addTab} onClick = {() => {addScenario(null);}}><i className='	fas fa-plus'></i>
                 <span className={styles.tooltipOpen}>Open Scenario</span>
               </div>
             </div>
@@ -683,16 +663,8 @@ const NPV = () => {
                   <a onClick={() => scrollTo(decarbonizationRef)}>Decarbonization (D<sub>Eff</sub>)</a>
                     </div>
                 </div>
-                <div className = {styles.mainRibbonButton}>
-                  Save Scenario
-                  <div className={styles.ribbonContent}>
-                      {localStorage.getItem("scenario-" + currentScenarios[index]?.createdAt) && (<a onClick = {() => {setNewName(currentScenarios[index].name); setSave(true);}}><span>Save</span></a>)}
-                      <a onClick={() => {setNewName(currentScenarios[index].name); setSaveAs(true);}}>Save As...</a>
-                      <a onClick={() => {setAutoSave(prev => {let newValue = !prev; localStorage.setItem("autoSave", JSON.stringify(newValue)); return newValue;});}}>AutoSave {autoSave ? <i className='	fa fa-check'></i> : ''}</a>
-                    </div>
-                </div>
-                <div className = {styles.mainRibbonButton} onClick = {duplicateScenario}>
-                  Duplicate Scenario
+                <div className = {styles.mainRibbonButton} onClick = {() => {setPage('case study');}}>
+                  View Case Studies
                 </div>
                 <div className = {styles.mainRibbonButton}>
                   Switch Units
@@ -717,8 +689,8 @@ const NPV = () => {
                 </div>
               </div>
               {(currentScenarios?.length > 0) && (<div><div className = {`${styles.horizontal} ${styles.scrollTarget}`} ref={calculatorRef}>
-                <Calculator key={`${index}-${units}`} vertical = {vertical} scenario = {currentScenarios[index]} saveToStorage = {saveToStorage} updateScenario = {updateScenario} units = {units} newOpen = {newOpen}/>
-                <Visuals scenarioData = {currentScenarios} index = {index} units = {units} delay = {parseInt(currentScenarios[index].delay)} vertical = {vertical} emissions = {emissions}/>
+                <Calculator key={`${index}-${units}-${currentScenarios[index].createdAt}`} vertical = {vertical} scenario = {currentScenarios[index]} saveToStorage = {saveToStorage} updateScenario = {updateScenario} units = {units} newOpen = {newOpen}  caseStudy = {caseStudy}/>
+                <Visuals scenarioData = {currentScenarios} index = {index} units = {units} delay = {parseInt(currentScenarios[index]?.delay)} vertical = {vertical} emissions = {emissions}/>
               </div>
               <div ref={sharedVisualsRef} className = {styles.scrollTarget}>
                 <SharedVisuals scenarioData = {currentScenarios} selected = {selected} setSelected = {setSelected} update = {update} units = {units} emissions = {emissions}/>
@@ -728,34 +700,6 @@ const NPV = () => {
               </div>)}
             </div>
           </div>
-          {addPopup && (
-            <div className={styles.overlay}>
-              <div className={styles.popup}>
-                <h2>Which Type of Scenario to Open?</h2>
-                <div className = {styles.popupAddContainer}> 
-                  <button className = {styles.popupButton} onClick={() => {setAddPopup(false);}}>Case Study</button>
-                  <button className = {styles.popupButton} onClick={() => {setAddPopup(false); setPage('saved');}}>Saved</button>
-                  <button className = {styles.popupButton} onClick={() => {setAddPopup(false); addScenario(null);}}>New</button>
-                </div>
-              </div>
-            </div>
-          )}
-          {remove && (
-            <div className={styles.overlay}>
-              <div className={styles.popup}>
-              <h2>Remove This Scenario Without Saving?</h2>
-              {localStorage.getItem(currentScenarios[toRemove].createdAt) !== null && (<div className = {styles.popupAddContainer}> 
-                <button className = {styles.popupButton} onClick={() => {setRemove(false); removeScenario(toRemove)}}>Remove</button>
-                <button className = {styles.popupButton} onClick={() => {setRemove(false); updateSave(); removeScenario(toRemove);}}>Save</button>
-                <button className = {styles.popupButton} onClick={() => {setRemove(false); setNewName(currentScenarios[toRemove].name); setSaveAs(true);}}>Save As</button>
-              </div>)}
-              {localStorage.getItem(currentScenarios[toRemove].createdAt) === null && (<div className = {styles.popup2Container}> 
-                <button className = {styles.popupButton} onClick={() => {setRemove(false); removeScenario(toRemove)}}>Remove</button>
-                <button className = {styles.popupButton} onClick={() => {setRemove(false); setNewName(currentScenarios[toRemove].name); setSaveAs(true);}}>Save As</button>
-              </div>)}
-              </div>
-            </div>
-          )}
           {saveAs && (
             <div className={styles.overlay}>
               <div className={styles.popup}>
@@ -775,20 +719,16 @@ const NPV = () => {
             <div className={styles.overlay}>
               <div className={styles.popup}>
                 <h2>This will override the currently saved version of this scenario. Are you sure you want to proceed?</h2>
-                <input id="scenarioName" 
-                  value = {newName} 
-                  onChange={(e) => setNewName(e.target.value)} 
-                  type="text" />
                 <div className = {styles.popupButtonContainer}> 
-                  <button className = {styles.popupButton} onClick={() => {setSave(false); setNewName('');}}>No, Cancel</button>
-                  <button className = {styles.popupButton} onClick={() => {setSave(false); saveToStorage(newName, currentScenarios[index].createdAt, currentScenarios[index].upfrontEmissions, currentScenarios[index].discountRate, currentScenarios[index].totalYears, currentScenarios[index].yearlyValuesRef, currentScenarios[index].longTerm, currentScenarios[index].activeTab, currentScenarios[index].delay); setNewName('');}}>Yes, Save</button>
+                  <button className = {styles.popupButton} onClick={() => {setSave(false);}}>No, Cancel</button>
+                  <button className = {styles.popupButton} onClick={() => {setSave(false); saveToStorage(currentScenarios[index].name, currentScenarios[index].createdAt, currentScenarios[index].upfrontEmissions, currentScenarios[index].discountRate, currentScenarios[index].totalYears, currentScenarios[index].yearlyValuesRef, currentScenarios[index].longTerm, currentScenarios[index].activeTab, currentScenarios[index].delay); setNewName('');}}>Yes, Save</button>
                 </div>
               </div>
             </div>
           )}
         </div>)}
 
-      {page === 'saved' && (<Saved addScenario = {addScenario} setPage = {setPage}/>)}
+      {page === 'saved' && (<Saved caseStudy = {caseStudy} addScenario = {addScenario} setPage = {setPage} openCaseStudy = {openCaseStudy}/>)}
 
       {page === 'faqs' && (<FAQS/>)}
 

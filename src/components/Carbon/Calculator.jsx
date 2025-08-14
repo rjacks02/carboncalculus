@@ -2,20 +2,20 @@ import React, {useState, useRef, useEffect} from 'react';
 
 import styles from '../../css/NPV.module.css'
 
-const Calculator = ({vertical, scenario, saveToStorage, updateScenario, units, newOpen}) => {
-    const [scenarioName, setName] = useState(scenario.name);
-    const [upfrontEmissions, setupfrontEmissions] = useState(scenario.upfrontEmissions);
-    const [discountRate, setDiscountRate] = useState(scenario.discountRate);
-    const [totalYears, setTotalYears] = useState(scenario.totalYears);
-    const yearlyValuesRef = useRef(scenario.yearlyValuesRef.current);
-    const [longTerm, setLongTerm] = useState(scenario.longTerm);
-    const [activeTab, setActiveTab] = useState(scenario.activeTab);
-    const [delay, setDelay] = useState(scenario.delay);
-    const [createdAt, setCreatedAt] = useState(scenario.createdAt);
+const Calculator = ({vertical, scenario, saveToStorage, updateScenario, units, newOpen, caseStudy}) => {
+    const [scenarioName, setName] = useState(scenario?.name);
+    const [upfrontEmissions, setupfrontEmissions] = useState(scenario?.upfrontEmissions);
+    const [discountRate, setDiscountRate] = useState(scenario?.discountRate);
+    const [totalYears, setTotalYears] = useState(scenario?.totalYears);
+    const yearlyValuesRef = useRef(scenario?.yearlyValuesRef.current);
+    const [longTerm, setLongTerm] = useState(scenario?.longTerm);
+    const [activeTab, setActiveTab] = useState(scenario?.activeTab);
+    const [delay, setDelay] = useState(scenario?.delay);
+    const [createdAt, setCreatedAt] = useState(scenario?.createdAt);
     
 
-    const basicValuesRef = useRef([...scenario.yearlyValuesRef.current]);
-    const advancedValuesRef = useRef([...scenario.yearlyValuesRef.current]);
+    const basicValuesRef = useRef([...scenario?.yearlyValuesRef.current]);
+    const advancedValuesRef = useRef([...scenario?.yearlyValuesRef.current]);
 
     const inputRefs = useRef([]);
     let refIndex = 0;
@@ -85,7 +85,7 @@ const Calculator = ({vertical, scenario, saveToStorage, updateScenario, units, n
 
         return(
             <div className = {styles.inputCenter}>
-                <label htmlFor="year">{endYear === 1 ? 'Year 1: ' : 'Years ' + startYear + ' - ' + endYear + ': '}</label>
+                <label htmlFor="year">{endYear === 1 || startYear === endYear ? 'Year ' + startYear + ': ' : 'Years ' + startYear + ' - ' + endYear + ': '}</label>
                 <input id="year" 
                     ref={el => {
                         if (el) inputRefs.current[refIndex] = el;
@@ -287,6 +287,7 @@ useEffect(() => {
     return (
         <div>
         {vertical && (<div className = {styles.section}>
+            <h2 className = {styles.caseName}>Case Study: {caseStudy}</h2>
             <div className = {styles.naming}>
                 <h2 className = {styles.scenarioTitle} onClick= {(e) => {if (e.detail === 2) {setShowPopup(true); setRename(true);}}}>Name: {scenarioName}</h2>
                 <button className = {styles.renameButton} onClick = {() => {setShowPopup(true); setRename(true);}}>Edit Name</button>
@@ -410,8 +411,9 @@ useEffect(() => {
         </div>)}
 
         {!vertical && (<div className = {styles.section}>
+            <h2 className = {styles.caseName}>Case Study: {caseStudy}</h2>
             <div className = {styles.naming} >
-                <h2 className = {styles.scenarioTitle} onClick= {(e) => {if (e.detail === 2) {setShowPopup(true); setRename(true);}}}>Name: {scenarioName}</h2>
+                <h2 className = {styles.scenarioTitle} onClick= {(e) => {if (e.detail === 2) {setShowPopup(true); setRename(true);}}}>Scenario Name: {scenarioName}</h2>
                 <button className = {styles.renameButton} onClick = {() => {setShowPopup(true); setRename(true);}}>Edit Name</button>
             </div>
             <div className = {styles.calcColumns}>

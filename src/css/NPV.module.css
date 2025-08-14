@@ -137,7 +137,7 @@ html, body, #root {
   background-color: #94c8dc;
   overflow-y: scroll;
   overflow-x: hidden;
-  height: 95%;
+  height: 97.5%;
   border: .5rem solid #2e7c53;
 }
 
@@ -512,6 +512,60 @@ html, body, #root {
   text-align: center;
 }
 
+.noScenarios{
+  width: fit-content;
+  margin: auto;
+  background-color: #aed9ea;
+  border: none;
+  border-radius: 6px;
+  text-align: center;
+  font-size: 1.5rem;
+  padding: 3%;
+  margin-top: 4%;
+}
+
+.caseInfo{
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  height: fit-content;
+  line-height: 50%;
+  align-items: center;
+  background-color: #aed9ea;
+  border: none;
+  border-radius: 6px;
+  text-align: center;
+}
+
+.caseTitle{
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  height: fit-content;
+  align-items: center;
+  border: none;
+  border-radius: 6px;
+  text-align: center;
+}
+
+.case {
+  height: fit-content;
+  margin-bottom: 2%;
+  display: grid;
+  grid-template-columns: 8fr 2fr;
+  line-height: 50%;
+  align-items: center;
+  border: none;
+  gap: 3%;
+  border-bottom: .3rem solid #5c99b7;
+  background-color: #5c99b7;
+  border-radius: 6px;
+}
+
+.caseInfoItem{
+  font-size: 1.5rem;
+  padding: 10%;
+  text-align: center;
+}
+
 
 .saveInfoItem{
   font-size: 1.5rem;
@@ -534,7 +588,20 @@ html, body, #root {
   background-color: #aed9ea;
   border-radius: 6px;
   padding: 1rem;
-  width: max-content;
+  width: 80%;
+  height: 60%;
+}
+
+.actionsTitle {
+  gap: 0.5rem;
+  border-radius: 6px;
+  padding: 1rem;
+  font-size: 1.5rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 80%;
+  text-align: center;
 }
 
 .saveActionItem{
@@ -578,6 +645,9 @@ html, body, #root {
   min-width: 300px;
   max-width: 45%;
   text-align: center;
+  white-space: normal;
+  height: fit-content;
+  line-height: 1.5;
 }
 
 .popupButtonContainer{
@@ -848,6 +918,22 @@ html, body, #root {
   border-bottom: .3rem solid #5c99b7;
 }
 
+.caseRibbonContainer {
+  position: sticky;
+  top: 0;
+  background: #94c8dc;
+  z-index: 999999;
+  padding: 1rem;
+  display: grid;
+  grid-auto-flow: column;
+  grid-template-columns: 1fr 1fr;
+  gap: 3%;
+  width: 96%;
+  padding-left: 2%;
+  padding-right: 2%;
+  border-bottom: .3rem solid #5c99b7;
+}
+
 .mainRibbonButton {
   width: 90%;
   position: relative;
@@ -858,6 +944,19 @@ html, body, #root {
   cursor: pointer;
   border-radius: 6px;
   text-align: center;
+}
+
+.caseRibbonButton{
+  width: fit-content;
+  position: relative;
+  padding: 1rem 1rem;
+  background: #2e7c53;
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+  border-radius: 6px;
+  text-align: center;
+  margin: auto;
 }
 
 .ribbonContent {
@@ -888,6 +987,10 @@ html, body, #root {
   background-color: #49bd7f;
 }
 
+.caseRibbonButton:hover  {
+  background-color: #49bd7f;
+}
+
 
 .mainRibbonButton:hover .ribbonContent {
   display: block;
@@ -906,7 +1009,7 @@ html, body, #root {
   position: relative;
   justify-content: start;
   overflow-x: scroll;
-  margin-top: -2rem;
+  margin-top: -3rem;
   padding-top: 1.6rem;
   width: 100%;
   min-width: 100%;
@@ -1090,7 +1193,22 @@ html, body, #root {
   grid-template-columns: 1fr 1fr;
   margin-bottom: 0;
   gap: 2%;
-  margin-top: 50px;
+  margin-top: 20px;
+}
+
+.caseName{
+  margin: auto;
+  margin-bottom: 0;
+  margin-top: 20px;
+  background-color: #aed9ea;
+  text-align: center;
+  font-size: 1.4rem;
+  padding: 1%;
+  border-radius: 8px;
+  max-width: 50vw;
+  white-space: normal;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 
@@ -1325,4 +1443,57 @@ html, body, #root {
   text-align: center;
   justify-content: center;
   border: .5rem solid white;
+}
+
+
+.caseButtonWrapper {
+  display: flex;
+  justify-content: center; /* centers the button horizontally */
+  width: 100%;             /* take full width of parent */
+  margin-top: 1rem;        /* optional spacing above button */
+}
+
+.caseButton{
+  width: fit-content;
+  margin: auto;
+  padding: 1rem 1rem;
+  font-size: 1.5rem;
+  background-color: #2e7c53;
+  color: white;
+  border: hidden;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  text-align: center;
+  margin-bottom: 3%;
+}
+
+.caseButton:hover{
+  background-color: #49bd7f;
+}
+
+
+.selectBox {
+  width: 50%;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  border: 1px solid #94c8dc;
+  background-color: #e0f0f7;
+  color: #000;
+  font-size: 1rem;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 10 6' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2394c8dc'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 0.65rem auto;
+}
+
+.optionItem {
+  padding: 0.5rem 1rem;
+  background-color: #e0f0f7;
+  color: #000;
 }

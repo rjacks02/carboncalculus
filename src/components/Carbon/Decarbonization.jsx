@@ -9,9 +9,7 @@ const SelectScenario = ({scenarios, compare, setCompare, bau, setBAU}) => {
   const dropdownRef = useRef();
 
   const toggleOptionBAU = (option) => {
-    console.log(bau);
-    console.log(option);
-    if (bau && bau.openedAt === option.openedAt){
+    if (bau && bau.createdAt === option.createdAt){
       setBAU({})
     }
     else{
@@ -21,9 +19,9 @@ const SelectScenario = ({scenarios, compare, setCompare, bau, setBAU}) => {
 
   const toggleOptionCompare = (option) => {
     setCompare((prev) => {
-      const exists = prev.some((o) => o.openedAt === option.openedAt);
+      const exists = prev.some((o) => o.createdAt === option.createdAt);
       return exists
-        ? prev.filter((o) => o.openedAt !== option.openedAt)
+        ? prev.filter((o) => o.createdAt !== option.createdAt)
         : [...prev, option];
     });
   };
@@ -40,10 +38,10 @@ const SelectScenario = ({scenarios, compare, setCompare, bau, setBAU}) => {
       {isOpen && (
         <div className={styles.SelectContent}>
           {scenarios.map((option, ind) => (
-            <label className={styles.multiSelectItem} key={option.openedAt}>
+            <label className={styles.multiSelectItem} key={option.createdAt}>
               <input
                 type="checkbox"
-                checked={bau && bau.openedAt === option.openedAt}
+                checked={bau && bau.createdAt === option.createdAt}
                 onChange={() => toggleOptionBAU(option)}
               />
               {option.name}
@@ -62,10 +60,10 @@ const SelectScenario = ({scenarios, compare, setCompare, bau, setBAU}) => {
       {isOpen && (
         <div className={styles.SelectContent}>
           {scenarios.map((option, ind) => (
-            <label className={styles.multiSelectItem} key={option.openedAt}>
+            <label className={styles.multiSelectItem} key={option.createdAt}>
               <input
                 type="checkbox"
-                checked={compare.some(sel => sel.openedAt === option.openedAt)}
+                checked={compare.some(sel => sel.createdAt === option.createdAt)}
                 onChange={() => toggleOptionCompare(option)}
               />
               {option.name}
@@ -92,22 +90,55 @@ const Decarbonization = ({scenarios, units, update, bau, setBAU, compare, setCom
 
   const [longterm, setLongterm] = useState(false);
 
-  const [deff, setDeff] = useState(0);
+  const [tableColors, setTableColors] = useState(['white', 'white', 'white', 'white', 'white']);
 
   const colors =["#000000", "#E69F00", "#009E73", "#F0E442", "#0072B2", "#CC79A7"];
   const pales = ["#D3D3D3", "#F4D7A8", "#BFEAD9", "#F9F4B0", "#BFDBEC", "#EFC3DC"];
 
     useEffect(() => {
-      let newData = [];
-      let newNames = [];
-      let newDeffs = []
-      let newLongs = [];
-      let newBreakEvens = [];
-      let newIRRs = [];
-      let curBreak;
-
       if (compare && bau && bau?.npvTotalValues && compare[0]?.npvTotalValues){
         let bauVals = [...bau.npvTotalValues];
+
+        let deffsSorted = [];
+
+        for (let i = 0; i < scenarios.length; i++){
+          let npvVals = [...scenarios[i].npvTotalValues];
+          let diff = [];
+
+          let longIndex = Math.min(101, npvVals.length, bauVals.length);
+
+          for (let j = 0; j < parseInt(scenarios[i].delay); j++){
+            diff.push(0);
+          }
+          
+          for (let j = parseInt(scenarios[i].delay); j < longIndex; j++){
+            const npvVal = parseFloat(npvVals[j]) || 0;
+            const bauVal = parseFloat(bauVals[j]) || 0;
+            const difference = -(npvVal - bauVal);
+            diff.push(+difference.toFixed(10));
+          }
+
+          deffsSorted.push([parseFloat(diff.at(-1)), scenarios[i].createdAt]);
+        }
+    
+        deffsSorted.sort((a, b) => b[0] - a[0]);
+    
+        let sortedColors = {};
+        let curColor = 0;
+    
+        for (let i = 0; i < deffsSorted.length; i++){
+          sortedColors[deffsSorted[i][1]] = [colors[curColor%6], pales[curColor%6]];
+          curColor++;
+        }
+
+        let newData = [];
+        let newNames = [];
+        let newDeffs = []
+        let newLongs = [];
+        let newBreakEvens = [];
+        let newIRRs = [];
+        let newColors = [];
+        let curBreak;
 
         for (let i = 0; i < compare.length; i++){
           let npvVals = [...compare[i].npvTotalValues];
@@ -131,7 +162,6 @@ const Decarbonization = ({scenarios, units, update, bau, setBAU, compare, setCom
           let fullBreak = findBreakeven(diff);
 
           if (fullBreak !== 'N/A'){
-            console.log(fullBreak);
             curBreak = (fullBreak - year).toFixed(2);
             let monthVal = fullBreak - Math.floor(fullBreak);
             let monthInd = Math.floor(monthVal * 12);
@@ -148,7 +178,7 @@ const Decarbonization = ({scenarios, units, update, bau, setBAU, compare, setCom
                 type: 'line',
                 mode: 'lines+markers',
                 name: compare[i].name,
-                marker: { color: colors[i%6] },
+                marker: { color: sortedColors[compare[i].createdAt][0] },
                 hovertemplate: `${compare[i].name} </br>Year: %{x}<br>${units} of CO<sub>2</sub>: %{y}<br>Breakeven: ${fullBreak}<extra></extra>`,
             }
 
@@ -156,6 +186,7 @@ const Decarbonization = ({scenarios, units, update, bau, setBAU, compare, setCom
           newNames.push(compare[i].name);
           newDeffs.push(diff.slice(0, shortIndex).at(-1).toFixed(2));
           newLongs.push(diff.at(-1).toFixed(2));
+          newColors.push(sortedColors[compare[i].createdAt][1]);
 
           newBreakEvens.push(curBreak);
           if (curBreak === 'N/A' || parseFloat(curBreak) === 0 ){
@@ -171,6 +202,7 @@ const Decarbonization = ({scenarios, units, update, bau, setBAU, compare, setCom
         setLongs([...newLongs, ...Array(Math.max(0, 5 - newLongs.length)).fill('')]);
         setBreakEvens([...newBreakEvens, ...Array(Math.max(0, 5 - newBreakEvens.length)).fill('')]);
         setIRRs([...newIRRs, ...Array(Math.max(0, 5 - newIRRs.length)).fill('')]);
+        setTableColors([...newColors,...Array(Math.max(0, 5 - newColors.length)).fill('white')]);
       }
     else{
       setData([]);
@@ -179,6 +211,7 @@ const Decarbonization = ({scenarios, units, update, bau, setBAU, compare, setCom
       setLongs(['', '', '', '', '']);
       setBreakEvens(['', '', '', '', '']);
       setIRRs(['', '', '', '', '']);
+      setTableColors(['white', 'white', 'white', 'white', 'white']);
     }
   }, [compare, bau, units, update, longterm]);
 
@@ -215,7 +248,7 @@ const Decarbonization = ({scenarios, units, update, bau, setBAU, compare, setCom
 
   function IRR(c, b, ind) {
     let min = 0.0;
-    let max = 1.0;
+    let max = 999.0;
     let guess = 0;
     let NPV = 0;
     let epsilon = 0.000001;
@@ -263,7 +296,7 @@ const Decarbonization = ({scenarios, units, update, bau, setBAU, compare, setCom
       <div className = {styles.section}>
         <h2 className = {styles.sectionTitle}><span className = {styles.info}><i className="material-icons" onClick = {() => {setShowInfo(true);}}>info_outline</i>
                             </span> Visualizing Effective Decarbonization</h2>
-        <SelectScenario scenarios = {scenarios} compare = {compare} setCompare = {setCompare} bau = {bau} setBAU = {setBAU} setDeff = {setDeff}/>
+        <SelectScenario scenarios = {scenarios} compare = {compare} setCompare = {setCompare} bau = {bau} setBAU = {setBAU}/>
         
         <div className = {styles.compareCols}>
         <div className = {styles.visualSection}>
@@ -356,7 +389,7 @@ const Decarbonization = ({scenarios, units, update, bau, setBAU, compare, setCom
             align: 'center',
             height: 30,
             line: { color: 'black', width: 1 },
-            fill: { color: ['white', 'white', 'white'] },
+            fill: { color: [tableColors, tableColors, tableColors] },
             font: { family: 'Arial', size: 14, color: 'black' }
           }
         }

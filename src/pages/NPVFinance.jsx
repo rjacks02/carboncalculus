@@ -170,7 +170,6 @@ const NPV = () => {
           if(newScenarios.length === 0){
             setEmpty(true);
           }
-          console.log(newScenarios);
       }
 
     function updateSelected(option){
