@@ -146,7 +146,7 @@ const Item = ({key_, caseStudy, refreshKeys, caseStudies}) => {
     )
 }
 
-const Saved = ({caseStudy, addScenario, setPage, openCaseStudy}) => {
+const Saved = ({caseStudy, setPage, openCaseStudy}) => {
     const [localKeys, setLocalKeys] = useState(['start']);
     const [update, setUpdate] = useState(false);
     const [refreshCode, setRefreshCode] = useState(0);

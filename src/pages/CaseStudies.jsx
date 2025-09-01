@@ -1,9 +1,12 @@
 import React, {useState, useRef, useEffect} from "react";
 import { useNavigate } from "react-router-dom";
 
-import styles from '../../css/NPV.module.css'
+import styles from '../css/NPV.module.css'
 
-const Item = ({key_, setPage, setCaseStudy, openCaseStudy, caseStudy, refreshKeys, badName, setBadName}) => {
+import Saved from '../components/Saved'
+import Header from '../components/Header'
+
+const Item = ({key_, setPage, setCaseStudy, openCaseStudy, caseStudy, refreshKeys, badName, setBadName, setOpenCase}) => {
     const navigate = useNavigate();
     const [info, setInfo] = useState({});
     const [deleteCase, setDeleteCase] = useState(false);
@@ -54,8 +57,8 @@ const Item = ({key_, setPage, setCaseStudy, openCaseStudy, caseStudy, refreshKey
                 </div>
             </div>
             <div className = {styles.saveAction}>
-                <div className = {styles.saveActionItem} onClick = {() => {setCaseStudy(key_.substring(10)); setPage('npv'); openCaseStudy(key_.substring(10));}}>Open</div>
-                <div className = {styles.saveActionItem} onClick = {() => {setCaseStudy(key_.substring(10)); setPage('saved');}}>View</div>
+                <div className = {styles.saveActionItem} onClick = {() => {localStorage.setItem('currentCase', JSON.stringify({name: key_.substring(10)})); navigate('/NPVCarbon')}}>Open</div>
+                <div className = {styles.saveActionItem} onClick = {() => {setOpenCase(key_.substring(10))}}>List</div>
                 <div className = {styles.saveActionItem} onClick = {() => {setRename(true);}}>Rename</div>
                 <div className = {styles.saveActionItem} onClick = {() => {setDeleteCase(true);}}>Delete</div>
             </div>
@@ -119,12 +122,14 @@ const Item = ({key_, setPage, setCaseStudy, openCaseStudy, caseStudy, refreshKey
     )
 }
 
-const CaseStudies = ({setCaseStudy, addScenario, setPage, openCaseStudy}) => {
+const CaseStudies = ({setCaseStudy, setPage, openCaseStudy}) => {
     const [localKeys, setLocalKeys] = useState([]);
     const [addPopup, setAddPopup] = useState(false);
     const [newName, setNewName] = useState('');
     const [refreshCode, setRefreshCode] = useState(0);
     const [badName, setBadName] = useState(false);
+
+    const [openCase, setOpenCase] = useState('');
 
     useEffect(() => {
         if (Object.keys(localStorage).filter(k => k.startsWith("caseStudy-")).length === 0){
@@ -151,8 +156,10 @@ const CaseStudies = ({setCaseStudy, addScenario, setPage, openCaseStudy}) => {
         const keyWithTimestamps = Object.keys(localStorage)
         .filter(k => k.startsWith("caseStudy-"))
         .sort((a, b) => {
-            const numA = parseInt(a.openedAt);
-            const numB = parseInt(b.openedAt);
+            let caseA = JSON.parse(localStorage.getItem(a));
+            let caseB = JSON.parse(localStorage.getItem(b));
+            const numA = parseInt(caseA.openedAt);
+            const numB = parseInt(caseB.openedAt);
             return numB - numA;
         });
         setLocalKeys(keyWithTimestamps);
@@ -162,7 +169,9 @@ const CaseStudies = ({setCaseStudy, addScenario, setPage, openCaseStudy}) => {
     
 
     return (
-        <div className = {styles.mainContainer}>
+        <div>
+            <Header />
+        {!openCase && (<div className = {styles.mainContainer}>
             <div className = {`${styles.section} ${styles.saveSection}`}>
                 <h2 className = {styles.sectionTitle}>Case Studies:</h2>
                 <div className = {styles.savedList}>
@@ -182,7 +191,7 @@ const CaseStudies = ({setCaseStudy, addScenario, setPage, openCaseStudy}) => {
                     Actions:
                 </div>
                 </div>
-                    {localKeys.map((key) => (<Item key={key+refreshCode} key_ = {key} setPage = {setPage} setCaseStudy = {setCaseStudy} openCaseStudy = {openCaseStudy} caseStudy = {key} refreshKeys = {refreshKeys} badName = {badName} setBadName={setBadName}/>))}
+                    {localKeys.map((key) => (<Item key={key+refreshCode} key_ = {key} setPage = {setPage} setCaseStudy = {setCaseStudy} openCaseStudy = {openCaseStudy} caseStudy = {key} refreshKeys = {refreshKeys} badName = {badName} setBadName={setBadName} setOpenCase = {setOpenCase}/>))}
                     <div className = {styles.caseButtonWrapper}>
                         <button className = {styles.caseButton} onClick = {() => {setAddPopup(true);}}><span>+ Add New Case Study</span></button>
                     </div>
@@ -213,7 +222,8 @@ const CaseStudies = ({setCaseStudy, addScenario, setPage, openCaseStudy}) => {
               </div>
             </div>
           )}
-          
+        </div>)}
+        {openCase && <Saved caseStudy = {openCase}/>}
         </div>
     );
 };

@@ -21,12 +21,12 @@ const Visuals = ({scenarioData, index, units, delay, vertical, emissions}) => {
     function renderVisual(){
         if (activeTab === 'Graph'){
             return (
-                <Graph name = {index === 0 ? `(BAU) ${scenarioData[index].name}` : scenarioData[index].name} vertical = {false} vals = {scenarioData[index]?.longTerm ? scenarioData[index]?.npvTotalValues ?? [] : (scenarioData[index]?.npvTotalValues ?? []).slice(0, parseInt(scenarioData[index]?.totalYears)+parseInt(scenarioData[index]?.delay)+1)} units = {units} emissions = {emissions}/>
+                <Graph name = {scenarioData[index].name} vertical = {false} vals = {scenarioData[index]?.longTerm ? scenarioData[index]?.npvTotalValues ?? [] : (scenarioData[index]?.npvTotalValues ?? []).slice(0, parseInt(scenarioData[index]?.totalYears)+parseInt(scenarioData[index]?.delay)+1)} units = {units} emissions = {emissions}/>
             )
         }
         else{
             return (
-                <BarChart name = {index === 0 ? `(BAU) ${scenarioData[index].name}` : scenarioData[index].name} vertical = {false} vals = {scenarioData[index]?.longTerm ? scenarioData[index]?.npvYearlyValues ?? [] : (scenarioData[index]?.npvYearlyValues ?? []).slice(0, parseInt(scenarioData[index]?.totalYears)+parseInt(scenarioData[index]?.delay)+1)} units = {units} delay = {delay} emissions = {emissions}/>
+                <BarChart name = {scenarioData[index].name} vertical = {false} vals = {scenarioData[index]?.longTerm ? scenarioData[index]?.npvYearlyValues ?? [] : (scenarioData[index]?.npvYearlyValues ?? []).slice(0, parseInt(scenarioData[index]?.totalYears)+parseInt(scenarioData[index]?.delay)+1)} units = {units} delay = {delay} emissions = {emissions}/>
             )
         }
     }
@@ -37,8 +37,8 @@ const Visuals = ({scenarioData, index, units, delay, vertical, emissions}) => {
                 <h2 className = {styles.sectionTitle}>Results and Visualizations for <br/> Current Scenario</h2>
                 <div className = {styles.npv}><span className = {styles.info}><i className="material-icons" onClick = {() => {setShowInfo(true);}}>info_outline</i>
                             </span>NPV<sub>CO<sub>2</sub></sub>: {(scenarioData[index]?.npv ?? 0).toFixed(2)} {units} Today</div>
-                <Graph name = {index === 0 ? `(BAU) ${scenarioData[index].name}` : scenarioData[index].name} vertical = {true} vals = {scenarioData[index]?.longTerm ? scenarioData[index]?.npvTotalValues ?? [] : (scenarioData[index]?.npvTotalValues ?? []).slice(0, parseInt(scenarioData[index]?.totalYears)+parseInt(scenarioData[index]?.delay)+1)} units = {units} emissions = {emissions}/>
-                <BarChart name = {index === 0 ? `(BAU) ${scenarioData[index].name}` : scenarioData[index].name} vertical = {true} vals = {scenarioData[index]?.longTerm ? scenarioData[index]?.npvYearlyValues ?? [] : (scenarioData[index]?.npvYearlyValues ?? []).slice(0, parseInt(scenarioData[index]?.totalYears)+parseInt(scenarioData[index]?.delay)+1)} units = {units} delay = {delay} emissions = {emissions}/>
+                <Graph name = {scenarioData[index].name} vertical = {true} vals = {scenarioData[index]?.longTerm ? scenarioData[index]?.npvTotalValues ?? [] : (scenarioData[index]?.npvTotalValues ?? []).slice(0, parseInt(scenarioData[index]?.totalYears)+parseInt(scenarioData[index]?.delay)+1)} units = {units} emissions = {emissions}/>
+                <BarChart name = {scenarioData[index].name} vertical = {true} vals = {scenarioData[index]?.longTerm ? scenarioData[index]?.npvYearlyValues ?? [] : (scenarioData[index]?.npvYearlyValues ?? []).slice(0, parseInt(scenarioData[index]?.totalYears)+parseInt(scenarioData[index]?.delay)+1)} units = {units} delay = {delay} emissions = {emissions}/>
             </div>)}
             {!vertical && (<div className = {styles.sectionHorizontal}>
                 <div className = {styles.npv} ><span className = {styles.info}><i className="material-icons" onClick = {() => {setShowInfo(true);}}>info_outline</i>

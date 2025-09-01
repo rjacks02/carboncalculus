@@ -2,12 +2,12 @@ import React, {useState, useRef, useEffect} from 'react';
 
 import styles from '../../css/NPV.module.css'
 
-const Calculator = ({vertical, scenario, saveToStorage, updateScenario, units, newOpen, caseStudy}) => {
+const Calculator = ({vertical, scenario, saveToStorage, updateScenario, units, caseStudy}) => {
     const [scenarioName, setName] = useState(scenario?.name);
     const [upfrontEmissions, setupfrontEmissions] = useState(scenario?.upfrontEmissions);
     const [discountRate, setDiscountRate] = useState(scenario?.discountRate);
     const [totalYears, setTotalYears] = useState(scenario?.totalYears);
-    const yearlyValuesRef = useRef(scenario?.yearlyValuesRef.current);
+    const yearlyValuesRef = useRef(scenario?.yearlyValuesRef?.current);
     const [longTerm, setLongTerm] = useState(scenario?.longTerm);
     const [activeTab, setActiveTab] = useState(scenario?.activeTab);
     const [delay, setDelay] = useState(scenario?.delay);
@@ -568,7 +568,7 @@ useEffect(() => {
             )}
             
 
-            {showPopup && rename && (localStorage.getItem("startingPopup") === "false" || !newOpen) && (
+            {showPopup && rename && (
                 <div className={styles.overlay}>
                     <div className={styles.popup}>
                         <h2>Enter a Name for the Scenario:</h2>

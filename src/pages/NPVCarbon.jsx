@@ -1,19 +1,21 @@
 import React, {useState, useRef, useEffect} from "react"; //react imports
+import { useNavigate, useLocation } from "react-router-dom"; //navigation imports
 
 import styles from '../css/NPV.module.css' //styling imports
 
 //component imports
-import FAQS from './FAQs'
 import Calculator from '../components/Carbon/Calculator'
 import Visuals from '../components/Carbon/Visuals'
 import Header from '../components/Header'
-import Saved from '../components/Saved'
 import SharedVisuals from '../components/Carbon/SharedVisuals'
 import Decarbonization from "../components/Carbon/Decarbonization";
-import CaseStudies from "../components/Carbon/CaseStudies";
 
 
 const NPV = () => {
+  //navigation variables
+  let navigate = useNavigate();
+  let location = useLocation();
+
   //base scenarios in kilograms and metric tons
   const baseScenarioKG = {createdAt: Date.now(), name: '', upfrontEmissions: '3000.00', discountRate: '3.355', totalYears: '5', yearlyValuesRef: {current: ['1000.00', '1000.00', '1000.00', '1000.00', '1000.00']}, longTerm: false, activeTab: 'Basic', delay: '0', units: 'Kilograms'};
   const baseScenarioMT = {createdAt: Date.now(), name: '', upfrontEmissions: '3.0', discountRate: '3.355', totalYears: '5', yearlyValuesRef: {current: ['1.0', '1.0', '1.0', '1.0', '1.0']}, longTerm: false, activeTab: 'Basic', delay: '0', units: 'Metric Tons'};
@@ -21,37 +23,25 @@ const NPV = () => {
 
   //main variables
   const [currentScenarios, setCurrentScenarios] = useState([]); //list of all open scenarios
-  const [caseStudy, setCaseStudy] = useState();
+  const [caseStudy, setCaseStudy] = useState(); //name of current case study
   const [index, setIndex] = useState(0); //current index based on tabs - which scenario to display
-  const [page, setPage] = useState('npv'); //what page to display: case studies, npv, saved, faqs
 
 
   //variables for calculating NPV for a scenario
-  const [npv, setNPV] = useState(0);
+  const [npv, setNPV] = useState(0); //npv value
   const npvValuesRef = useRef({}); //yearly present values
   const npvTotalRef = useRef({}); //cumulative present values
 
 
   //initial popup
-  const [newOpen, setNewOpen] = useState(true); //keeps track if page was just opened
-  const [showAgain, setShowAgain] = useState(true); //"don't show this again button" on initial popup
+  const [initialPopup, setInitialPopup] = useState(((localStorage.getItem("startingPopup") === null || localStorage.getItem("startingPopup") === "true") && location.state));
+  const [showAgain, setShowAgain] = useState(true); //"don't show this again" button on initial popup
   
 
-  //all updated under 'more options' button
+  //different modes/settings
   const [units, setUnits] = useState('Kilograms') //units: kilograms or metric tons
   const [emissions, setEmissions] = useState(true); //set mode: emissions or reductions
   const [vertical, setVertical] = useState(false); //set layout: vertical or horizontal
-
-
-  //removing scenarios
-  const [remove, setRemove] = useState(false); //show remove popup if scenario has been edited (delete, save, save as)
-  const [toRemove, setToRemove] = useState(0); //save index of scenario to delete after saving
-
-  
-  //saving scenarios
-  const [save, setSave] = useState(false); //show save as popup if saving edited scenario
-  const [saveAs, setSaveAs] = useState(false); //show save as popup if saving edited scenario
-  const [newName, setNewName] = useState(''); //setting new name for a 'save as' scenario
 
 
   //comparing scenarios
@@ -60,21 +50,34 @@ const NPV = () => {
   const [compare, setCompare] = useState([]); //selected scenarios for effective decarbonization graph
   const [update, setUpdate] = useState(0); //update shared comparison and decarbonization graphs after values change
 
+  
+  //refs for scrolling with 'jump to'
   const calculatorRef = useRef(null);
-  const visualsRef = useRef(null);
+  const visualsRef = useRef(null); //only available in vertical mode
   const sharedVisualsRef = useRef(null);
   const decarbonizationRef = useRef(null);
 
+
+  //when first rendered, open the previously open case study
   useEffect(() => {
-    if (currentScenarios.length=== 0 && !caseStudy){
-      openCaseStudy('Default');
-      setCaseStudy('Default');
+    if ((currentScenarios.length === 0 && !caseStudy)){
+      let currentCase = JSON.parse(localStorage.getItem('currentCase'));
+      if (currentCase && localStorage.getItem('caseStudy-'+currentCase.name)){
+        openCaseStudy(currentCase.name);
+        setCaseStudy(currentCase.name);
+      }
+      else{
+        openCaseStudy('Default');
+        setCaseStudy('Default');
+        localStorage.setItem('currentCase', JSON.stringify({name: 'Default'}));
+      }
     }
   }, [currentScenarios, caseStudy])
 
-  function updateCaseStudy(cur = currentScenarios) {
-    if (caseStudy){
-      let stored = JSON.parse(localStorage.getItem('caseStudy-' + caseStudy));
+  //updates name + contents of a case study
+  function updateCaseStudy(cur = currentScenarios, caseName = caseStudy) {
+    if (caseName){
+      let stored = JSON.parse(localStorage.getItem('caseStudy-' + caseName));
       let timeStamps = [];
       for (let i = 0; i < cur.length; i++){
         if (cur[i].name){
@@ -82,49 +85,101 @@ const NPV = () => {
         }
       }
       stored.scenarios = timeStamps;
-      localStorage.setItem('caseStudy-' + caseStudy, JSON.stringify(stored));
+      localStorage.setItem('caseStudy-' + caseName, JSON.stringify(stored));
     }
   }
 
+  //opens a case study and saves as current case
   function openCaseStudy(caseName = caseStudy){
+    setCaseStudy(caseName);
     let currentCase = JSON.parse(localStorage.getItem('caseStudy-' + caseName));
     if (!currentCase){
       localStorage.setItem('caseStudy-'+caseName, JSON.stringify({openedAt: Date.now(), scenarios: Object.values([])}));
       currentCase = JSON.parse(localStorage.getItem('caseStudy-' + caseName));
     }
+    else{
+      localStorage.setItem('caseStudy-'+caseName, JSON.stringify({openedAt: Date.now(), scenarios: currentCase.scenarios}));
+    }
+
+    localStorage.setItem('currentCase', JSON.stringify({name: caseName}));
 
     let scenarios = currentCase.scenarios;
 
     if (scenarios.length === 0){
-      setCurrentScenarios([baseScenarioKG]);
-      console.log('huh');
+      if (units === 'Kilograms'){
+        setCurrentScenarios([baseScenarioKG]);
+      }
+      else{
+        setCurrentScenarios([baseScenarioMT]);
+      }
     }
     else{
       let newScenarios = [];
 
-      for (let i = 0; i < scenarios.length; i++){
-        let data = JSON.parse(localStorage.getItem('scenario-' + scenarios[i]));
-        let scenario = {
-          name: data.name,
-          upfrontEmissions: data.upfrontEmissions,
-          discountRate: data.discountRate,
-          totalYears: data.totalYears,
-          yearlyValuesRef: { current: data.yearlyValues || [] },
-          longTerm: data.longTerm,
-          activeTab: data.activeTab,
-          delay: data.delay,
-          createdAt: data.createdAt,
-          units: 'Kilograms',
-        };
-        newScenarios.push(scenario);
+      if (units === 'Kilograms'){
+        for (let i = 0; i < scenarios.length; i++){
+          let data = JSON.parse(localStorage.getItem('scenario-' + scenarios[i]));
+          let scenario = {
+            name: data.name,
+            upfrontEmissions: data.upfrontEmissions,
+            discountRate: data.discountRate,
+            totalYears: data.totalYears,
+            yearlyValuesRef: { current: data.yearlyValues || [] },
+            longTerm: data.longTerm,
+            activeTab: data.activeTab,
+            delay: data.delay,
+            createdAt: data.createdAt,
+            units: 'Kilograms',
+            npvYearlyValues: data.npvYearlyValues,
+            npvTotalValues: data.npvTotalValues,
+            npv: data.npv,
+          };
+          newScenarios.push(scenario);
+        }
+      }
+      else{
+        for (let i = 0; i < scenarios.length; i++){
+          let data = JSON.parse(localStorage.getItem('scenario-' + scenarios[i]));
+          let editedYearly = data.yearlyValues.map(val => (parseFloat(val)/1000).toString());
+          let editedNPVYearly = data.npvYearlyValues.map(val => (parseFloat(val)/1000).toString());
+          let editedNPVTotal = data.npvTotalValues.map(val => (parseFloat(val)/1000).toString());
+
+          let scenario = {
+            name: data.name,
+            upfrontEmissions: (parseFloat(data.upfrontEmissions)/1000).toString(),
+            discountRate: data.discountRate,
+            totalYears: data.totalYears,
+            yearlyValuesRef: { current: editedYearly || [] },
+            longTerm: data.longTerm,
+            activeTab: data.activeTab,
+            delay: data.delay,
+            createdAt: data.createdAt,
+            units: 'Kilograms',
+            npvYearlyValues: editedNPVYearly,
+            npvTotalValues: editedNPVTotal,
+            npv: (parseFloat(data.npv)/1000).toString(),
+          };
+          newScenarios.push(scenario);
+        }
       }
 
       setCurrentScenarios(newScenarios);
-      updateCaseStudy(newScenarios);
+      updateCaseStudy(newScenarios, caseName);
     }
   }
 
-  //convert all current scenarios to kilograms
+  //autosaves each scenario and updates case study, resets current scenario and index
+  function resetCalculator(){
+    for (let i = 0; i < currentScenarios.length; i++){
+      let scenario = currentScenarios[i];
+      saveToStorage(scenario.name, scenario.createdAt, scenario.upfrontEmissions, scenario.discountRate, scenario.totalYears, scenario.yearlyValuesRef, scenario.longTerm, scenario.activeTab, scenario.delay);
+    }
+    updateCaseStudy();
+    setCurrentScenarios([]);
+    setIndex(0);
+  }
+
+  //convert all current scenarios to kilograms from metric tons
   function convertToKilograms(){
     for (let i = 0; i < currentScenarios.length; i++){
       let scenario = currentScenarios[i];
@@ -166,11 +221,12 @@ const NPV = () => {
     }
   }
 
-  //handle toggle in initial popup: don't show this again
+  //handle toggle in initial popup: "don't show this again"
   function handleToggle(){
     setShowAgain(prev => !prev);
   }
 
+  //handles "jump to" events
   const scrollTo = (ref) => {
     ref?.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
@@ -223,7 +279,7 @@ const NPV = () => {
       npv = npvTotalRef.current[delay+years]
     }
     
-    npv = parseFloat(npv.toPrecision(3))
+    npv = parseFloat(npv.toPrecision(3)) //3 significant figures
     setNPV(npv);
 
     const updatedScenario = {
@@ -235,105 +291,42 @@ const NPV = () => {
 
     return updatedScenario;
   }
-
-  function duplicateScenario(){
-    setCurrentScenarios(prev => {
-      let newScenario;
-        newScenario = {
-          name: currentScenarios[index].name + " copy",
-          upfrontEmissions: currentScenarios[index].upfrontEmissions,
-          discountRate: currentScenarios[index].discountRate,
-          totalYears: currentScenarios[index].totalYears,
-          yearlyValuesRef: currentScenarios[index].yearlyValuesRef,
-          longTerm: currentScenarios[index].longTerm,
-          activeTab: currentScenarios[index].activeTab,
-          delay: currentScenarios[index].delay,
-          units: currentScenarios[index].units,
-          createdAt: Date.now(),
-        };
-
-        const newList = [...prev, newScenario];
-        setIndex(newList.length - 1);
-        return newList;
-      });
-  }
   
   //opens new scenario
-  function addScenario(toAdd) {
+  function addScenario() {
     setCurrentScenarios(prev => {
       let newScenario;
 
-      //if toAdd is null, then use base scenario for kilograms or metric tons
-      if (toAdd === null) {
-        if (units === 'Kilograms'){
-          newScenario = {
-            name: '',
-            upfrontEmissions: baseScenarioKG.upfrontEmissions,
-            discountRate: baseScenarioKG.discountRate,
-            totalYears: baseScenarioKG.totalYears,
-            yearlyValuesRef: baseScenarioKG.yearlyValuesRef,
-            longTerm: baseScenarioKG.longTerm,
-            activeTab: baseScenarioKG.activeTab,
-            delay: baseScenarioKG.delay,
-            units: 'Kilograms',
-            createdAt: Date.now(),
-          };
-        }
-        else{
-          newScenario = {
-            name: '',
-            upfrontEmissions: baseScenarioMT.upfrontEmissions,
-            discountRate: baseScenarioMT.discountRate,
-            totalYears: baseScenarioMT.totalYears,
-            yearlyValuesRef: baseScenarioMT.yearlyValuesRef,
-            longTerm: baseScenarioMT.longTerm,
-            activeTab: baseScenarioMT.activeTab,
-            delay: baseScenarioMT.delay,
-            units: 'Metric Tons',
-            createdAt: Date.now(),
-          };
-        }
-        
-      } 
-
-      //otherwise, retrieve saved data from local storage
-      else {
-        const data = JSON.parse(localStorage.getItem(toAdd));
-
-        //since all saved scenarios are in kilograms, convert to metric tons if needed
-        if (units === 'Metric Tons'){
-          let editedYearly = data.yearlyValues.map(val => (parseFloat(val)/1000).toString());
-
-          newScenario = {
-            name: data.name,
-            upfrontEmissions: (parseFloat(data.upfrontEmissions)/1000).toString(),
-            discountRate: data.discountRate,
-            totalYears: data.totalYears,
-            yearlyValuesRef: { current: editedYearly || [] },
-            longTerm: data.longTerm,
-            activeTab: data.activeTab,
-            delay: data.delay,
-            createdAt: data.createdAt,
-            units: 'Kilograms',
-          };
-        }
-        else {
-          newScenario = {
-            name: data.name,
-            upfrontEmissions: data.upfrontEmissions,
-            discountRate: data.discountRate,
-            totalYears: data.totalYears,
-            yearlyValuesRef: { current: data.yearlyValues || [] },
-            longTerm: data.longTerm,
-            activeTab: data.activeTab,
-            delay: data.delay,
-            createdAt: data.createdAt,
-            units: 'Kilograms',
-          };
-        }
-        
-        setPage('npv');
+      //use base scenario for kilograms or metric tons
+      if (units === 'Kilograms'){
+        newScenario = {
+          name: '',
+          upfrontEmissions: baseScenarioKG.upfrontEmissions,
+          discountRate: baseScenarioKG.discountRate,
+          totalYears: baseScenarioKG.totalYears,
+          yearlyValuesRef: baseScenarioKG.yearlyValuesRef,
+          longTerm: baseScenarioKG.longTerm,
+          activeTab: baseScenarioKG.activeTab,
+          delay: baseScenarioKG.delay,
+          units: 'Kilograms',
+          createdAt: Date.now(),
+        };
       }
+      else{
+        newScenario = {
+          name: '',
+          upfrontEmissions: baseScenarioMT.upfrontEmissions,
+          discountRate: baseScenarioMT.discountRate,
+          totalYears: baseScenarioMT.totalYears,
+          yearlyValuesRef: baseScenarioMT.yearlyValuesRef,
+          longTerm: baseScenarioMT.longTerm,
+          activeTab: baseScenarioMT.activeTab,
+          delay: baseScenarioMT.delay,
+          units: 'Metric Tons',
+          createdAt: Date.now(),
+        };
+      }
+      
       const newList = [...prev, newScenario];
       updateCaseStudy(newList);
       return newList;
@@ -370,71 +363,7 @@ const NPV = () => {
       updateCaseStudy(filtered);
       let newList = filtered.length > 0 ? filtered : (units === 'Kilograms' ? [baseScenarioKG] : [baseScenarioMT]);
       return newList;
-    });
-    
-  }
-
-  //check if scenario has changed (if so, gives option to save before removing)
-  function changed(ind){
-    //helper function for parsing values
-    function parseFloatValues(obj) {
-      const parsed = {};
-      for (const key in obj) {
-        if (obj.hasOwnProperty(key)) {
-          parsed[key] = parseFloat(obj[key]);
-        }
-      }
-      return parsed;
-    }
-
-    let scenario = currentScenarios[ind];
-    let saved = JSON.parse(localStorage.getItem("scenario-" + scenario.createdAt)); //saved version of the scenario (if it exists)
-    
-    //compare to base scenario for kilograms
-    if (scenario.units === 'Kilograms' &&
-    parseFloat(scenario.upfrontEmissions) === parseFloat(baseScenarioKG.upfrontEmissions) &&
-    parseFloat(scenario.discountRate) === parseFloat(baseScenarioKG.discountRate) &&
-    parseInt(scenario.totalYears) === parseInt(baseScenarioKG.totalYears) &&
-    JSON.stringify(parseFloatValues(scenario.yearlyValuesRef.current.slice(0, parseInt(scenario.totalYears)))) === JSON.stringify(parseFloatValues(baseScenarioKG.yearlyValuesRef.current)) &&
-    scenario.longTerm === baseScenarioKG.longTerm &&
-    parseInt(scenario.delay) === parseInt(baseScenarioKG.delay)){
-      return false; //false (ie. did not change) if same as base
-    }
-
-    //compare to base scenario for metric tons
-    else if (scenario.units === 'Metric Tons' &&
-    parseFloat(scenario.upfrontEmissions) === parseFloat(baseScenarioMT.upfrontEmissions) &&
-    parseFloat(scenario.discountRate) === parseFloat(baseScenarioMT.discountRate) &&
-    parseInt(scenario.totalYears) === parseInt(baseScenarioMT.totalYears) &&
-    JSON.stringify(parseFloatValues(scenario.yearlyValuesRef.current.slice(0, parseInt(scenario.totalYears)))) === JSON.stringify(parseFloatValues(baseScenarioMT.yearlyValuesRef.current)) &&
-    scenario.longTerm === baseScenarioMT.longTerm &&
-    parseInt(scenario.delay) === parseInt(baseScenarioMT.delay)){
-      return false; //false (ie. did not change) if same as base
-    }
-
-    //if scenario is not saved, it has changed
-    else if(!saved){
-      return true;
-    }
-
-    //case where scenario is saved
-    else{
-      if(
-      scenario.name === saved.name &&
-      scenario.upfrontEmissions === saved.upfrontEmissions &&
-      scenario.discountRate === saved.discountRate &&
-      scenario.totalYears === saved.totalYears &&
-      JSON.stringify(parseFloatValues(Object.values(scenario.yearlyValuesRef.current.slice(0, parseInt(scenario.totalYears))))) === JSON.stringify(parseFloatValues(saved.yearlyValues)) &&
-      scenario.longTerm === saved.longTerm &&
-      scenario.delay === saved.delay &&
-      scenario.units === saved.units
-      ){
-        return false; //false (ie. did not change) if same as saved version
-      }
-      else{
-        return true; //scenario has changed
-      }
-    }
+    });  
   }
 
   //saves scenario to local storage
@@ -478,6 +407,7 @@ const NPV = () => {
     setUpdate((u) => u + 1); //send update to compare graph component
   }
 
+  //update compare (decarbonization) if scenario changed
   function updateCompare(option){
     setCompare((prev) => {
       const exists = prev.some((o) => o.createdAt === option.createdAt); //if scenario is in compare
@@ -492,7 +422,7 @@ const NPV = () => {
     setUpdate((u) => u + 1); //send update to decarbonization component
   }
 
-  //update compare (decarbonization) if scenario changed
+  //update BAU (decarbonization) if scenario changed
   function updateBAU(option){
     if (bau.createdAt === option.createdAt){ //if scenario is in compare, update it
       setBAU(option)
@@ -530,255 +460,128 @@ const NPV = () => {
     updateCompare(fullScenario);
     updateBAU(fullScenario);
   }
-
-  //updates an already saved scenario in local storage
-  function updateSave(){
-    let scenario = currentScenarios[toRemove];
-    saveToStorage(scenario.name, scenario.createdAt, scenario.upfrontEmissions, scenario.discountRate, scenario.totalYears, scenario.yearlyValuesRef, scenario.longTerm, scenario.activeTab, scenario.delay)
-  }
         
   return (
     <div>
-      <Header setPage = {setPage}/>
-
-      {page === 'case study' && (
-        <CaseStudies setCaseStudy = {setCaseStudy} setPage = {setPage} openCaseStudy = {openCaseStudy}/>
-      )}
-
-      {page === 'npv' && vertical && (
-        <div className = {styles.mainContainer}>
-          <div style={{ height: '80vh'}}>
-            <div className={styles.mainTabsContainer}>
-              {currentScenarios.map((scenario, ind) => {          
-                return (
-                <div key={scenario.createdAt}
-                  className={`${styles.mainTab} ${index === ind ? styles.selected : ''}`}
-                  onClick={() => setIndex(ind)}>
-                  <div className = {styles.mainTabName}> {scenario.name} </div>
-                  <div className = {styles.x} onClick={(e) => {e.stopPropagation(); setToRemove(ind); 
-                    removeScenario(ind);}}>
-                    <i className='fas fa-close'></i>
-                    <span className={styles.tooltipRemove}>Remove Scenario</span>
-                  </div>
-                </div>)
-              })}
-              <div className = {styles.addTab} onClick = {() => {addScenario(null);}}><i className='	fas fa-plus'></i>
-                <span className={styles.tooltipOpen}>Open Scenario</span>
+      <Header />
+      <div className = {styles.mainContainer}>
+        <div style={{ height: '80vh'}}>
+          <div className={styles.mainTabsContainer}>
+            {currentScenarios.map((scenario, ind) => {          
+              return (
+              <div key={scenario.createdAt}
+                className={`${styles.mainTab} ${index === ind ? styles.selected : ''}`}
+                onClick={() => setIndex(ind)}>
+                <div className = {styles.mainTabName}> {scenario.name} </div>
+                <div className = {styles.x} onClick={(e) => {e.stopPropagation(); 
+                  removeScenario(ind);}}>
+                  <i className='fas fa-close'></i>
+                  <span className={styles.tooltipRemove}>Remove Scenario</span>
+                </div>
               </div>
+              );
+            })}
+            <div className = {styles.addTab} onClick = {() => {addScenario();}}><i className='	fas fa-plus'></i>
+              <span className={styles.tooltipOpen}>Open Scenario</span>
             </div>
-            <div className = {styles.mainNPV}>
+          </div>
+          <div className = {styles.mainNPV}>
             <div className = {styles.mainRibbonContainer}>
-            <div className = {styles.mainRibbonButton}>
-                  Jump To...
-                  <div className={styles.ribbonContent}>
+              <div className = {styles.mainRibbonButton}>
+                Jump To...
+                <div className={styles.ribbonContent}>
                   <a onClick={() => scrollTo(calculatorRef)}>Inputs</a>
-                  <a onClick={() => scrollTo(visualsRef)}>Visuals</a>
+                  {vertical && (<a onClick={() => scrollTo(visualsRef)}>Visuals</a>)}
                   <a onClick={() => scrollTo(sharedVisualsRef)}>Comparison (NPV<sub>CO<sub>2</sub></sub>)</a>
                   <a onClick={() => scrollTo(decarbonizationRef)}>Decarbonization (D<sub>Eff</sub>)</a>
-                    </div>
-                </div>
-                <div className = {styles.mainRibbonButton} onClick = {() => {setPage('case study');}}>
-                  View Case Studies
-                </div>
-                <div className = {styles.mainRibbonButton}>
-                  Switch Units
-                  <div className={styles.ribbonContent}>
-                    <a onClick={() => {setUnits(prev => {if (prev !== 'Kilograms'){convertToKilograms(); return 'Kilograms'} else{return prev}})}}>Kilograms  {units === 'Kilograms' ? <i className='	fa fa-check'></i> : ''}</a>
-                    <a onClick={() => {setUnits(prev => {if (prev !== 'Metric Tons'){convertToTons(); return 'Metric Tons'} else{return prev}})}}>Metric Tons  {units === 'Metric Tons' ? <i className='	fa fa-check'></i> : ''}</a>
-                  </div>
-                </div>
-                <div className = {styles.mainRibbonButton}>
-                  Switch Layout
-                  <div className={styles.ribbonContent}>
-                      <a onClick={() => {setVertical(prev => {if (prev){return !prev} else{return prev}})}}>Horizontal  {!vertical ? <i className='	fa fa-check'></i> : ''}</a>
-                      <a onClick={() => {setVertical(prev => {if (!prev){ return !prev} else{return prev}})}}>Vertical  {vertical ? <i className='	fa fa-check'></i> : ''}</a>
-                    </div>
-                </div>
-                <div className = {styles.mainRibbonButton}>
-                  Change Mode
-                  <div className={styles.ribbonContent}>
-                      <a onClick={() => {setEmissions(prev => {if (prev){return !prev} else{return prev}})}}>Reductions  {!emissions ? <i className='	fa fa-check'></i> : ''}</a>
-                      <a onClick={() => {setEmissions(prev => {if (!prev){ return !prev} else{return prev}})}}>Emissions  {emissions ? <i className='	fa fa-check'></i> : ''}</a>
-                    </div>
                 </div>
               </div>
-              {(currentScenarios?.length > 0) && (<div>
+              <div className = {styles.mainRibbonButton} onClick = {() => {resetCalculator(); navigate('/CaseStudies')}}>
+                View Case Studies
+              </div>
+              <div className = {styles.mainRibbonButton}>
+                Switch Units
+                <div className={styles.ribbonContent}>
+                  <a onClick={() => {setUnits(prev => {if (prev !== 'Kilograms'){convertToKilograms(); return 'Kilograms'} else{return prev}})}}>Kilograms  {units === 'Kilograms' ? <i className='	fa fa-check'></i> : ''}</a>
+                  <a onClick={() => {setUnits(prev => {if (prev !== 'Metric Tons'){convertToTons(); return 'Metric Tons'} else{return prev}})}}>Metric Tons  {units === 'Metric Tons' ? <i className='	fa fa-check'></i> : ''}</a>
+                </div>
+              </div>
+              <div className = {styles.mainRibbonButton}>
+                Switch Layout
+                <div className={styles.ribbonContent}>
+                    <a onClick={() => {setVertical(prev => {if (prev){return !prev} else{return prev}})}}>Horizontal  {!vertical ? <i className='	fa fa-check'></i> : ''}</a>
+                    <a onClick={() => {setVertical(prev => {if (!prev){ return !prev} else{return prev}})}}>Vertical  {vertical ? <i className='	fa fa-check'></i> : ''}</a>
+                  </div>
+              </div>
+              <div className = {styles.mainRibbonButton}>
+                Change Mode
+                <div className={styles.ribbonContent}>
+                    <a onClick={() => {setEmissions(prev => {if (prev){return !prev} else{return prev}})}}>Reductions  {!emissions ? <i className='	fa fa-check'></i> : ''}</a>
+                    <a onClick={() => {setEmissions(prev => {if (!prev){ return !prev} else{return prev}})}}>Emissions  {emissions ? <i className='	fa fa-check'></i> : ''}</a>
+                  </div>
+              </div>
+            </div>
+            {(currentScenarios?.length > 0) && (<div>
+              {vertical && (<div>
                 <div ref={calculatorRef} className = {styles.scrollTarget}>
-                  <Calculator key={`${index}-${units}-${currentScenarios[index].name}`} vertical = {vertical} scenario = {currentScenarios[index]} saveToStorage = {saveToStorage} updateScenario = {updateScenario} units = {units} newOpen = {newOpen} caseStudy = {caseStudy}/>
+                  <Calculator key={`${index}-${units}-${currentScenarios[index].name}`} vertical = {vertical} scenario = {currentScenarios[index]} saveToStorage = {saveToStorage} updateScenario = {updateScenario} units = {units} caseStudy = {caseStudy}/>
                 </div>
                 <div ref={visualsRef} className = {styles.scrollTarget}>
                   <Visuals scenarioData = {currentScenarios} index = {index} units = {units} delay = {parseInt(currentScenarios[index].delay)} vertical = {vertical} emissions = {emissions}/>
                 </div>
-                <div ref={sharedVisualsRef} className = {styles.scrollTarget}>
-                  <SharedVisuals scenarioData = {currentScenarios} selected = {selected} setSelected = {setSelected} update = {update} units = {units} emissions = {emissions}/>
-                </div>
-                <div ref={decarbonizationRef} className = {styles.scrollTarget}>
-                  <Decarbonization scenarios = {currentScenarios} units = {units} update = {update} bau = {bau} setBAU = {setBAU} compare = {compare} setCompare = {setCompare}/></div>
-                </div>)}
-            </div>
-          </div>
-          {saveAs && (
-            <div className={styles.overlay}>
-              <div className={styles.popup}>
-                <h2>Edit Name and/or Save As:</h2>
-                <input id="scenarioName" 
-                  value = {newName} 
-                  onChange={(e) => setNewName(e.target.value)} 
-                  type="text" />
-                <div className = {styles.popupButtonContainer}> 
-                  <button className = {styles.popupButton} onClick={() => {setSaveAs(false); setNewName('');}}>Cancel</button>
-                  <button className = {styles.popupButton} onClick={() => {setSaveAs(false); currentScenarios[index].createdAt = Date.now(); saveToStorage(newName, currentScenarios[index].createdAt, currentScenarios[index].upfrontEmissions, currentScenarios[index].discountRate, currentScenarios[index].totalYears, currentScenarios[index].yearlyValuesRef, currentScenarios[index].longTerm, currentScenarios[index].activeTab, currentScenarios[index].delay); setNewName('');}}>Save As</button>
-                </div>
-              </div>
-            </div>
-          )}
-          {save && (
-            <div className={styles.overlay}>
-              <div className={styles.popup}>
-                <h2>This will override the currently saved version of this scenario. Are you sure you want to proceed?</h2>
-                <div className = {styles.popupButtonContainer}> 
-                  <button className = {styles.popupButton} onClick={() => {setSave(false);}}>No, Cancel</button>
-                  <button className = {styles.popupButton} onClick={() => {setSave(false); saveToStorage(currentScenarios[index].name, currentScenarios[index].createdAt, currentScenarios[index].upfrontEmissions, currentScenarios[index].discountRate, currentScenarios[index].totalYears, currentScenarios[index].yearlyValuesRef, currentScenarios[index].longTerm, currentScenarios[index].activeTab, currentScenarios[index].delay); setNewName('');}}>Yes, Save</button>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>)}
-
-      {page === 'npv' && !vertical && (
-        <div className = {styles.mainContainer}>
-          <div style={{ height: '80vh'}}>
-            <div className={styles.mainTabsContainer}>
-            {currentScenarios.map((scenario, ind) => {
-                          
-              return (
-                <div key={scenario.createdAt}
-                  className={`${styles.mainTab} ${index === ind ? styles.selected : ''}`}
-                  onClick={() => setIndex(ind)}>
-                  <div className = {styles.mainTabName}> {scenario.name} </div>
-                  <div className = {styles.x} onClick={(e) => {e.stopPropagation(); setToRemove(ind); 
-                    removeScenario(ind);}}>
-                    <i className='fas fa-close'></i>
-                    <span className={styles.tooltipRemove}>Remove Scenario</span>
-                  </div>
-                </div>)
-              })}
-              <div className = {styles.addTab} onClick = {() => {addScenario(null);}}><i className='	fas fa-plus'></i>
-                <span className={styles.tooltipOpen}>Open Scenario</span>
-              </div>
-            </div>
-            <div className = {styles.mainNPV}>
-            <div className = {styles.mainRibbonContainer}>
-            <div className = {styles.mainRibbonButton}>
-                  Jump To...
-                  <div className={styles.ribbonContent}>
-                  <a onClick={() => scrollTo(calculatorRef)}>Inputs</a>
-                  <a onClick={() => scrollTo(sharedVisualsRef)}>Comparison (NPV<sub>CO<sub>2</sub></sub>)</a>
-                  <a onClick={() => scrollTo(decarbonizationRef)}>Decarbonization (D<sub>Eff</sub>)</a>
-                    </div>
-                </div>
-                <div className = {styles.mainRibbonButton} onClick = {() => {setPage('case study');}}>
-                  View Case Studies
-                </div>
-                <div className = {styles.mainRibbonButton}>
-                  Switch Units
-                  <div className={styles.ribbonContent}>
-                    <a onClick={() => {setUnits(prev => {if (prev !== 'Kilograms'){convertToKilograms(); return 'Kilograms'} else{return prev}})}}>Kilograms  {units === 'Kilograms' ? <i className='	fa fa-check'></i> : ''}</a>
-                    <a onClick={() => {setUnits(prev => {if (prev !== 'Metric Tons'){convertToTons(); return 'Metric Tons'} else{return prev}})}}>Metric Tons  {units === 'Metric Tons' ? <i className='	fa fa-check'></i> : ''}</a>
-                  </div>
-                </div>
-                <div className = {styles.mainRibbonButton}>
-                  Switch Layout
-                  <div className={styles.ribbonContent}>
-                      <a onClick={() => {setVertical(prev => {if (prev){return !prev} else{return prev}})}}>Horizontal  {!vertical ? <i className='	fa fa-check'></i> : ''}</a>
-                      <a onClick={() => {setVertical(prev => {if (!prev){ return !prev} else{return prev}})}}>Vertical  {vertical ? <i className='	fa fa-check'></i> : ''}</a>
-                    </div>
-                </div>
-                <div className = {styles.mainRibbonButton}>
-                  Change Mode
-                  <div className={styles.ribbonContent}>
-                      <a onClick={() => {setEmissions(prev => {if (prev){return !prev} else{return prev}})}}>Reductions  {!emissions ? <i className='	fa fa-check'></i> : ''}</a>
-                      <a onClick={() => {setEmissions(prev => {if (!prev){ return !prev} else{return prev}})}}>Emissions  {emissions ? <i className='	fa fa-check'></i> : ''}</a>
-                    </div>
-                </div>
-              </div>
-              {(currentScenarios?.length > 0) && (<div><div className = {`${styles.horizontal} ${styles.scrollTarget}`} ref={calculatorRef}>
-                <Calculator key={`${index}-${units}-${currentScenarios[index].createdAt}`} vertical = {vertical} scenario = {currentScenarios[index]} saveToStorage = {saveToStorage} updateScenario = {updateScenario} units = {units} newOpen = {newOpen}  caseStudy = {caseStudy}/>
+              </div>)}
+              {!vertical && (<div className = {`${styles.horizontal} ${styles.scrollTarget}`} ref={calculatorRef}>
+                <Calculator key={`${index}-${units}-${currentScenarios[index]?.createdAt}`} vertical = {vertical} scenario = {currentScenarios[index]} saveToStorage = {saveToStorage} updateScenario = {updateScenario} units = {units} caseStudy = {caseStudy}/>
                 <Visuals scenarioData = {currentScenarios} index = {index} units = {units} delay = {parseInt(currentScenarios[index]?.delay)} vertical = {vertical} emissions = {emissions}/>
-              </div>
+              </div>)}
               <div ref={sharedVisualsRef} className = {styles.scrollTarget}>
                 <SharedVisuals scenarioData = {currentScenarios} selected = {selected} setSelected = {setSelected} update = {update} units = {units} emissions = {emissions}/>
               </div>
               <div ref={decarbonizationRef} className = {styles.scrollTarget}>
-                <Decarbonization scenarios = {currentScenarios} units = {units} update = {update} bau = {bau} setBAU = {setBAU}  compare = {compare} setCompare = {setCompare}/> </div>
+                <Decarbonization scenarios = {currentScenarios} units = {units} update = {update} bau = {bau} setBAU = {setBAU} compare = {compare} setCompare = {setCompare}/></div>
               </div>)}
-            </div>
-          </div>
-          {saveAs && (
-            <div className={styles.overlay}>
-              <div className={styles.popup}>
-                <h2>Edit Name and/or Save As:</h2>
-                <input id="scenarioName" 
-                  value = {newName} 
-                  onChange={(e) => setNewName(e.target.value)} 
-                  type="text" />
-                <div className = {styles.popupButtonContainer}> 
-                  <button className = {styles.popupButton} onClick={() => {setSaveAs(false); setNewName('');}}>Cancel</button>
-                  <button className = {styles.popupButton} onClick={() => {setSaveAs(false); currentScenarios[index].createdAt = Date.now(); saveToStorage(newName, currentScenarios[index].createdAt, currentScenarios[index].upfrontEmissions, currentScenarios[index].discountRate, currentScenarios[index].totalYears, currentScenarios[index].yearlyValuesRef, currentScenarios[index].longTerm, currentScenarios[index].activeTab, currentScenarios[index].delay); setNewName('');}}>Save As</button>
-                </div>
-              </div>
-            </div>
-          )}
-          {save && (
-            <div className={styles.overlay}>
-              <div className={styles.popup}>
-                <h2>This will override the currently saved version of this scenario. Are you sure you want to proceed?</h2>
-                <div className = {styles.popupButtonContainer}> 
-                  <button className = {styles.popupButton} onClick={() => {setSave(false);}}>No, Cancel</button>
-                  <button className = {styles.popupButton} onClick={() => {setSave(false); saveToStorage(currentScenarios[index].name, currentScenarios[index].createdAt, currentScenarios[index].upfrontEmissions, currentScenarios[index].discountRate, currentScenarios[index].totalYears, currentScenarios[index].yearlyValuesRef, currentScenarios[index].longTerm, currentScenarios[index].activeTab, currentScenarios[index].delay); setNewName('');}}>Yes, Save</button>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>)}
-
-      {page === 'saved' && (<Saved caseStudy = {caseStudy} addScenario = {addScenario} setPage = {setPage} openCaseStudy = {openCaseStudy}/>)}
-
-      {page === 'faqs' && (<FAQS/>)}
-
-      {(localStorage.getItem("startingPopup") === null || localStorage.getItem("startingPopup") === "true") && newOpen && (
-        <div className={styles.overlay}>
-          <div className={styles.popup}>
-            <h2>Welcome to the Carbon Calculus Calculator!</h2>
-            <p> <br/> </p>
-            <p>If this is your first time, we highly recommend viewing our tutorial and/or FAQs before beginning your calculations. </p>
-            <p> <br/> </p>
-            <label>
-              Don't Show This Again:
-              <input type="checkbox" checked={!showAgain} onChange={handleToggle} />
-            </label>
-            <div className = {styles.popup2Container}> 
-              <button className = {styles.popupButton} onClick={() => {
-                if (!showAgain){
-                  localStorage.setItem("startingPopup", false);
-                }
-                else {
-                  localStorage.setItem("startingPopup", true);
-                }
-                setNewOpen(false);}}>Open Calculator</button>
-              <button className = {styles.popupButton} onClick={() => {
-                if (!showAgain){
-                  localStorage.setItem("startingPopup", false);
-                }
-                else {
-                  localStorage.setItem("startingPopup", true);
-                }
-                setNewOpen(false);
-                setPage('faqs')}}>View Tutorial/FAQs</button>
-            </div>
           </div>
         </div>
-      )}
+      </div>
+
+
+        {initialPopup && (
+          <div className={styles.overlay}>
+            <div className={styles.popup}>
+              <h2>Welcome to the Carbon Calculus Calculator!</h2>
+              <p><br/>If this is your first time, we highly recommend viewing our tutorial and/or FAQs before beginning your calculations.</p>
+              <label>
+                Don't Show This Again:
+                <input type="checkbox" checked={!showAgain} onChange={handleToggle} />
+              </label>
+              <div className = {styles.popup2Container}> 
+                <button className = {styles.popupButton} onClick={() => {
+                  if (!showAgain){
+                    localStorage.setItem("startingPopup", false);
+                  }
+                  else {
+                    localStorage.setItem("startingPopup", true);
+                  }
+                  setInitialPopup(false);
+                }}>
+                  Open Calculator
+                </button>
+                <button className = {styles.popupButton} onClick={() => {
+                  if (!showAgain){
+                    localStorage.setItem("startingPopup", false);
+                  }
+                  else {
+                    localStorage.setItem("startingPopup", true);
+                  }
+                  setInitialPopup(false);
+                  navigate('/FAQs');
+                }}>
+                  View Tutorial/FAQs
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
     </div> 
   );
 };

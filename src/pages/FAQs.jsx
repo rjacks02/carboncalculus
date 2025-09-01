@@ -8,6 +8,7 @@ import styles from '../css/NPV.module.css'
 const FAQs = () => {
     return (
         <div>
+            <Header />
             <div className = {styles.mainContainer}>
                 <div className = {styles.faqsContainer}>
                     <div className = {styles.faqTitle}>
