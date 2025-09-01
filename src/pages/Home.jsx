@@ -1,10 +1,10 @@
-import React, {useState} from "react";
-import { useNavigate } from "react-router-dom";
+import React from "react"; //react imports
+import { useNavigate } from "react-router-dom"; //navigation imports
 
-import styles from '../css/NPV.module.css';
+import styles from '../css/NPV.module.css'; //styling imports
 
 const Home = () => {
-    const navigate = useNavigate();
+    const navigate = useNavigate(); //navigation
 
     return (
         <div className = {styles.home}>
@@ -13,7 +13,7 @@ const Home = () => {
                     <h2>Carbon Calculus™</h2>
                 </div>
                 <div className = {styles.subtitle}>
-                    <h2>"A novel approach to quantify the net present value of carbon dioxide emission reductions (NPV<sub>CO<sub>2</sub></sub>) and assist in more efficiently comparing the value of decarbonization actions"</h2>
+                    <h2>"A Novel Approach to Quantify the Net Present Value of Carbon Dioxide Emission Reductions (NPV<sub>CO2</sub>) and Assist in More Efficiently Comparing the Value of Decarbonization Actions."</h2>
                 </div>
                 <div className = {styles.homeButtonContainer}>
                     <button className = {styles.homeButton} onClick = {() => {navigate('/NPVCarbon', { state: { fromHome: true } })}}>Begin Calculations</button>
