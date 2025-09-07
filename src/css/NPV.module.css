@@ -488,8 +488,7 @@ html, body, #root {
 .save{
   height: fit-content;
   margin-bottom: 2%;
-  display: grid;
-  grid-template-columns: 8fr 2fr;
+  display: flex;
   line-height: 50%;
   align-items: center;
   border: none;
@@ -502,7 +501,7 @@ html, body, #root {
 
 .saveInfo{
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
   height: fit-content;
   line-height: 50%;
   align-items: center;
@@ -510,6 +509,7 @@ html, body, #root {
   border: none;
   border-radius: 6px;
   text-align: center;
+  width: 80%;
 }
 
 .noScenarios{
@@ -534,6 +534,7 @@ html, body, #root {
   border: none;
   border-radius: 6px;
   text-align: center;
+  width: 80%;
 }
 
 .caseTitle{
@@ -588,7 +589,7 @@ html, body, #root {
   background-color: #aed9ea;
   border-radius: 6px;
   padding: 1rem;
-  width: 80%;
+  width: 20%;
   height: 60%;
 }
 

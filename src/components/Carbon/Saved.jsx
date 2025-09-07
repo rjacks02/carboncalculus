@@ -1,10 +1,9 @@
 import React, {useState, useRef, useEffect} from "react";
 import { useNavigate } from "react-router-dom";
 
-import styles from '../css/NPV.module.css'
+import styles from '../../css/NPV.module.css'
 
-const Item = ({key_, caseStudy, refreshKeys, caseStudies}) => {
-    const navigate = useNavigate();
+const Item = ({key_, openCase, refreshKeys, caseStudies}) => {
     const [info, setInfo] = useState({});
 
     const [renamePopup, setRenamePopup] = useState(false);
@@ -23,10 +22,10 @@ const Item = ({key_, caseStudy, refreshKeys, caseStudies}) => {
 
     function move(){
         if (moveTo){
-            let stored = JSON.parse(localStorage.getItem('caseStudy-' + caseStudy));
+            let stored = JSON.parse(localStorage.getItem('caseStudy-' + openCase));
             let newScenarios = stored.scenarios.filter(timestamp => timestamp !== key_);
             stored.scenarios = newScenarios;
-            localStorage.setItem('caseStudy-' + caseStudy, JSON.stringify(stored));
+            localStorage.setItem('caseStudy-' + openCase, JSON.stringify(stored));
 
             let newStored = JSON.parse(localStorage.getItem(moveTo));
             let newScens = [...newStored.scenarios];
@@ -65,12 +64,12 @@ const Item = ({key_, caseStudy, refreshKeys, caseStudies}) => {
     }
 
     function onDelete(){
-        let newStored = JSON.parse(localStorage.getItem('caseStudy-'+caseStudy));
+        let newStored = JSON.parse(localStorage.getItem('caseStudy-'+openCase));
         let newScens = [...newStored.scenarios];
         newScens = newScens.filter(s => s !== key_);
         newStored.scenarios = newScens ?? [];
 
-        localStorage.setItem('caseStudy-'+caseStudy, JSON.stringify(newStored));
+        localStorage.setItem('caseStudy-'+openCase, JSON.stringify(newStored));
         localStorage.removeItem('scenario-'+key_);
         refreshKeys();
     }
@@ -146,18 +145,18 @@ const Item = ({key_, caseStudy, refreshKeys, caseStudies}) => {
     )
 }
 
-const Saved = ({caseStudy, setPage, openCaseStudy}) => {
+const Saved = ({openCase, setOpenCase, caseStudies}) => {
+    const navigate = useNavigate();
+
     const [localKeys, setLocalKeys] = useState(['start']);
-    const [update, setUpdate] = useState(false);
     const [refreshCode, setRefreshCode] = useState(0);
-    const [caseStudies, setCaseStudies] = useState(Object.keys(localStorage).filter(k => k.startsWith("caseStudy-")));
 
     useEffect(() => {
         refreshKeys();
     }, []);
 
     function refreshKeys() {
-        let caseInfo = JSON.parse(localStorage.getItem('caseStudy-' + caseStudy));
+        let caseInfo = JSON.parse(localStorage.getItem('caseStudy-' + openCase));
         let scenarioKeys = caseInfo.scenarios;
         if (!scenarioKeys || scenarioKeys.length === 0){
             setLocalKeys([]);
@@ -177,19 +176,19 @@ const Saved = ({caseStudy, setPage, openCaseStudy}) => {
         <div className = {styles.mainContainer}>
             <div className = {`${styles.section} ${styles.saveSection}`}>
             <div className = {styles.caseRibbonContainer}>
-            <div className = {styles.caseRibbonButton} onClick = {() => {setPage('case study');}}>
+            <div className = {styles.caseRibbonButton} onClick = {() => {setOpenCase(false);}}>
                     <i className='fas fa-arrow-left'></i> Back
                 </div>
-                <div className = {styles.caseRibbonButton} onClick = {() => {setPage('npv'); openCaseStudy();}}>
+                <div className = {styles.caseRibbonButton} onClick = {() => {localStorage.setItem('currentCase', JSON.stringify({name: openCase})); navigate('/NPVCarbon')}}>
                   Open Case Study
                 </div>
               </div>
-                <h2 className = {styles.sectionTitle}>Case Study: {caseStudy}</h2>   
+                <h2 className = {styles.sectionTitle}>Case Study: {openCase}</h2>   
                 <div className = {styles.savedList}>
                 {localKeys.length === 0 && (<div className = {styles.noScenarios}>
                         This case study does not have any scenarios.
                          </div>)}
-                    {localKeys.map((key) => (<Item key={key + refreshCode} key_ = {key} setPage = {setPage} update = {update} openCaseStudy = {openCaseStudy} caseStudy = {caseStudy} refreshKeys = {refreshKeys} caseStudies = {caseStudies}/>))}
+                    {localKeys.map((key) => (<Item key={key + refreshCode} key_ = {key} openCase = {openCase} refreshKeys = {refreshKeys} caseStudies = {caseStudies}/>))}
                 </div>
             </div>
         </div>
