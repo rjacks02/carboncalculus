@@ -12,6 +12,7 @@ const Visuals = ({scenarioData, index, units, delay, vertical, emissions}) => {
     const [activeTab, setActiveTab] = useState('Graph'); //tab is Graph or Bar Chart
     const [showInfo, setShowInfo] = useState(false); //show info popup
 
+    //render visuals
     function renderVisual(){
         if (activeTab === 'Graph'){
             return (
@@ -20,7 +21,7 @@ const Visuals = ({scenarioData, index, units, delay, vertical, emissions}) => {
         }
         else{
             return (
-                <BarChart name = {scenarioData[index].name} vertical = {false} vals = {scenarioData[index]?.longTerm ? scenarioData[index]?.npvYearlyValues ?? [] : (scenarioData[index]?.npvYearlyValues ?? []).slice(0, parseInt(scenarioData[index]?.totalYears)+parseInt(scenarioData[index]?.delay)+1)} units = {units} delay = {delay} emissions = {emissions}/>
+                <BarChart name = {scenarioData[index].name} vertical = {false} vals = {scenarioData[index]?.longTerm ? scenarioData[index]?.npvYearlyValues ?? [] : (scenarioData[index]?.npvYearlyValues ?? []).slice(0, parseInt(scenarioData[index]?.totalYears)+parseInt(scenarioData[index]?.delay)+1)} units = {units} emissions = {emissions}/>
             )
         }
     }
