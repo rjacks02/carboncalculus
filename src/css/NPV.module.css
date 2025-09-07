@@ -239,6 +239,7 @@ html, body, #root {
   flex-direction: column;
   background-color: #94c8dc;
   padding: 10px;
+  padding-top: 0;
   box-sizing: border-box;
   gap: 0.5rem;
   overflow-x: hidden;
@@ -280,6 +281,19 @@ html, body, #root {
   border-radius: 10px;
   margin: auto;
   margin-top: 2%;
+}
+
+.openCase {
+  background-color: #f0db9a;
+  font-size: 1.5rem;
+  padding: 1rem;
+  margin: auto;
+  margin-bottom: 2%;
+  width: max-content;
+  align-self: center;
+  text-align: center;
+  border-radius: 10px;
+  margin-top: 0%;
 }
 
 .inputColumnsHolder{
@@ -501,9 +515,8 @@ html, body, #root {
 
 .saveInfo{
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr;
   height: fit-content;
-  line-height: 50%;
   align-items: center;
   background-color: #aed9ea;
   border: none;
@@ -547,12 +560,21 @@ html, body, #root {
   text-align: center;
 }
 
+.saveTitle{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  height: fit-content;
+  align-items: center;
+  border: none;
+  border-radius: 6px;
+  text-align: center;
+}
+
 .case {
   height: fit-content;
   margin-bottom: 2%;
   display: grid;
   grid-template-columns: 8fr 2fr;
-  line-height: 50%;
   align-items: center;
   border: none;
   gap: 3%;
@@ -567,10 +589,16 @@ html, body, #root {
   text-align: center;
 }
 
+.titleItem{
+  font-size: 1.5rem;
+  padding: 0%;
+  text-align: center;
+}
+
 
 .saveInfoItem{
   font-size: 1.5rem;
-  padding: 10%;
+  padding: 5%;
   text-align: center;
 }
 
@@ -603,6 +631,7 @@ html, body, #root {
   align-items: center;
   width: 80%;
   text-align: center;
+  height: fit-content;
 }
 
 .saveActionItem{
@@ -927,12 +956,14 @@ html, body, #root {
   padding: 1rem;
   display: grid;
   grid-auto-flow: column;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
   gap: 3%;
   width: 96%;
   padding-left: 2%;
   padding-right: 2%;
   border-bottom: .3rem solid #5c99b7;
+  margin-bottom: 0%;
+  padding-top: 2%;
 }
 
 .mainRibbonButton {

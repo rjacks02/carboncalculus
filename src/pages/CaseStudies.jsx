@@ -161,13 +161,13 @@ const CaseStudies = () => {
                     <div className = {styles.savedList}>
                         <div className = {styles.case}>
                             <div className = {styles.caseTitle}>
-                                <div className = {styles.caseInfoItem}>
+                                <div className = {styles.titleItem}>
                                     Title:
                                 </div>
-                                <div className = {styles.caseInfoItem}>
+                                <div className = {styles.titleItem}>
                                     Scenarios:
                                 </div>
-                                <div className = {styles.caseInfoItem}>
+                                <div className = {styles.titleItem}>
                                     Opened:
                                 </div>
                             </div>
