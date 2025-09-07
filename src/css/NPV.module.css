@@ -355,7 +355,7 @@ html, body, #root {
   color: white;
 }
 
-.totalYears {
+.calcComponent {
   text-align: right;
   font-size: 1rem;
   color: black;
