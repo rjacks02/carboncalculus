@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useRef} from "react"; //react imports
+import React, {useState, useEffect} from "react"; //react imports
 
 import styles from '../../css/NPV.module.css'; //styling imports
 
