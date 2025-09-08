@@ -1,5 +1,7 @@
 import React, {useState, useEffect} from "react"; //react imports
 
+import { useNavigate } from "react-router-dom"; //navigation imports
+
 import styles from '../../css/NPV.module.css'; //styling imports
 
 //component imports
@@ -10,6 +12,7 @@ import info from './info.json' //more info about terms
 
 //dropdown component for selecting scenarios
 const SelectScenarios = ({scenarios, selected, setSelected}) => {
+
   const [isOpen, setIsOpen] = useState(true); //if dropdown is open
 
   //toggles option, if already selected then unselect
@@ -48,6 +51,8 @@ const SelectScenarios = ({scenarios, selected, setSelected}) => {
 
 //main component with graph and table
 const Comparison = ({scenarioData, selected, setSelected, update, units, emissions}) => {
+  let navigate = useNavigate(); //navigation
+  
   const [data, setData] = useState([]); //main data values with colors
   const [names, setNames] = useState(['', '', '', '', '']); //names of selected scenarios
   const [npvs, setNPVs] = useState(['', '', '', '', '']); //npvs based on total years
@@ -170,7 +175,7 @@ const Comparison = ({scenarioData, selected, setSelected, update, units, emissio
             <p>{info[`NPV<sub>CO2</sub>`]}</p>
             <div className = {styles.popup2Container}> 
               <button className = {styles.popupButton} onClick={() => {setShowInfo(false);}}>Close</button>
-              <button className = {styles.popupButton} onClick={() => {setShowInfo(false);}}>Read More</button>
+              <button className = {styles.popupButton} onClick={() => {setShowInfo(false); navigate('/FAQs');}}>Read More</button>
             </div>
           </div>
         </div>

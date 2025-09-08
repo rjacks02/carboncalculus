@@ -2,6 +2,8 @@ import React, {useState, useEffect} from "react"; //react imports
 
 import styles from '../../css/NPV.module.css' //styling imports
 
+import { useNavigate } from "react-router-dom"; //navigation imports
+
 //component imports
 import DecarbGraph from './DecarbGraph';
 import DecarbTable from "./DecarbTable";
@@ -82,6 +84,8 @@ const SelectScenario = ({scenarios, compare, setCompare, bau, setBAU}) => {
 };
 
 const Decarbonization = ({scenarios, units, update, bau, setBAU, compare, setCompare}) => {
+  let navigate = useNavigate(); //navigation
+  
   const [data, setData] = useState([]); //main data with colors
   const [names, setNames] = useState(['', '', '', '', '']); //names of selected scenarios
   const [deffs, setDeffs] = useState(['', '', '', '', '']); //deffs based on total years
@@ -331,14 +335,14 @@ const Decarbonization = ({scenarios, units, update, bau, setBAU, compare, setCom
 
       {showInfo && (
         <div className={styles.overlay}>
-            <div className={styles.popup}>
+          <div className={styles.popup}>
             <h2>D<sub>Eff</sub> (Effective Decarbonization)</h2>
             <p>{info["D<sub>Eff</sub> (Effective Decarbonization)"]}</p>
-                <div className = {styles.popup2Container}> 
-                    <button className = {styles.popupButton} onClick={() => {setShowInfo(false);}}>Close</button>
-                    <button className = {styles.popupButton} onClick={() => {setShowInfo(false);}}>Read More</button>
-                </div>
+            <div className = {styles.popup2Container}> 
+              <button className = {styles.popupButton} onClick={() => {setShowInfo(false);}}>Close</button>
+              <button className = {styles.popupButton} onClick={() => {setShowInfo(false); navigate('/FAQs');}}>Read More</button>
             </div>
+          </div>
         </div>
       )}
     </div>

@@ -1,20 +1,21 @@
-import React from "react";
-import { useNavigate } from "react-router-dom";
+import React from "react"; //react imports
 
-import styles from '../css/NPV.module.css'
+import { useNavigate } from "react-router-dom"; //navigation imports
+
+import styles from '../css/NPV.module.css' //styling imports
 
 const Header = () => {
-    const navigate = useNavigate();
+  let navigate = useNavigate(); //navigation
 
-    return (
-        <div className = {styles.headerContainer}>
-            <h2 className = {styles.header}>Carbon Calculus™</h2>
-            <button className = {styles.navButton} onClick = {() => {navigate('/Home')}}>Home</button>
-            <button className = {styles.navButton} onClick = {() => {navigate('/NPVCarbon')}}>Calculator</button>
-            <button className = {styles.navButton} onClick = {() => {navigate('/FAQs')}}>FAQs/Tutorial</button>
-            <button className = {styles.navButton} onClick = {() => {navigate('/FAQs')}}>Our Research</button>
-        </div>
-    );
+  return (
+    <div className = {styles.headerContainer}>
+      <h2 className = {styles.header}>Carbon Calculus™</h2>
+      <button className = {styles.navButton} onClick = {() => {navigate('/Home')}}>Home</button>
+      <button className = {styles.navButton} onClick = {() => {navigate('/NPVCarbon')}}>Calculator</button>
+      <button className = {styles.navButton} onClick = {() => {navigate('/FAQs')}}>FAQs/Tutorial</button>
+      <button className = {styles.navButton} onClick = {() => {navigate('/FAQs')}}>Our Research</button>
+    </div>
+  );
 };
 
 export default Header;

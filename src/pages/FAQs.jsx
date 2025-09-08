@@ -83,7 +83,7 @@ const FAQs = () => {
                 What is Long-Term Value?
               </div>
               <div className = {styles.answer}>
-                Enabling this function accounts for the limit of your scenario, taking your final year’s emission rate and assuming that rate continues for many years to come. This is encouraged as a default setting, as most real-world emissions will not stop at the end of your chosen time horizon, but that ultimately depends on your scenario.
+              Enabling this function accounts for 100 years of discounted impact for your scenario(s), taking the final year’s emission rate and assuming that rate continues through year 100. This explores the version of your scenario(s) considering that emissions might not stop at the end of your chosen time horizon, but that ultimately depends on your scenario.
               </div>
             </div>
             <div className = {styles.qanda}>

@@ -524,14 +524,14 @@ const NPV = () => {
             {(currentScenarios?.length > 0) && (<div>
               {vertical && (<div>
                 <div ref={calculatorRef} className = {styles.scrollTarget}>
-                  <Calculator key={`${index}-${units}-${currentScenarios[index].name}`} vertical = {vertical} scenario = {currentScenarios[index]} saveToStorage = {saveToStorage} updateScenario = {updateScenario} units = {units} caseStudy = {caseStudy}/>
+                  <Calculator key={`${index}-${units}-${currentScenarios[index].name}`} scenario = {currentScenarios[index]} updateScenario = {updateScenario} units = {units} caseStudy = {caseStudy}/>
                 </div>
                 <div ref={visualsRef} className = {styles.scrollTarget}>
                   <Visuals scenarioData = {currentScenarios} index = {index} units = {units} delay = {parseInt(currentScenarios[index].delay)} vertical = {vertical} emissions = {emissions}/>
                 </div>
               </div>)}
               {!vertical && (<div className = {`${styles.horizontal} ${styles.scrollTarget}`} ref={calculatorRef}>
-                <Calculator key={`${index}-${units}-${currentScenarios[index]?.createdAt}`} vertical = {vertical} scenario = {currentScenarios[index]} saveToStorage = {saveToStorage} updateScenario = {updateScenario} units = {units} caseStudy = {caseStudy}/>
+                <Calculator key={`${index}-${units}-${currentScenarios[index]?.createdAt}`} scenario = {currentScenarios[index]} updateScenario = {updateScenario} units = {units} caseStudy = {caseStudy}/>
                 <Visuals scenarioData = {currentScenarios} index = {index} units = {units} delay = {parseInt(currentScenarios[index]?.delay)} vertical = {vertical} emissions = {emissions}/>
               </div>)}
               <div ref={comparisonRef} className = {styles.scrollTarget}>

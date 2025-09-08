@@ -102,118 +102,118 @@ const Item = ({caseStudy, refreshKeys, setBadName, setOpenCase}) => {
 
 //page for list of case studies
 const CaseStudies = () => {
-    const [caseStudies, setCaseStudies] = useState([]); //list of case studies
-    const [openCase, setOpenCase] = useState(''); //currently open case
-    const [refreshCode, setRefreshCode] = useState(0); //rerender list of case studies
+  const [caseStudies, setCaseStudies] = useState([]); //list of case studies
+  const [openCase, setOpenCase] = useState(''); //currently open case
+  const [refreshCode, setRefreshCode] = useState(0); //rerender list of case studies
 
-    const [addPopup, setAddPopup] = useState(false); //popup to add new case study
-    const [newName, setNewName] = useState(''); //rename case study
-    const [badName, setBadName] = useState(false); //triggers true if case study with new name already exists
-
-
-    //finds all saved case studies
-    useEffect(() => {
-        if (Object.keys(localStorage).filter(k => k.startsWith("caseStudy-")).length === 0){
-            newCaseStudy('Default'); //if no case studies exist, create default case study
-        }
-        refreshKeys();
-    }, []);
+  const [addPopup, setAddPopup] = useState(false); //popup to add new case study
+  const [newName, setNewName] = useState(''); //rename case study
+  const [badName, setBadName] = useState(false); //triggers true if case study with new name already exists
 
 
-    //creates new case study
-    function newCaseStudy(name){
-        if (localStorage.getItem('caseStudy-'+name)){ //if case study with name already exists
-            setBadName(true);
-        }
-        else{
-            localStorage.setItem('caseStudy-' + name, JSON.stringify({openedAt: Date.now(), scenarios: Object.values([])}));
-            refreshKeys();
-        }
+  //finds all saved case studies
+  useEffect(() => {
+    if (Object.keys(localStorage).filter(k => k.startsWith("caseStudy-")).length === 0){
+      newCaseStudy('Default'); //if no case studies exist, create default case study
+    }
+    refreshKeys();
+  }, []);
+
+
+  //creates new case study
+  function newCaseStudy(name){
+    if (localStorage.getItem('caseStudy-'+name)){ //if case study with name already exists
+      setBadName(true);
+    }
+    else{
+      localStorage.setItem('caseStudy-' + name, JSON.stringify({openedAt: Date.now(), scenarios: Object.values([])}));
+      refreshKeys();
+    }
+  }
+
+  //refreshes case studies in order of last opened
+  function refreshKeys() {
+    if (Object.keys(localStorage).filter(k => k.startsWith("caseStudy-")).length === 0){
+      newCaseStudy('Default'); //if no case studies exist, create default case study
     }
 
-    //refreshes case studies in order of last opened
-    function refreshKeys() {
-        if (Object.keys(localStorage).filter(k => k.startsWith("caseStudy-")).length === 0){
-            newCaseStudy('Default'); //if no case studies exist, create default case study
-        }
+    //sorts case studies
+    const keysWithTimestamps = Object.keys(localStorage)
+    .filter(k => k.startsWith("caseStudy-"))
+    .sort((a, b) => {
+      let caseA = JSON.parse(localStorage.getItem(a));
+      let caseB = JSON.parse(localStorage.getItem(b));
+      const numA = parseInt(caseA.openedAt);
+      const numB = parseInt(caseB.openedAt);
+      return numB - numA;
+    });
+    setCaseStudies(keysWithTimestamps);
+    setRefreshCode(prev => prev+1); //updates list
+  }
 
-        //sorts case studies
-        const keysWithTimestamps = Object.keys(localStorage)
-        .filter(k => k.startsWith("caseStudy-"))
-        .sort((a, b) => {
-            let caseA = JSON.parse(localStorage.getItem(a));
-            let caseB = JSON.parse(localStorage.getItem(b));
-            const numA = parseInt(caseA.openedAt);
-            const numB = parseInt(caseB.openedAt);
-            return numB - numA;
-        });
-        setCaseStudies(keysWithTimestamps);
-        setRefreshCode(prev => prev+1); //updates list
-    }
-
-    
-    return (
-        <div>
-            <Header />
-            {!openCase && (<div className = {styles.mainContainer}>
-                <div className = {`${styles.section} ${styles.saveSection}`}>
-                    <h2 className = {styles.sectionTitle}>Case Studies:</h2>
-                    <div className = {styles.savedList}>
-                        <div className = {styles.case}>
-                            <div className = {styles.caseTitle}>
-                                <div className = {styles.titleItem}>
-                                    Title:
-                                </div>
-                                <div className = {styles.titleItem}>
-                                    Scenarios:
-                                </div>
-                                <div className = {styles.titleItem}>
-                                    Opened:
-                                </div>
-                            </div>
-                            <div className = {styles.actionsTitle}>
-                                Actions:
-                            </div>
-                        </div>
-                        {caseStudies.map((key) => (<Item key={key+refreshCode} caseStudy = {key} refreshKeys = {refreshKeys} setBadName={setBadName} setOpenCase = {setOpenCase}/>))}
-                        <div className = {styles.caseButtonWrapper}>
-                            <button className = {styles.caseButton} onClick = {() => {setAddPopup(true);}}><span>+ Add New Case Study</span></button>
-                        </div>
-                    </div>
+  
+  return (
+    <div>
+      <Header />
+      {!openCase && (<div className = {styles.mainContainer}>
+        <div className = {`${styles.section} ${styles.saveSection}`}>
+          <h2 className = {styles.sectionTitle}>Case Studies:</h2>
+          <div className = {styles.savedList}>
+            <div className = {styles.case}>
+              <div className = {styles.caseTitle}>
+                <div className = {styles.titleItem}>
+                  Title:
                 </div>
-
-                {addPopup && (
-                    <div className={styles.overlay}>
-                        <div className={styles.popup}>
-                            <h2>Enter A Name For The Case Study:</h2>
-                            <input id="caseName" 
-                                value = {newName} 
-                                onChange={(e) => setNewName(e.target.value)} 
-                                type="text" />
-                            <div className = {styles.popupButtonContainer}> 
-                                <button className = {styles.popupButton} onClick={() => {setAddPopup(false); setNewName('');}}>Cancel</button>
-                                <button className = {styles.popupButton} onClick={() => {setAddPopup(false); newCaseStudy(newName); setNewName('');}}>Confirm</button>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {badName && (
-                    <div className={styles.overlay}>
-                    <div className={styles.popup}>
-                        <h2>A case study with this name already exists, so the action could not be completed.</h2>
-                        <div className = {styles.popupContainer}> 
-                            <button className = {styles.popupButton} onClick={() => {setBadName(false);}}>OK</button>
-                        </div>
-                    </div>
-                    </div>
-                )}
-
-            </div>)}
-
-            {openCase && <Saved openCase = {openCase} setOpenCase = {setOpenCase} caseStudies = {caseStudies}/>}
+                <div className = {styles.titleItem}>
+                  Scenarios:
+                </div>
+                <div className = {styles.titleItem}>
+                  Opened:
+                </div>
+              </div>
+              <div className = {styles.actionsTitle}>
+                Actions:
+              </div>
+            </div>
+            {caseStudies.map((key) => (<Item key={key+refreshCode} caseStudy = {key} refreshKeys = {refreshKeys} setBadName={setBadName} setOpenCase = {setOpenCase}/>))}
+            <div className = {styles.caseButtonWrapper}>
+              <button className = {styles.caseButton} onClick = {() => {setAddPopup(true);}}><span>+ Add New Case Study</span></button>
+            </div>
+          </div>
         </div>
-    );
+
+        {addPopup && (
+          <div className={styles.overlay}>
+            <div className={styles.popup}>
+              <h2>Enter A Name For The Case Study:</h2>
+              <input id="caseName" 
+                value = {newName} 
+                onChange={(e) => setNewName(e.target.value)} 
+                type="text" />
+              <div className = {styles.popupButtonContainer}> 
+                <button className = {styles.popupButton} onClick={() => {setAddPopup(false); setNewName('');}}>Cancel</button>
+                <button className = {styles.popupButton} onClick={() => {setAddPopup(false); newCaseStudy(newName); setNewName('');}}>Confirm</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {badName && (
+          <div className={styles.overlay}>
+          <div className={styles.popup}>
+            <h2>A case study with this name already exists, so the action could not be completed.</h2>
+            <div className = {styles.popupContainer}> 
+              <button className = {styles.popupButton} onClick={() => {setBadName(false);}}>OK</button>
+            </div>
+          </div>
+          </div>
+        )}
+
+      </div>)}
+
+      {openCase && <Saved openCase = {openCase} setOpenCase = {setOpenCase} caseStudies = {caseStudies}/>}
+    </div>
+  );
 };
 
 export default CaseStudies;

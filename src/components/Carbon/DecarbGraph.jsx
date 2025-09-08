@@ -1,10 +1,17 @@
-import React from "react"; //react imports
+import React, {useState} from "react"; //react imports
+
+import { useNavigate } from "react-router-dom"; //navigation imports
 
 import styles from '../../css/NPV.module.css' //styling imports
+
+import info from './info.json' //more info about terms
 
 import Plot from 'react-plotly.js'; //plotting imports
 
 const DecarbGraph = ({data, handleToggle, longterm, units, bau}) => {
+  let navigate = useNavigate(); //navigation
+  
+  const [showInfo, setShowInfo] = useState(false);
 
   return (
     <div className = {styles.visualSection}>
@@ -61,11 +68,25 @@ const DecarbGraph = ({data, handleToggle, longterm, units, bau}) => {
         />
       </div>
       <div className = {styles.longterm}>
-        <label>
+        <label><div className = {styles.info}><i className="material-icons" onClick = {() => {setShowInfo(true);}}>info_outline</i></div>
             Long-Term Value:
             <input type="checkbox" id = "longterm" checked={longterm} onChange={handleToggle} />
         </label>
       </div>
+
+      {showInfo && (
+                <div className={styles.overlay}>
+                    <div className={styles.popup}>
+                        <h2>Long-Term Value:</h2>
+                        <p>{info["Long-Term Value"]}</p>
+                        <div className = {styles.popup2Container}> 
+                            <button className = {styles.popupButton} onClick={() => {setShowInfo(false);}}>Close</button>
+                            <button className = {styles.popupButton} onClick={() => {setShowInfo(false); navigate('/FAQs');}}>Read More</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
     </div>
   );
 };
