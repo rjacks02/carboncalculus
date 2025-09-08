@@ -1,19 +1,19 @@
-import React, {useState, useEffect} from "react";
+import React from "react"; //react imports
 
-import styles from '../../css/NPV.module.css'
-import Plot from 'react-plotly.js';
+import styles from '../../css/NPV.module.css' //styling imports
+
+import Plot from 'react-plotly.js'; //plotly imports
 
 const CompareTable = ({names, npvs, longTerms, colors, units}) => {
+  
+  return (
+    <div className = {styles.visualSection}>
+      <h3 className = {styles.visualHeader}>
+        NPV<sub>CO₂</sub> Comparison Table ({units})
+      </h3>
 
-    return (
-        <div className = {styles.visualSection}>
-            <h3 className = {styles.visualHeader}>
-            NPV<sub>CO₂</sub> Comparison Table ({units})
-        </h3>
-
-          <Plot
-      data={[
-        {
+      <Plot
+        data={[{
           type: 'table',
           header: {
             values: [['<b>Scenario</b>'], [`<b>NPV<sub>CO<sub>2</sub></sub></b>`], [`<b>Long-Term NPV<sub>CO<sub>2</sub></sub></b>`]],
@@ -34,22 +34,21 @@ const CompareTable = ({names, npvs, longTerms, colors, units}) => {
             fill: { color: [colors, colors, colors] },
             font: { family: 'Arial', size: 14, color: 'black' }
           }
-        }
-      ]}
-      layout={{
-        margin: { t: 10, b: 10, r: 10, l: 10 },
-        paper_bgcolor: 'transparent',
-        plot_bgcolor: 'transparent',
-      }}
-      config={{
-        responsive: true,
-      }}
-      useResizeHandler={true}
-      style={{ width: "100%", height: "100%" }}
-    />
+        }]}
+        layout={{
+          margin: { t: 10, b: 10, r: 10, l: 10 },
+          paper_bgcolor: 'transparent',
+          plot_bgcolor: 'transparent',
+        }}
+        config={{
+          responsive: true,
+        }}
+        useResizeHandler={true}
+        style={{ width: "100%", height: "100%" }}
+      />
 
-        </div>
-    );
+    </div>
+  );
 };
 
 export default CompareTable;

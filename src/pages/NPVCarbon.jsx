@@ -7,7 +7,7 @@ import styles from '../css/NPV.module.css' //styling imports
 import Calculator from '../components/Carbon/Calculator'
 import Visuals from '../components/Carbon/Visuals'
 import Header from '../components/Header'
-import SharedVisuals from '../components/Carbon/SharedVisuals'
+import Comparison from '../components/Carbon/Comparison'
 import Decarbonization from "../components/Carbon/Decarbonization";
 
 
@@ -54,7 +54,7 @@ const NPV = () => {
   //refs for scrolling with 'jump to'
   const calculatorRef = useRef(null);
   const visualsRef = useRef(null); //only available in vertical mode
-  const sharedVisualsRef = useRef(null);
+  const comparisonRef = useRef(null);
   const decarbonizationRef = useRef(null);
 
 
@@ -492,7 +492,7 @@ const NPV = () => {
                 <div className={styles.ribbonContent}>
                   <a onClick={() => scrollTo(calculatorRef)}>Inputs</a>
                   {vertical && (<a onClick={() => scrollTo(visualsRef)}>Visuals</a>)}
-                  <a onClick={() => scrollTo(sharedVisualsRef)}>Comparison (NPV<sub>CO<sub>2</sub></sub>)</a>
+                  <a onClick={() => scrollTo(comparisonRef)}>Comparison (NPV<sub>CO<sub>2</sub></sub>)</a>
                   <a onClick={() => scrollTo(decarbonizationRef)}>Decarbonization (D<sub>Eff</sub>)</a>
                 </div>
               </div>
@@ -534,8 +534,8 @@ const NPV = () => {
                 <Calculator key={`${index}-${units}-${currentScenarios[index]?.createdAt}`} vertical = {vertical} scenario = {currentScenarios[index]} saveToStorage = {saveToStorage} updateScenario = {updateScenario} units = {units} caseStudy = {caseStudy}/>
                 <Visuals scenarioData = {currentScenarios} index = {index} units = {units} delay = {parseInt(currentScenarios[index]?.delay)} vertical = {vertical} emissions = {emissions}/>
               </div>)}
-              <div ref={sharedVisualsRef} className = {styles.scrollTarget}>
-                <SharedVisuals scenarioData = {currentScenarios} selected = {selected} setSelected = {setSelected} update = {update} units = {units} emissions = {emissions}/>
+              <div ref={comparisonRef} className = {styles.scrollTarget}>
+                <Comparison scenarioData = {currentScenarios} selected = {selected} setSelected = {setSelected} update = {update} units = {units} emissions = {emissions}/>
               </div>
               <div ref={decarbonizationRef} className = {styles.scrollTarget}>
                 <Decarbonization scenarios = {currentScenarios} units = {units} update = {update} bau = {bau} setBAU = {setBAU} compare = {compare} setCompare = {setCompare}/></div>
