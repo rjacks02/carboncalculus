@@ -262,7 +262,7 @@ const NPV = () => {
     npvTotalRef.current[delay] = npv;
 
     let i = 0;
-    
+
     while(i < copyValues.length){
       copyValues[i] = parseFloat(copyValues[i]);
       let discount = (1 + parseFloat(rate)/100) ** (i+1+delay);
@@ -370,13 +370,13 @@ const NPV = () => {
   //saves scenario to local storage
   function saveToStorage(scenarioName, date, upfrontEmissions, discountRate, totalYears, yearlyValuesRef, longTerm, activeTab, delay){
     //calculate npv to save accurate values
-    calculateNPV(upfrontEmissions, Object.values(yearlyValuesRef.current), discountRate, delay, totalYears, longTerm);
-      
+    let curScenario = calculateNPV(upfrontEmissions, Object.values(yearlyValuesRef.current), discountRate, delay, totalYears, longTerm);
+
     let initialEdited = upfrontEmissions;
     let yearlyValsEdited = Object.values(yearlyValuesRef.current);
-    let npvEdited = npv;
-    let npvValuesEdited = Object.values(npvValuesRef.current);
-    let npvTotalEdited = Object.values(npvTotalRef.current);
+    let npvEdited = curScenario.npv;
+    let npvValuesEdited = Object.values(curScenario.npvYearlyValues);
+    let npvTotalEdited = Object.values(curScenario.npvTotalValues);
 
     //save all scenarios in kilograms, so conversions if scenario is currently in metric tons
     if (units === 'Metric Tons'){
