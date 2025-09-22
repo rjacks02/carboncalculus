@@ -108,31 +108,34 @@ const Decarbonization = ({scenarios, units, update, bau, setBAU, compare, setCom
 
   //calculate values for graph/table
   useEffect(() => {
-    if (compare && bau && bau?.npvTotalValues && compare[0]?.npvTotalValues){
-      let bauVals = [...bau.npvTotalValues];
+    if (compare && bau && bau?.npvYearlyValues && compare[0]?.npvYearlyValues){
+      let bauVals = [...bau.npvYearlyValues];
 
       let deffsSorted = [];
 
       for (let i = 0; i < scenarios.length; i++){
-        let npvVals = [...scenarios[i].npvTotalValues];
+        let npvVals = [...scenarios[i].npvYearlyValues];
         let diff = [];
+        let curr = 0
+        
 
         let longIndex = Math.min(101, npvVals.length, bauVals.length);
 
         for (let j = 0; j < parseInt(scenarios[i].delay); j++){
           diff.push(0);
         }
-          
+
+        
         for (let j = parseInt(scenarios[i].delay); j < longIndex; j++){
           const npvVal = parseFloat(npvVals[j]) || 0;
           const bauVal = parseFloat(bauVals[j]) || 0;
-          const difference = -(npvVal - bauVal);
+          const difference = bauVal - npvVal + curr;
+          curr = difference
           diff.push(+difference.toFixed(10));
         }
-
         deffsSorted.push([parseFloat(diff.at(-1)), scenarios[i].createdAt]);
+
       }
-    
       deffsSorted.sort((a, b) => b[0] - a[0]); //sort deffs by long term
     
       let sortedColors = {};
@@ -160,8 +163,9 @@ const Decarbonization = ({scenarios, units, update, bau, setBAU, compare, setCom
       );
 
       for (let i = 0; i < reordered.length; i++){
-        let npvVals = [...reordered[i].npvTotalValues];
+        let npvVals = [...reordered[i].npvYearlyValues];
         let diff = [];
+        let curr = 0;
 
         let longIndex = Math.min(101, npvVals.length, bauVals.length);
 
@@ -174,7 +178,8 @@ const Decarbonization = ({scenarios, units, update, bau, setBAU, compare, setCom
         for (let j = parseInt(reordered[i].delay); j < longIndex; j++){
           const npvVal = parseFloat(npvVals[j]) || 0;
           const bauVal = parseFloat(bauVals[j]) || 0;
-          const difference = -(npvVal - bauVal);
+          const difference = bauVal - npvVal + curr;
+          curr = difference;
           diff.push(+difference.toFixed(10));
         }
           
