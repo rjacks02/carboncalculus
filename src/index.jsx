@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { HashRouter, Routes, Route } from 'react-router-dom';
 
 import Home from './pages/Home';
 import NPVCarbon from './pages/NPVCarbon'
@@ -11,7 +11,7 @@ const root = ReactDOM.createRoot(document.getElementById('root'));
 
 root.render(
   <React.StrictMode>
-    <BrowserRouter basename="/carboncalculus">
+    <HashRouter>
       <Routes>
         <Route index element={<Home />} />
         <Route path="/Home" element={<Home />} />
@@ -19,6 +19,6 @@ root.render(
         <Route path="/CaseStudies" element={<CaseStudies />} />
         <Route path="/FAQs" element={<FAQs />} />
       </Routes>
-    </BrowserRouter>
+    </HashRouter>
   </React.StrictMode>
 );

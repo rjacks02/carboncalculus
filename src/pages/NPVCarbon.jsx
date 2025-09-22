@@ -262,6 +262,7 @@ const NPV = () => {
     npvTotalRef.current[delay] = npv;
 
     let i = 0;
+    
     while(i < copyValues.length){
       copyValues[i] = parseFloat(copyValues[i]);
       let discount = (1 + parseFloat(rate)/100) ** (i+1+delay);
