@@ -375,8 +375,8 @@ const NPV = () => {
     let initialEdited = upfrontEmissions;
     let yearlyValsEdited = Object.values(yearlyValuesRef.current);
     let npvEdited = curScenario.npv;
-    let npvValuesEdited = Object.values(curScenario.npvYearlyValues);
-    let npvTotalEdited = Object.values(curScenario.npvTotalValues);
+    let npvValuesEdited = curScenario.npvYearlyValues;
+    let npvTotalEdited = curScenario.npvTotalValues;
 
     //save all scenarios in kilograms, so conversions if scenario is currently in metric tons
     if (units === 'Metric Tons'){
