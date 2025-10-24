@@ -100,17 +100,19 @@ const NPV = () => {
   function openCaseStudy(caseName = caseStudy){
     setCaseStudy(caseName);
     let currentCase = JSON.parse(localStorage.getItem('caseStudy-' + caseName));
+    let newUnits = currentCase?.units ? currentCase.units : 'Kilograms'
+
     if (!currentCase){
       localStorage.setItem('caseStudy-'+caseName, JSON.stringify({openedAt: Date.now(), scenarios: Object.values([]), units: 'Kilograms'}));
       currentCase = JSON.parse(localStorage.getItem('caseStudy-' + caseName));
     }
     else{
-      localStorage.setItem('caseStudy-'+caseName, JSON.stringify({openedAt: Date.now(), scenarios: currentCase.scenarios, units: currentCase?.units ? currentCase.units : 'Kilograms'}));
+      localStorage.setItem('caseStudy-'+caseName, JSON.stringify({openedAt: Date.now(), scenarios: currentCase.scenarios, units: newUnits}));
     }
 
     localStorage.setItem('currentCase', JSON.stringify({name: caseName}));
     let scenarios = currentCase.scenarios;
-    setUnits(currentCase.units)
+    setUnits(newUnits)
 
     if (scenarios.length === 0){
         let newS = baseScenario;
@@ -132,7 +134,7 @@ const NPV = () => {
           activeTab: data.activeTab,
           delay: data.delay,
           createdAt: data.createdAt,
-          units: currentCase.units,
+          units: newUnits,
           npvYearlyValues: data.npvYearlyValues,
           npvTotalValues: data.npvTotalValues,
           npv: data.npv,
@@ -141,7 +143,7 @@ const NPV = () => {
       }
 
       setCurrentScenarios(newScenarios);
-      updateCaseStudy(newScenarios, caseName, currentCase.units);
+      updateCaseStudy(newScenarios, caseName, newUnits);
     }
   }
 
