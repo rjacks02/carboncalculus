@@ -202,7 +202,7 @@ const Saved = ({openCase, setOpenCase, caseStudies}) => {
                   Title:
                 </div>
                 <div className = {styles.titleItem}>
-                  NPV (kg):
+                  NPV:
                 </div>
               </div>
             <div className = {styles.actionsTitle}>

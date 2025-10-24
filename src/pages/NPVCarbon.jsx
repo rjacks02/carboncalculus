@@ -16,10 +16,16 @@ const NPV = () => {
   let navigate = useNavigate();
   let location = useLocation();
 
-  //base scenarios in kilograms and metric tons
-  const baseScenarioKG = {createdAt: Date.now(), name: '', upfrontEmissions: '3000.00', discountRate: '3.355', totalYears: '5', yearlyValuesRef: {current: ['1000.00', '1000.00', '1000.00', '1000.00', '1000.00']}, longTerm: false, activeTab: 'Basic', delay: '0', units: 'Kilograms'};
-  const baseScenarioMT = {createdAt: Date.now(), name: '', upfrontEmissions: '3.0', discountRate: '3.355', totalYears: '5', yearlyValuesRef: {current: ['1.0', '1.0', '1.0', '1.0', '1.0']}, longTerm: false, activeTab: 'Basic', delay: '0', units: 'Metric Tons'};
+  //base scenarios in kilograms, metric tons, pounds, short tons
+  const baseScenario = {createdAt: Date.now(), name: '', upfrontEmissions: '3000.00', discountRate: '3.355', totalYears: '5', yearlyValuesRef: {current: ['1000.00', '1000.00', '1000.00', '1000.00', '1000.00']}, longTerm: false, activeTab: 'Basic', delay: '0', units: 'Kilograms'};
 
+  //conversion rates
+  const conversionRates = {
+    'Kilograms': 1,          // base unit
+    'Metric Tons': 1000,      // 1 metric ton = 1000 kg
+    'Pounds': 0.45359237,    // 1 lb = 0.45359237 kg
+    'Short Tons': 907.18474   // 1 short ton (US) = 907.18474 kg
+  };
 
   //main variables
   const [currentScenarios, setCurrentScenarios] = useState([]); //list of all open scenarios
@@ -75,7 +81,7 @@ const NPV = () => {
   }, [currentScenarios, caseStudy])
 
   //updates name + contents of a case study
-  function updateCaseStudy(cur = currentScenarios, caseName = caseStudy) {
+  function updateCaseStudy(cur = currentScenarios, caseName = caseStudy, newUnits = units) {
     if (caseName){
       let stored = JSON.parse(localStorage.getItem('caseStudy-' + caseName));
       let timeStamps = [];
@@ -85,6 +91,7 @@ const NPV = () => {
         }
       }
       stored.scenarios = timeStamps;
+      stored.units = newUnits;
       localStorage.setItem('caseStudy-' + caseName, JSON.stringify(stored));
     }
   }
@@ -94,77 +101,47 @@ const NPV = () => {
     setCaseStudy(caseName);
     let currentCase = JSON.parse(localStorage.getItem('caseStudy-' + caseName));
     if (!currentCase){
-      localStorage.setItem('caseStudy-'+caseName, JSON.stringify({openedAt: Date.now(), scenarios: Object.values([])}));
+      localStorage.setItem('caseStudy-'+caseName, JSON.stringify({openedAt: Date.now(), scenarios: Object.values([]), units: 'Kilograms'}));
       currentCase = JSON.parse(localStorage.getItem('caseStudy-' + caseName));
     }
     else{
-      localStorage.setItem('caseStudy-'+caseName, JSON.stringify({openedAt: Date.now(), scenarios: currentCase.scenarios}));
+      localStorage.setItem('caseStudy-'+caseName, JSON.stringify({openedAt: Date.now(), scenarios: currentCase.scenarios, units: currentCase?.units ? currentCase.units : 'Kilograms'}));
     }
 
     localStorage.setItem('currentCase', JSON.stringify({name: caseName}));
-
     let scenarios = currentCase.scenarios;
+    setUnits(currentCase.units)
 
     if (scenarios.length === 0){
-      if (units === 'Kilograms'){
-        setCurrentScenarios([baseScenarioKG]);
-      }
-      else{
-        setCurrentScenarios([baseScenarioMT]);
-      }
+        let newS = baseScenario;
+        newS.units = units;
+        setCurrentScenarios([newS]);
     }
     else{
       let newScenarios = [];
 
-      if (units === 'Kilograms'){
-        for (let i = 0; i < scenarios.length; i++){
-          let data = JSON.parse(localStorage.getItem('scenario-' + scenarios[i]));
-          let scenario = {
-            name: data.name,
-            upfrontEmissions: data.upfrontEmissions,
-            discountRate: data.discountRate,
-            totalYears: data.totalYears,
-            yearlyValuesRef: { current: data.yearlyValues || [] },
-            longTerm: data.longTerm,
-            activeTab: data.activeTab,
-            delay: data.delay,
-            createdAt: data.createdAt,
-            units: 'Kilograms',
-            npvYearlyValues: data.npvYearlyValues,
-            npvTotalValues: data.npvTotalValues,
-            npv: data.npv,
-          };
-          newScenarios.push(scenario);
-        }
-      }
-      else{
-        for (let i = 0; i < scenarios.length; i++){
-          let data = JSON.parse(localStorage.getItem('scenario-' + scenarios[i]));
-          let editedYearly = data.yearlyValues.map(val => (parseFloat(val)/1000).toString());
-          let editedNPVYearly = data.npvYearlyValues.map(val => (parseFloat(val)/1000).toString());
-          let editedNPVTotal = data.npvTotalValues.map(val => (parseFloat(val)/1000).toString());
-
-          let scenario = {
-            name: data.name,
-            upfrontEmissions: (parseFloat(data.upfrontEmissions)/1000).toString(),
-            discountRate: data.discountRate,
-            totalYears: data.totalYears,
-            yearlyValuesRef: { current: editedYearly || [] },
-            longTerm: data.longTerm,
-            activeTab: data.activeTab,
-            delay: data.delay,
-            createdAt: data.createdAt,
-            units: 'Kilograms',
-            npvYearlyValues: editedNPVYearly,
-            npvTotalValues: editedNPVTotal,
-            npv: (parseFloat(data.npv)/1000).toString(),
-          };
-          newScenarios.push(scenario);
-        }
+      for (let i = 0; i < scenarios.length; i++){
+        let data = JSON.parse(localStorage.getItem('scenario-' + scenarios[i]));
+        let scenario = {
+          name: data.name,
+          upfrontEmissions: data.upfrontEmissions,
+          discountRate: data.discountRate,
+          totalYears: data.totalYears,
+          yearlyValuesRef: { current: data.yearlyValues || [] },
+          longTerm: data.longTerm,
+          activeTab: data.activeTab,
+          delay: data.delay,
+          createdAt: data.createdAt,
+          units: data.units,
+          npvYearlyValues: data.npvYearlyValues,
+          npvTotalValues: data.npvTotalValues,
+          npv: data.npv,
+        };
+        newScenarios.push(scenario);
       }
 
       setCurrentScenarios(newScenarios);
-      updateCaseStudy(newScenarios, caseName);
+      updateCaseStudy(newScenarios, caseName, currentCase.units);
     }
   }
 
@@ -179,46 +156,30 @@ const NPV = () => {
     setIndex(0);
   }
 
-  //convert all current scenarios to kilograms from metric tons
-  function convertToKilograms(){
+  //convert units from 'fromUnit' to 'toUnit'
+  function convertUnits(fromUnit, toUnit){
     for (let i = 0; i < currentScenarios.length; i++){
-      let scenario = currentScenarios[i];
+        let scenario = currentScenarios[i];
+  
+        Object.keys(scenario.yearlyValuesRef.current).forEach(key => {
+          let val = parseFloat(scenario.yearlyValuesRef.current[key]);
+          let result = parseFloat((val * conversionRates[fromUnit]).toFixed(5)) / conversionRates[toUnit]
+          scenario.yearlyValuesRef.current[key] = parseFloat((result.toFixed(8))).toString();
+        });
 
-      Object.keys(scenario.yearlyValuesRef.current).forEach(key => {
-        let val = parseFloat(scenario.yearlyValuesRef.current[key]);
-        scenario.yearlyValuesRef.current[key] = (val * 1000).toString();
-      });
-
-      const updated = {
-        ...scenario,
-        units: 'Kilograms',
-        upfrontEmissions: (parseFloat(scenario.upfrontEmissions) * 1000).toString()
+        let upVal = parseFloat((parseFloat(scenario.upfrontEmissions) * conversionRates[fromUnit]).toFixed(5)) / conversionRates[toUnit]
+        let upResult = parseFloat(upVal.toFixed(8))
+  
+        const updated = {
+          ...scenario,
+          units: toUnit,
+          upfrontEmissions: (upResult).toString()
+        }
+  
+        //fully update the scenario
+        updateScenario(updated.name, updated.createdAt, updated.upfrontEmissions, updated.discountRate, updated.totalYears, updated.yearlyValuesRef, updated.longTerm, updated.activeTab, updated.delay, getFullYearlyValues(updated), i)
       }
-
-      //fully update the scenario
-      updateScenario(updated.name, updated.createdAt, updated.upfrontEmissions, updated.discountRate, updated.totalYears, updated.yearlyValuesRef, updated.longTerm, updated.activeTab, updated.delay, getFullYearlyValues(updated), i)
-    }
-  }
-
-  //convert all current scenarios to metric tons
-  function convertToTons(){
-    for (let i = 0; i < currentScenarios.length; i++){
-      let scenario = currentScenarios[i];
-
-      Object.keys(scenario.yearlyValuesRef.current).forEach(key => {
-        let val = parseFloat(scenario.yearlyValuesRef.current[key]);
-        scenario.yearlyValuesRef.current[key] = (val / 1000).toString();
-      });
-
-      const updated = {
-        ...scenario,
-        units: 'Metric Tons',
-        upfrontEmissions: (parseFloat(scenario.upfrontEmissions) / 1000).toString()
-      }
-
-      //fully update the scenario
-      updateScenario(updated.name, updated.createdAt, updated.upfrontEmissions, updated.discountRate, updated.totalYears, updated.yearlyValuesRef, updated.longTerm, updated.activeTab, updated.delay, getFullYearlyValues(updated), i)
-    }
+    setUnits(toUnit)
   }
 
   //handle toggle in initial popup: "don't show this again"
@@ -298,35 +259,18 @@ const NPV = () => {
     setCurrentScenarios(prev => {
       let newScenario;
 
-      //use base scenario for kilograms or metric tons
-      if (units === 'Kilograms'){
-        newScenario = {
-          name: '',
-          upfrontEmissions: baseScenarioKG.upfrontEmissions,
-          discountRate: baseScenarioKG.discountRate,
-          totalYears: baseScenarioKG.totalYears,
-          yearlyValuesRef: baseScenarioKG.yearlyValuesRef,
-          longTerm: baseScenarioKG.longTerm,
-          activeTab: baseScenarioKG.activeTab,
-          delay: baseScenarioKG.delay,
-          units: 'Kilograms',
-          createdAt: Date.now(),
-        };
-      }
-      else{
-        newScenario = {
-          name: '',
-          upfrontEmissions: baseScenarioMT.upfrontEmissions,
-          discountRate: baseScenarioMT.discountRate,
-          totalYears: baseScenarioMT.totalYears,
-          yearlyValuesRef: baseScenarioMT.yearlyValuesRef,
-          longTerm: baseScenarioMT.longTerm,
-          activeTab: baseScenarioMT.activeTab,
-          delay: baseScenarioMT.delay,
-          units: 'Metric Tons',
-          createdAt: Date.now(),
-        };
-      }
+      newScenario = {
+        name: '',
+        upfrontEmissions: baseScenario.upfrontEmissions,
+        discountRate: baseScenario.discountRate,
+        totalYears: baseScenario.totalYears,
+        yearlyValuesRef: baseScenario.yearlyValuesRef,
+        longTerm: baseScenario.longTerm,
+        activeTab: baseScenario.activeTab,
+        delay: baseScenario.delay,
+        units: units,
+        createdAt: Date.now(),
+      };
       
       const newList = [...prev, newScenario];
       updateCaseStudy(newList);
@@ -362,7 +306,7 @@ const NPV = () => {
     setCurrentScenarios(prev => {
       const filtered = prev.filter((_, i) => i !== ind);
       updateCaseStudy(filtered);
-      let newList = filtered.length > 0 ? filtered : (units === 'Kilograms' ? [baseScenarioKG] : [baseScenarioMT]);
+      let newList = filtered.length > 0 ? filtered : [baseScenario];
       return newList;
     });  
   }
@@ -372,24 +316,9 @@ const NPV = () => {
     //calculate npv to save accurate values
     let curScenario = calculateNPV(upfrontEmissions, Object.values(yearlyValuesRef.current), discountRate, delay, totalYears, longTerm);
 
-    let initialEdited = upfrontEmissions;
-    let yearlyValsEdited = Object.values(yearlyValuesRef.current);
-    let npvEdited = curScenario.npv;
-    let npvValuesEdited = curScenario.npvYearlyValues;
-    let npvTotalEdited = curScenario.npvTotalValues;
-
-    //save all scenarios in kilograms, so conversions if scenario is currently in metric tons
-    if (units === 'Metric Tons'){
-      yearlyValsEdited = yearlyValsEdited.map(val => (parseFloat(val) * 1000).toString());
-      initialEdited *= 1000;
-      npvEdited *= 1000;
-      npvValuesEdited = npvValuesEdited.map(val => (parseFloat(val) * 1000).toString());
-      npvTotalEdited = npvTotalEdited.map(val => (parseFloat(val) * 1000).toString());
-    }
-
     //items saved as "scenario-time" where time is millisecond of creating/saving
     if (scenarioName !== ""){
-      localStorage.setItem("scenario-" + date, JSON.stringify({name: scenarioName, upfrontEmissions: initialEdited, discountRate: discountRate, totalYears: totalYears, yearlyValues: yearlyValsEdited, npvYearlyValues: npvValuesEdited, npvTotalValues: npvTotalEdited, npv: npvEdited, longTerm: longTerm, activeTab: activeTab, delay: delay, units: 'Kilograms', createdAt: date}));
+      localStorage.setItem("scenario-" + date, JSON.stringify({name: scenarioName, upfrontEmissions: upfrontEmissions, discountRate: discountRate, totalYears: totalYears, yearlyValues: Object.values(yearlyValuesRef.current), npvYearlyValues: curScenario.npvYearlyValues, npvTotalValues: curScenario.npvTotalValues, npv: curScenario.npv, longTerm: longTerm, activeTab: activeTab, delay: delay, units: units, createdAt: date}));
     }
   }
 
@@ -503,8 +432,10 @@ const NPV = () => {
               <div className = {styles.mainRibbonButton}>
                 Switch Units
                 <div className={styles.ribbonContent}>
-                  <a onClick={() => {setUnits(prev => {if (prev !== 'Kilograms'){convertToKilograms(); return 'Kilograms'} else{return prev}})}}>Kilograms  {units === 'Kilograms' ? <i className='	fa fa-check'></i> : ''}</a>
-                  <a onClick={() => {setUnits(prev => {if (prev !== 'Metric Tons'){convertToTons(); return 'Metric Tons'} else{return prev}})}}>Metric Tons  {units === 'Metric Tons' ? <i className='	fa fa-check'></i> : ''}</a>
+                  <a onClick={() => {convertUnits(units, 'Kilograms')}}>Kilograms  {units === 'Kilograms' ? <i className='	fa fa-check'></i> : ''}</a>
+                  <a onClick={() => {convertUnits(units, 'Metric Tons')}}>Metric Tons  {units === 'Metric Tons' ? <i className='	fa fa-check'></i> : ''}</a>
+                  <a onClick={() => {convertUnits(units, 'Pounds')}}>Pounds  {units === 'Pounds' ? <i className='	fa fa-check'></i> : ''}</a>
+                  <a onClick={() => {convertUnits(units, 'Short Tons')}}>Short Tons  {units === 'Short Tons' ? <i className='	fa fa-check'></i> : ''}</a>
                 </div>
               </div>
               <div className = {styles.mainRibbonButton}>
