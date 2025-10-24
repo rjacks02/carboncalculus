@@ -132,7 +132,7 @@ const NPV = () => {
           activeTab: data.activeTab,
           delay: data.delay,
           createdAt: data.createdAt,
-          units: data.units,
+          units: currentCase.units,
           npvYearlyValues: data.npvYearlyValues,
           npvTotalValues: data.npvTotalValues,
           npv: data.npv,
