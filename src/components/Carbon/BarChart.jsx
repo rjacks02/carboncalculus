@@ -4,7 +4,7 @@ import styles from '../../css/NPV.module.css' //styling imports
 
 import Plot from 'react-plotly.js'; //plotting imports
 
-const BarChart = ({name, vertical, vals, units, emissions}) => {
+const BarChart = ({name, vals, units, emissions}) => {
   const [values, setValues] = useState(vals); //x values (pvco2)
   const year = new Date().getFullYear(); //y values (years)
 
@@ -19,7 +19,7 @@ const BarChart = ({name, vertical, vals, units, emissions}) => {
   }, [vals, emissions])
 
   return (
-    <div className={`${styles.visualSection} ${vertical === false ? styles.visualSectionHorizontal : ''}`}>
+    <div className={`${styles.visualSection} ${styles.visualSectionHorizontal}`}>
       {values && (
         <Plot
           data={[

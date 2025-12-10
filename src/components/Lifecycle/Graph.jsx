@@ -4,9 +4,9 @@ import styles from '../../css/NPV.module.css' //styling imports
 
 import Plot from 'react-plotly.js'; //plotting imports
 
-const Graph = ({name, vals, units, emissions}) => {
+const Graph = ({year0, name, vals, units, emissions}) => {
   const [values, setValues] = useState(vals); //x values (npvco2)
-  const year = new Date().getFullYear(); //y values (year)
+  const year = year0; //y values (year)
 
   //if reductions, make all values negative
   useEffect(() => {

@@ -11,8 +11,7 @@ const Calculator = ({scenario, updateScenario, units, caseStudy}) => {
 
   //info about the current scenario
   const [scenarioName, setName] = useState(scenario?.name); //scenario's name
-  const [upfrontEmissions, setupfrontEmissions] = useState(scenario?.upfrontEmissions); //scenario's upfront emissions
-  const [discountRate, setDiscountRate] = useState(scenario?.discountRate); //scenario's discount rate
+  const [upfrontEmissions, setUpfrontEmissions] = useState(scenario?.upfrontEmissions); //scenario's upfront emissions
   const [totalYears, setTotalYears] = useState(scenario?.totalYears); //scenario's total years
   const yearlyValuesRef = useRef(scenario?.yearlyValuesRef?.current); //scenario's yearly values
   const [longTerm, setLongTerm] = useState(scenario?.longTerm); //scenario's long term (true/false)
@@ -135,7 +134,7 @@ const Calculator = ({scenario, updateScenario, units, caseStudy}) => {
 
   //updates scenario when needed
   useEffect(() => {
-      updateScenario(scenarioName, createdAt, upfrontEmissions, discountRate, totalYears, { current: getFullYearlyValues() }, longTerm, activeTab, delay, getFullYearlyValues());
+      updateScenario(scenarioName, createdAt, upfrontEmissions, totalYears, { current: getFullYearlyValues() }, longTerm, activeTab, delay, getFullYearlyValues());
   }, [update, activeTab]);
 
 
@@ -322,28 +321,9 @@ const Calculator = ({scenario, updateScenario, units, caseStudy}) => {
                 }
               }}
               value = {upfrontEmissions} 
-              onChange={(e) => setupfrontEmissions(e.target.value)}
-              onBlur = {(e) => {setupfrontEmissions(handleValueChange(e.target.value)); setUpdate(prev => prev+1);}} 
+              onChange={(e) => setUpfrontEmissions(e.target.value)}
+              onBlur = {(e) => {setUpfrontEmissions(handleValueChange(e.target.value)); setUpdate(prev => prev+1);}} 
               type="text" inputMode="decimal"/><div className = {styles.info}><i className="material-icons" onClick = {() => {setInfoKey('Upfront Emissions'); setShowInfo(true);}}>info_outline</i></div>
-            </div>
-            <div className = {styles.calcComponent}>
-              <label htmlFor="discountRate">Discount Rate (%): </label>
-              <input id="discountRate" 
-              ref={el => {
-                if (el) inputRefs.current[refIndex] = el;
-                refIndex++;
-              }}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === 'Tab') {
-                  e.preventDefault();
-                  const currentIndex = inputRefs.current.indexOf(e.target);
-                  setFocusIndex(currentIndex + 1);
-                }
-              }}
-              value = {discountRate} 
-              onChange={(e) => setDiscountRate(e.target.value)} 
-              onBlur = {(e) => {setDiscountRate(handlePercentChange(e.target.value)); setUpdate(prev => prev+1);}}
-              type="text" inputMode="decimal"/><div className = {styles.info}><i className="material-icons" onClick = {() => {setInfoKey('Discount Rate'); setShowInfo(true);}}>info_outline</i></div>
             </div>
             <div className = {styles.calcComponent}>
               <label htmlFor="totalYears">Total Years: </label>

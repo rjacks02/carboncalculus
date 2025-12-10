@@ -89,15 +89,12 @@ const Decarbonization = ({scenarios, units, update, bau, setBAU, compare, setCom
   const [data, setData] = useState([]); //main data with colors
   const [names, setNames] = useState(['', '', '', '', '']); //names of selected scenarios
   const [deffs, setDeffs] = useState(['', '', '', '', '']); //deffs based on total years
-  const [longs, setLongs] = useState(['', '', '', '', '']); //deffs based on long-term values
   const [breakEvens, setBreakEvens] = useState(['', '', '', '', '']); //breakevens of selected
   const [IRRs, setIRRs] = useState(['', '', '', '', '']); //irrs of selected
   const [tableColors, setTableColors] = useState(['white', 'white', 'white', 'white', 'white']); //ordered colors for table
 
   const year = new Date().getFullYear(); //current year
   const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]; //months
-
-  const [longterm, setLongterm] = useState(false); //if longterm on graph
 
   const colors =["#000000", "#E69F00", "#009E73", "#F0E442", "#0072B2", "#CC79A7"]; //colors for graph
   const pales = ["#D3D3D3", "#F4D7A8", "#BFEAD9", "#F9F4B0", "#BFDBEC", "#EFC3DC"]; //colors for table
@@ -116,17 +113,18 @@ const Decarbonization = ({scenarios, units, update, bau, setBAU, compare, setCom
       for (let i = 0; i < scenarios.length; i++){
         let npvVals = [...scenarios[i].npvYearlyValues];
         let diff = [];
-        let curr = 0
+        let curr = 0;
+        let delay = parseInt(scenarios[i].constructYr)-parseInt(scenarios[i].year0);
+        
+        let longIndex = Math.min(npvVals.length, bauVals.length);
         
 
-        let longIndex = Math.min(101, npvVals.length, bauVals.length);
-
-        for (let j = 0; j < parseInt(scenarios[i].delay); j++){
+        for (let j = 0; j < delay; j++){
           diff.push(0);
         }
 
         
-        for (let j = parseInt(scenarios[i].delay); j < longIndex; j++){
+        for (let j = delay; j < longIndex; j++){
           const npvVal = parseFloat(npvVals[j]) || 0;
           const bauVal = parseFloat(bauVals[j]) || 0;
           const difference = bauVal - npvVal + curr;
@@ -149,8 +147,7 @@ const Decarbonization = ({scenarios, units, update, bau, setBAU, compare, setCom
 
       let newData = [];
       let newNames = [];
-      let newDeffs = []
-      let newLongs = [];        
+      let newDeffs = []      
       let newBreakEvens = [];
       let newIRRs = [];
       let newColors = [];
@@ -166,19 +163,18 @@ const Decarbonization = ({scenarios, units, update, bau, setBAU, compare, setCom
         let npvVals = [...reordered[i].npvYearlyValues];
         let diff = [];
         let curr = 0;
+        let delay = parseInt(scenarios[i].constructYr)-parseInt(scenarios[i].year0);
 
-        let longIndex = Math.min(101, npvVals.length, bauVals.length);
-
-        let shortIndex = parseInt(reordered[i].totalYears)+parseInt(reordered[i].delay)+1;
+        let longIndex = Math.min(npvVals.length, bauVals.length);
           
-        for (let j = 0; j < parseInt(reordered[i].delay); j++){
+        for (let j = 0; j < delay; j++){
           diff.push(0);
         }
           
-        for (let j = parseInt(reordered[i].delay); j < longIndex; j++){
+        for (let j = delay; j < longIndex; j++){
           const npvVal = parseFloat(npvVals[j]) || 0;
           const bauVal = parseFloat(bauVals[j]) || 0;
-          const difference = -(npvVal - bauVal) + curr;
+          const difference = bauVal - npvVal + curr;
           curr = difference;
           diff.push(+difference.toFixed(10));
         }
@@ -198,8 +194,8 @@ const Decarbonization = ({scenarios, units, update, bau, setBAU, compare, setCom
 
         //x value for graph
         let current = {
-          x: longterm ? diff.map((_, k) => k+year) : diff.slice(0, shortIndex).map((_, k) => k+year),
-          y: longterm ? diff : diff.slice(0, shortIndex),
+          x: diff.map((_, k) => k+year),
+          y: diff,
           type: 'line',
           mode: 'lines+markers',
           name: reordered[i].name,
@@ -209,8 +205,7 @@ const Decarbonization = ({scenarios, units, update, bau, setBAU, compare, setCom
 
         newData.push(current);
         newNames.push(reordered[i].name);
-        newDeffs.push(diff.slice(0, shortIndex).at(-1).toFixed(2));
-        newLongs.push(diff.at(-1).toFixed(2));
+        newDeffs.push(diff.at(-1).toFixed(2));
         newColors.push(sortedColors[reordered[i].createdAt][1]);
         newBreakEvens.push(curBreak);
 
@@ -218,13 +213,12 @@ const Decarbonization = ({scenarios, units, update, bau, setBAU, compare, setCom
           newIRRs.push('N/A');
         }
         else{
-          newIRRs.push(IRR(reordered[i], bau, longIndex-1));
+          newIRRs.push(IRR(npvVals, bauVals, longIndex-1));
         }
       }
       setData(newData);
       setNames([...newNames, ...Array(Math.max(0, 5 - newNames.length)).fill('')]);
       setDeffs([...newDeffs, ...Array(Math.max(0, 5 - newDeffs.length)).fill('')]);
-      setLongs([...newLongs, ...Array(Math.max(0, 5 - newLongs.length)).fill('')]);
       setBreakEvens([...newBreakEvens, ...Array(Math.max(0, 5 - newBreakEvens.length)).fill('')]);
       setIRRs([...newIRRs, ...Array(Math.max(0, 5 - newIRRs.length)).fill('')]);
       setTableColors([...newColors,...Array(Math.max(0, 5 - newColors.length)).fill('white')]);
@@ -233,12 +227,11 @@ const Decarbonization = ({scenarios, units, update, bau, setBAU, compare, setCom
       setData([]);
       setNames(['', '', '', '', '']);
       setDeffs(['', '', '', '', '']);
-      setLongs(['', '', '', '', '']);
       setBreakEvens(['', '', '', '', '']);
       setIRRs(['', '', '', '', '']);
       setTableColors(['white', 'white', 'white', 'white', 'white']);
     }
-  }, [compare, bau, units, update, longterm]);
+  }, [compare, bau, units, update]);
 
   //finds breakeven
   function findBreakeven(diff) {
@@ -276,7 +269,7 @@ const Decarbonization = ({scenarios, units, update, bau, setBAU, compare, setCom
   }
 
   //finds IRR
-  function IRR(c, b, ind) {
+  function IRR(npvVals, bauVals, ind) {
     let min = 0.0;
     let max = 999.0;
     let guess = 0;
@@ -285,11 +278,10 @@ const Decarbonization = ({scenarios, units, update, bau, setBAU, compare, setCom
     let maxIterations = 1000;
     let iter = 0;
 
-    let up = -(parseFloat(c.upfrontEmissions)-parseFloat(b.upfrontEmissions));
-    let vals = [+up];
+    let vals = [];
 
     for (let i = 0; i < ind; i++){
-      let difference = -(parseFloat(c.yearlyValuesRef.current[i]) - parseFloat(b.yearlyValuesRef.current[i]));
+      let difference = -(parseFloat(npvVals[i]) - parseFloat(bauVals[i]));
       vals.push(+difference);
     }
   
@@ -317,11 +309,6 @@ const Decarbonization = ({scenarios, units, update, bau, setBAU, compare, setCom
     return 'N/A';
   }
 
-  //toggle long term
-  function handleToggle(){
-    setLongterm(prev => !prev);
-  }
-
   return (
     <div className = {styles.section}>
       <h2 className = {styles.sectionTitle}>
@@ -334,8 +321,8 @@ const Decarbonization = ({scenarios, units, update, bau, setBAU, compare, setCom
       <SelectScenario scenarios = {scenarios} compare = {compare} setCompare = {setCompare} bau = {bau} setBAU = {setBAU}/>
         
       <div className = {styles.compareCols}>
-        <DecarbGraph data = {data} handleToggle = {handleToggle} longterm = {longterm} units = {units} bau = {bau}/>
-        <DecarbTable names = {names} deffs = {deffs} longs = {longs} breakEvens = {breakEvens} IRRs = {IRRs} tableColors = {tableColors} units = {units} />
+        <DecarbGraph data = {data} units = {units} bau = {bau}/>
+        <DecarbTable names = {names} deffs = {deffs} breakEvens = {breakEvens} IRRs = {IRRs} tableColors = {tableColors} units = {units} />
       </div>
 
       {showInfo && (

@@ -10,7 +10,7 @@ import Graph from './Graph';
 
 import info from './info.json' //more info about terms
 
-const Visuals = ({scenarioData, index, units, delay, emissions}) => {
+const Visuals = ({scenarioData, index, units, delay, vertical, emissions}) => {
   let navigate = useNavigate(); //navigation
   
   const [activeTab, setActiveTab] = useState('Graph'); //tab is Graph or Bar Chart
@@ -20,12 +20,12 @@ const Visuals = ({scenarioData, index, units, delay, emissions}) => {
   function renderVisual(){
     if (activeTab === 'Graph'){
       return (
-        <Graph name = {scenarioData[index].name} vals = {scenarioData[index]?.longTerm ? scenarioData[index]?.npvTotalValues ?? [] : (scenarioData[index]?.npvTotalValues ?? []).slice(0, parseInt(scenarioData[index]?.totalYears)+parseInt(scenarioData[index]?.delay)+1)} units = {units} emissions = {emissions}/>
+        <Graph year0 = {scenarioData[index].year0} name = {scenarioData[index].name} vals = {scenarioData[index]?.npvTotalValues} units = {units} emissions = {emissions}/>
       )
     }
     else{
       return (
-        <BarChart name = {scenarioData[index].name} vals = {scenarioData[index]?.longTerm ? scenarioData[index]?.npvYearlyValues ?? [] : (scenarioData[index]?.npvYearlyValues ?? []).slice(0, parseInt(scenarioData[index]?.totalYears)+parseInt(scenarioData[index]?.delay)+1)} units = {units} emissions = {emissions}/>
+        <BarChart year0 = {scenarioData[index].year0} name = {scenarioData[index].name} vals = {scenarioData[index]?.npvYearlyValues} units = {units} emissions = {emissions}/>
       )
     }
   }

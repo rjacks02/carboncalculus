@@ -4,11 +4,11 @@ import { useNavigate, useLocation } from "react-router-dom"; //navigation import
 import styles from '../css/NPV.module.css' //styling imports
 
 //component imports
-import Calculator from '../components/Carbon/Calculator'
-import Visuals from '../components/Carbon/Visuals'
+import Calculator from '../components/Lifecycle/Calculator'
+import Visuals from '../components/Lifecycle/Visuals'
 import Header from '../components/Header'
-import Comparison from '../components/Carbon/Comparison'
-import Decarbonization from "../components/Carbon/Decarbonization";
+import Comparison from '../components/Lifecycle/Comparison'
+import Decarbonization from "../components/Lifecycle/Decarbonization";
 
 
 const NPV = () => {
@@ -17,7 +17,16 @@ const NPV = () => {
   let location = useLocation();
 
   //base scenarios in kilograms, metric tons, pounds, short tons
-  const baseScenario = {createdAt: Date.now(), name: '', upfrontEmissions: '3000.00', totalYears: '5', yearlyValuesRef: {current: ['1000.00', '1000.00', '1000.00', '1000.00', '1000.00']}, longTerm: false, activeTab: 'Basic', delay: '0', units: 'Kilograms'};
+  const baseScenario = {createdAt: Date.now(), 
+    name: '', 
+    upfrontCarbon: '3000.00', 
+    systemLifespan: 20, 
+    year0: 2025, 
+    constructYr: 2028, 
+    operationalYr: 2030, 
+    operationCarbon: '1000.00', 
+    endCarbon: '0.00', 
+    units: 'Kilograms'};
 
   //conversion rates
   const conversionRates = {
@@ -66,15 +75,15 @@ const NPV = () => {
   //when first rendered, open the previously open case study
   useEffect(() => {
     if ((currentScenarios.length === 0 && !caseStudy)){
-      let currentCase = JSON.parse(localStorage.getItem('currentCase'));
-      if (currentCase && localStorage.getItem('caseStudy-'+currentCase.name)){
+      let currentCase = JSON.parse(localStorage.getItem('currentCaseLifecycle'));
+      if (currentCase && localStorage.getItem('caseStudyLifecycle-'+currentCase.name)){
         openCaseStudy(currentCase.name);
         setCaseStudy(currentCase.name);
       }
       else{
         openCaseStudy('Default');
         setCaseStudy('Default');
-        localStorage.setItem('currentCase', JSON.stringify({name: 'Default'}));
+        localStorage.setItem('currentCaseLifecycle', JSON.stringify({name: 'Default'}));
       }
     }
   }, [currentScenarios, caseStudy])
@@ -82,7 +91,7 @@ const NPV = () => {
   //updates name + contents of a case study
   function updateCaseStudy(cur = currentScenarios, caseName = caseStudy, newUnits = units, newDiscountRate = discountRate) {
     if (caseName){
-      let stored = JSON.parse(localStorage.getItem('caseStudy-' + caseName));
+      let stored = JSON.parse(localStorage.getItem('caseStudyLifecycle-' + caseName));
       let timeStamps = [];
       for (let i = 0; i < cur.length; i++){
         if (cur[i].name){
@@ -92,26 +101,26 @@ const NPV = () => {
       stored.scenarios = timeStamps;
       stored.units = newUnits;
       stored.discountRate = newDiscountRate;
-      localStorage.setItem('caseStudy-' + caseName, JSON.stringify(stored));
+      localStorage.setItem('caseStudyLifecycle-' + caseName, JSON.stringify(stored));
     }
   }
 
   //opens a case study and saves as current case
   function openCaseStudy(caseName = caseStudy){
     setCaseStudy(caseName);
-    let currentCase = JSON.parse(localStorage.getItem('caseStudy-' + caseName));
+    let currentCase = JSON.parse(localStorage.getItem('caseStudyLifecycle-' + caseName));
     let newUnits = currentCase?.units ? currentCase.units : 'Kilograms';
     let newDiscountRate = currentCase?.discountRate ? currentCase.discountRate : 3.16;
 
     if (!currentCase){
-      localStorage.setItem('caseStudy-'+caseName, JSON.stringify({openedAt: Date.now(), scenarios: Object.values([]), units: 'Kilograms', discountRate: 3.16}));
-      currentCase = JSON.parse(localStorage.getItem('caseStudy-' + caseName));
+      localStorage.setItem('caseStudyLifecycle-'+caseName, JSON.stringify({openedAt: Date.now(), scenarios: Object.values([]), units: 'Kilograms', discountRate: 3.16}));
+      currentCase = JSON.parse(localStorage.getItem('caseStudyLifecycle-' + caseName));
     }
     else{
-      localStorage.setItem('caseStudy-'+caseName, JSON.stringify({openedAt: Date.now(), scenarios: currentCase.scenarios, units: newUnits, discountRate: newDiscountRate}));
+      localStorage.setItem('caseStudyLifecycle-'+caseName, JSON.stringify({openedAt: Date.now(), scenarios: currentCase.scenarios, units: newUnits, discountRate: newDiscountRate}));
     }
 
-    localStorage.setItem('currentCase', JSON.stringify({name: caseName}));
+    localStorage.setItem('currentCaseLifecycle', JSON.stringify({name: caseName}));
     let scenarios = currentCase.scenarios;
     setUnits(newUnits);
     setDiscountRate(newDiscountRate);
@@ -127,13 +136,14 @@ const NPV = () => {
       for (let i = 0; i < scenarios.length; i++){
         let data = JSON.parse(localStorage.getItem('scenario-' + scenarios[i]));
         let scenario = {
-          name: data.name,
-          upfrontEmissions: data.upfrontEmissions,
-          totalYears: data.totalYears,
-          yearlyValuesRef: { current: data.yearlyValues || [] },
-          longTerm: data.longTerm,
-          activeTab: data.activeTab,
-          delay: data.delay,
+          name: data.name, 
+          upfrontCarbon: data.upfrontCarbon,
+          systemLifespan: data.systemLifespan,
+          year0: data.year0,
+          constructYr: data.constructYr,
+          operationalYr: data.operationalYr,
+          operationCarbon: data.operationCarbon,
+          endCarbon: data.endCarbon,
           createdAt: data.createdAt,
           units: newUnits,
           npvYearlyValues: data.npvYearlyValues,
@@ -152,24 +162,26 @@ const NPV = () => {
   function convertUnits(fromUnit, toUnit){
     for (let i = 0; i < currentScenarios.length; i++){
         let scenario = currentScenarios[i];
-  
-        Object.keys(scenario.yearlyValuesRef.current).forEach(key => {
-          let val = parseFloat(scenario.yearlyValuesRef.current[key]);
-          let result = parseFloat((val * conversionRates[fromUnit]).toFixed(5)) / conversionRates[toUnit]
-          scenario.yearlyValuesRef.current[key] = parseFloat((result.toFixed(8))).toString();
-        });
 
-        let upVal = parseFloat((parseFloat(scenario.upfrontEmissions) * conversionRates[fromUnit]).toFixed(5)) / conversionRates[toUnit]
+        let upVal = parseFloat((parseFloat(scenario.upfrontCarbon) * conversionRates[fromUnit]).toFixed(5)) / conversionRates[toUnit]
         let upResult = parseFloat(upVal.toFixed(8))
   
+        let opVal = parseFloat((parseFloat(scenario.operationCarbon) * conversionRates[fromUnit]).toFixed(5)) / conversionRates[toUnit]
+        let opResult = parseFloat(opVal.toFixed(8))
+
+        let endVal = parseFloat((parseFloat(scenario.endCarbon) * conversionRates[fromUnit]).toFixed(5)) / conversionRates[toUnit]
+        let endResult = parseFloat(endVal.toFixed(8))
+
         const updated = {
           ...scenario,
           units: toUnit,
-          upfrontEmissions: (upResult).toString()
+          upfrontCarbon: (upResult).toString(),
+          operationCarbon: (opResult).toString(),
+          endCarbon: (endResult).toString()
         }
   
         //fully update the scenario
-        updateScenario(updated.name, updated.createdAt, updated.upfrontEmissions, updated.totalYears, updated.yearlyValuesRef, updated.longTerm, updated.activeTab, updated.delay, getFullYearlyValues(updated), i)
+        updateScenario(updated.name, updated.createdAt, updated.upfrontCarbon, updated.systemLifespan, updated.year0, updated.constructYr, updated.operationalYr, updated.operationCarbon, updated.endCarbon, i)
       }
     setUnits(toUnit)
   }
@@ -184,25 +196,22 @@ const NPV = () => {
     ref?.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
-
-  //extend yearly values to 100 years (long term value)
-  const getFullYearlyValues = (s) => {
-    const baseValues = s.yearlyValuesRef.current.slice(0, Math.min(100, parseInt(s.totalYears)));
-
-    const lastVal = baseValues[baseValues.length - 1];
-    const extendedVals = Array(100 - baseValues.length-parseInt(s.delay)).fill(lastVal);
-    return [...baseValues, ...extendedVals];
-  };
-
   //function to fully calculate npv
-  function calculateNPV(initial, values, delayed, totalYears, longTerm, ind = index, dr = discountRate) {
-    let delay = parseInt(delayed);
-    let years = parseInt(totalYears);
+  function calculateNPV(year0, constructYr, operationalYr, systemLifespan, upfrontCarbon, operationCarbon, endCarbon, ind = index, dr = discountRate) {
+    let delay = constructYr - year0;
+    let conYears = operationalYr - constructYr;
+    let opYears = systemLifespan;
+    
+    let annualCon = parseFloat(upfrontCarbon)/conYears;
+    let annualOp = parseFloat(operationCarbon)/opYears;
+    let annualEnd = parseFloat(endCarbon);
+
     let rate = parseFloat(dr);
 
+    let npv = 0
+    let newValue;
     npvValuesRef.current = {};
     npvTotalRef.current = {};
-    const copyValues = [...values];
 
     //all values are 0 until delay ends
     for (let i = 0; i < delay; i++){
@@ -210,31 +219,27 @@ const NPV = () => {
       npvTotalRef.current[i] = 0;
     }
 
-    let initialDiscount = (1 + parseFloat(rate)/100) ** (delay)
-    let npv = (parseFloat(initial)/initialDiscount);
-    npvValuesRef.current[delay] = npv;
-    npvTotalRef.current[delay] = npv;
-
-    let i = 0;
-
-    while(i < copyValues.length){
-      copyValues[i] = parseFloat(copyValues[i]);
-      let discount = (1 + parseFloat(rate)/100) ** (i+1+delay);
-      let newValue = copyValues[i]/discount;
-
-      npv += newValue
-      npvValuesRef.current[i+delay+1] = newValue;
-      npvTotalRef.current[i+delay+1] = npv;
-      
-      i += 1;
+    for (let i = 0; i < conYears; i++){
+      newValue = annualCon/(1 + rate/100) ** (i+delay);
+      npv += newValue;
+      npvValuesRef.current[i+delay] = newValue;
+      npvTotalRef.current[i+delay] = npv;
     }
 
-    //sets npv based on total years if not long term
-    if(!longTerm){
-      npv = npvTotalRef.current[delay+years]
+    for (let i = 0; i < opYears; i++){
+      newValue = annualOp/(1 + rate/100) ** (i+conYears+delay);
+      npv += newValue;
+      npvValuesRef.current[i+delay+conYears] = newValue;
+      npvTotalRef.current[i+delay+conYears] = npv;
     }
+
+    let endValue = annualEnd/(1 + rate/100) ** (opYears+conYears+delay);
+    npv += endValue;
+    npvValuesRef.current[opYears+conYears+delay] = endValue;
+    npvTotalRef.current[opYears+conYears+delay] = npv;
+
     
-    npv = parseFloat(npv.toPrecision(3)) //3 significant figures
+    npv = parseFloat(npv.toFixed(2)) //2 decimal places
     setNPV(npv);
 
     const updatedScenario = {
@@ -254,12 +259,13 @@ const NPV = () => {
 
       newScenario = {
         name: '',
-        upfrontEmissions: baseScenario.upfrontEmissions,
-        totalYears: baseScenario.totalYears,
-        yearlyValuesRef: baseScenario.yearlyValuesRef,
-        longTerm: baseScenario.longTerm,
-        activeTab: baseScenario.activeTab,
-        delay: baseScenario.delay,
+        upfrontCarbon: baseScenario.upfrontCarbon,
+        systemLifespan: baseScenario.systemLifespan,
+        year0: baseScenario.year0,
+        constructYr: baseScenario.constructYr,
+        operationalYr: baseScenario.operationalYr,
+        operationCarbon: baseScenario.operationCarbon,
+        endCarbon: baseScenario.endCarbon,
         units: units,
         createdAt: Date.now(),
       };
@@ -304,13 +310,13 @@ const NPV = () => {
   }
 
   //saves scenario to local storage
-  function saveToStorage(scenarioName, date, upfrontEmissions, totalYears, yearlyValuesRef, longTerm, activeTab, delay){
+  function saveToStorage(scenarioName, date, upfrontCarbon, systemLifespan, year0, constructYr, operationalYr, operationCarbon, endCarbon){
     //calculate npv to save accurate values
-    let curScenario = calculateNPV(upfrontEmissions, Object.values(yearlyValuesRef.current), delay, totalYears, longTerm);
+    let curScenario = calculateNPV(year0, constructYr, operationalYr, systemLifespan, upfrontCarbon, operationCarbon, endCarbon);
 
     //items saved as "scenario-time" where time is millisecond of creating/saving
     if (scenarioName !== ""){
-      localStorage.setItem("scenario-" + date, JSON.stringify({name: scenarioName, upfrontEmissions: upfrontEmissions, totalYears: totalYears, yearlyValues: Object.values(yearlyValuesRef.current), npvYearlyValues: curScenario.npvYearlyValues, npvTotalValues: curScenario.npvTotalValues, npv: curScenario.npv, longTerm: longTerm, activeTab: activeTab, delay: delay, units: units, createdAt: date}));
+      localStorage.setItem("scenario-" + date, JSON.stringify({name: scenarioName, upfrontCarbon: upfrontCarbon, systemLifespan: systemLifespan, year0: year0, npvYearlyValues: curScenario.npvYearlyValues, npvTotalValues: curScenario.npvTotalValues, npv: curScenario.npv, constructYr: constructYr, operationalYr: operationalYr, operationCarbon: operationCarbon, endCarbon: endCarbon, units: units, createdAt: date}));
     }
   }
 
@@ -354,25 +360,25 @@ const NPV = () => {
   }
 
   //update scenario based on new values
-  function updateScenario(name, createdAt, upfrontEmissions, totalYears, yearlyValuesRef, longTerm, activeTab, delay, fullYears, i = index, dr = discountRate) {
-    let updatedScenario = calculateNPV(upfrontEmissions, fullYears, delay, totalYears, longTerm, i, dr);
-    console.log(yearlyValuesRef);
+  function updateScenario(name, createdAt, upfrontCarbon, systemLifespan, year0, constructYr, operationalYr, operationCarbon, endCarbon, i = index, dr = discountRate) {
+    let updatedScenario = calculateNPV(year0, constructYr, operationalYr, systemLifespan, upfrontCarbon, operationCarbon, endCarbon, i, dr);
     const fullScenario = {
       ...updatedScenario,
       name,
-      upfrontEmissions,
-      totalYears,
-      yearlyValuesRef: { current: [...yearlyValuesRef.current] },
-      longTerm,
-      delay,
-      activeTab,
+      upfrontCarbon,
+      systemLifespan,
+      year0,
+      constructYr,
+      operationalYr,
+      operationCarbon, 
+      endCarbon,
       units
     };
       
     setCurrentScenarios(prev => {
       const updated = [...prev];
       updated[i] = { ...fullScenario };
-      saveToStorage(name, createdAt, upfrontEmissions, totalYears, yearlyValuesRef, longTerm, activeTab, delay);
+      saveToStorage(name, createdAt, upfrontCarbon, systemLifespan, year0, constructYr, operationalYr, operationCarbon, endCarbon);
       updateCaseStudy(updated, caseStudy, units, dr);
       return updated;
     });
@@ -386,7 +392,7 @@ const NPV = () => {
   function updateAllScenarios(dr){
     for (let i = 0; i < currentScenarios.length; i++){
       let s = currentScenarios[i];
-      updateScenario(s.name, s.createdAt, s.upfrontEmissions, s.totalYears, s.yearlyValuesRef, s.longTerm, s.activeTab, s.delay, getFullYearlyValues(s), i, dr)
+      updateScenario(s.name, s.createdAt, s.upfrontCarbon, s.systemLifespan, s.year0, s.constructYr, s.operationalYr, s.operationCarbon, s.endCarbon, i, dr);
     }
   }
         
@@ -441,7 +447,7 @@ const NPV = () => {
                 Discount Rate
                 <div className={styles.ribbonContent}>
                 <p>Discount Rate: {discountRate}</p>
-                <div className={styles.discountRate}>
+                  <div className={styles.discountRate}>
                     <input
                       type="range"
                       min="1.4"
@@ -460,8 +466,8 @@ const NPV = () => {
                 <div className = {styles.mainRibbonButton}>
                 Change Mode
                 <div className={styles.ribbonContent}>
-                  <a onClick={() => {}}>Standard <i className='	fa fa-check'></i></a>
-                  <a onClick={() => {navigate('/Lifecycle')}}>Lifecycle </a>
+                  <a onClick={() => {navigate('/NPVCarbon')}}>Standard </a>
+                  <a onClick={() => {}}>Lifecycle  <i className='	fa fa-check'></i></a>
                 </div>
               </div>
             </div>

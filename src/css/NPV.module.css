@@ -362,11 +362,14 @@ html, body, #root {
   margin-top: 8%;
   margin-bottom: 5%;
   text-align: center;
-  margin-left: auto;
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  gap: 1px;
+  gap: 5px;
+}
+
+.calcText {
+  margin: auto;
 }
 
 
@@ -1528,4 +1531,10 @@ html, body, #root {
   padding: 0.5rem 1rem;
   background-color: #e0f0f7;
   color: #000;
+}
+
+.discountRate{
+  width: 90%;
+  margin: auto;
+  margin-bottom: 5%;
 }
