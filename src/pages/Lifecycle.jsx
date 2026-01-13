@@ -434,16 +434,6 @@ const NPV = () => {
                 View Case Studies
               </div>
               <div className = {styles.mainRibbonButton}>
-                Switch Units
-                <div className={styles.ribbonContent}>
-                  <a onClick={() => {convertUnits(units, 'Kilograms')}}>Kilograms  {units === 'Kilograms' ? <i className='	fa fa-check'></i> : ''}</a>
-                  <a onClick={() => {convertUnits(units, 'Metric Tons')}}>Metric Tons  {units === 'Metric Tons' ? <i className='	fa fa-check'></i> : ''}</a>
-                  <a onClick={() => {convertUnits(units, 'Pounds')}}>Pounds  {units === 'Pounds' ? <i className='	fa fa-check'></i> : ''}</a>
-                  <a onClick={() => {convertUnits(units, 'Short Tons')}}>Short Tons  {units === 'Short Tons' ? <i className='	fa fa-check'></i> : ''}</a>
-                  <a onClick={() => {setEmissions(prev => !prev)}}>Mode: {!emissions ? "Reductions " : 'Emissions '}<i className='	fa fa-check'></i></a>
-                </div>
-              </div>
-              <div className = {styles.mainRibbonButton}>
                 Discount Rate
                 <div className={styles.ribbonContent}>
                 <p>Discount Rate: {discountRate}</p>
@@ -463,6 +453,16 @@ const NPV = () => {
                     </div>
                   </div>
                 </div>
+              <div className = {styles.mainRibbonButton}>
+                Switch Units
+                <div className={styles.ribbonContent}>
+                  <a onClick={() => {convertUnits(units, 'Kilograms')}}>Kilograms  {units === 'Kilograms' ? <i className='	fa fa-check'></i> : ''}</a>
+                  <a onClick={() => {convertUnits(units, 'Metric Tons')}}>Metric Tons  {units === 'Metric Tons' ? <i className='	fa fa-check'></i> : ''}</a>
+                  <a onClick={() => {convertUnits(units, 'Pounds')}}>Pounds  {units === 'Pounds' ? <i className='	fa fa-check'></i> : ''}</a>
+                  <a onClick={() => {convertUnits(units, 'Short Tons')}}>Short Tons  {units === 'Short Tons' ? <i className='	fa fa-check'></i> : ''}</a>
+                  <a onClick={() => {setEmissions(prev => !prev)}}>Mode: {!emissions ? "Reductions " : 'Emissions '}<i className='	fa fa-check'></i></a>
+                </div>
+              </div>
                 <div className = {styles.mainRibbonButton}>
                 Change Mode
                 <div className={styles.ribbonContent}>
